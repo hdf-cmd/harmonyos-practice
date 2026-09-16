@@ -15,25 +15,7 @@ import { RouteConstants } from '../../../common/constants/RouteConstants'
 import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
 import { CategoryGroup, groupByCategory } from '../../../common/utils/PaperUtils'
 import { ExamSubjectCard } from './components/ExamSubjectCard'
-
-// 考卷列表占位页：实训 4-3 将替换为真正的 ExamListPage
-// 它挂在 examStack 上，所以根节点是 NavDestination（Navigation 体系里"域内页面"的写法）
-@ComponentV2
-struct ExamListPlaceholder {
-  build() {
-    NavDestination() {
-      Column() {
-        Text('考卷列表页（实训 4-3 建设中）')
-          .fontSize(CommonConstants.FONT_BODY)
-          .fontColor(CommonConstants.COLOR_TEXT_SUB)
-      }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-    }
-    .title('考卷列表')
-  }
-}
+import { ExamListPage } from './ExamListPage'
 
 @ComponentV2
 export struct ExamSubjectView {
@@ -47,7 +29,7 @@ export struct ExamSubjectView {
   @Builder
   ExamRouter(name: string, param: Object) {
     if (name === RouteConstants.EXAM_LIST) {
-      ExamListPlaceholder()
+      ExamListPage()
     }
   }
 
@@ -94,7 +76,7 @@ export struct ExamSubjectView {
       })
       .backgroundColor(CommonConstants.COLOR_BG_PAGE)
     }
-    .navDestination(this.ExamRouter)   // 域内路由表：EXAM_LIST → 考卷列表占位页
+    .navDestination(this.ExamRouter)   // 域内路由表：EXAM_LIST → 考卷列表页（ExamListPage）
     .hideTitleBar(true)                // 不要系统标题栏：Tab 页有自己的标题排版
     .mode(NavigationMode.Stack)        // 栈模式：域内页面层层压栈
   }
