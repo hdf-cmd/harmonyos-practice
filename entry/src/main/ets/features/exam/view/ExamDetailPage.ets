@@ -1,9 +1,16 @@
 // 考试模式答题页：顶部标题区 + 中部题目区 + 底部操作区
-import { CommonConstants } from '../constants/CommomConstants'
-import { MOCK_PAPER, MOCK_QUESTIONS } from '../mock/MockExamData'
-import { QuestionItem, OptionItem } from '../model/QuestionModel'
+//
+// 本页知识点：@Local 状态驱动 UI、ForEach 渲染选项列表、Radio/Checkbox 受控用法。
+// 注意：本页是独立路由页（@Entry），在 main_pages.json 中注册，将来由首页试卷卡片 router 跳入。
+// 数据目前直接读 MOCK_PAPER / MOCK_QUESTIONS，接入接口后需换成路由传参 + 请求结果。
+// 【分层说明】本文件位于 features/exam/view/：它是"考试"feature 的路由页（@Entry），
+//   会被注册进 main_pages.json，所以放在 feature 的 view 层而不是 pages/ 下。
+import { CommonConstants } from '../../../common/constants/CommonConstants'
+import { MOCK_PAPER, MOCK_QUESTIONS } from '../../../common/mock/MockExamData'
+import { QuestionItem, OptionItem } from '../../../common/model/QuestionModel'
 
-// 题型标签映射
+// 题型标签映射：后端存的是枚举码（JUDGE/SINGLE/MULTI），展示时翻成中文
+// 用 Record 集中管理映射关系，新增题型只改这一处
 const TYPE_LABEL: Record<string, string> = {
   'JUDGE': '判断题',
   'SINGLE': '单选题',
@@ -14,19 +21,21 @@ const TYPE_LABEL: Record<string, string> = {
 @Entry
 @ComponentV2
 struct ExamDetailPage {
-  // 当前题目索引
+  // 当前题目索引：整页最核心的状态——它一变，题目区所有内容跟着刷新
   @Local currentIndex: number = 0
-  // 单选/判断选中项（记录选中的 label）
+  // 单选/判断选中项（记录选中的 label，如 'A'）
+  // 用 string 而不是 boolean：Radio 组件靠"值相等"判断谁被选中
   @Local radioSelected: string = ''
-  // 多选选中项集合
+  // 多选选中项集合：Set 天然去重，add/delete 对应勾选/取消
+  // 注意 Set 整体替换（resetSelection 里 new 一个新的）才会触发 V2 状态刷新
   @Local checkboxSelected: Set<string> = new Set<string>()
 
-  // 获取当前题目
+  // 获取当前题目：所有题目区 UI 都经由它取数据，改 currentIndex 即整体换题
   getCurrentQuestion(): QuestionItem {
     return MOCK_QUESTIONS[this.currentIndex]
   }
 
-  // 题型标签文本
+  // 题型标签文本：映射表查不到时兜底"未知题型"，避免 undefined 直接上屏
   getTypeLabel(type: string): string {
     const label: string = TYPE_LABEL[type]
     return label !== undefined ? label : '未知题型'
@@ -38,9 +47,10 @@ struct ExamDetailPage {
   }
 
   // 切换题目时重置选中状态
+  // 因为两道题共用同一组状态变量，不重置的话上一题的勾选会"串"到下一题
   resetSelection(): void {
     this.radioSelected = ''
-    this.checkboxSelected = new Set<string>()
+    this.checkboxSelected = new Set<string>()   // 整体替换新 Set，确保状态刷新
   }
 
   build() {
@@ -58,6 +68,7 @@ struct ExamDetailPage {
 
         // 第二行：题目进度 + 倒计时
         Row() {
+          // Text 嵌 Span：一行文字里"当前题号"单独标橙色强调
           Text() {
             Span('第 ')
             Span((this.currentIndex + 1).toString())
@@ -69,8 +80,9 @@ struct ExamDetailPage {
           .fontSize(CommonConstants.FONT_CAPTION)
           .fontColor(CommonConstants.COLOR_TEXT_SUB)
 
-          Blank()
+          Blank()   // 弹性空隙：把倒计时推到行尾
 
+          // 倒计时目前是写死的静态值，后续阶段换成定时器驱动
           Text('29:59')
             .fontSize(CommonConstants.FONT_CAPTION)
             .fontColor(CommonConstants.COLOR_WARN)
@@ -101,15 +113,18 @@ struct ExamDetailPage {
           .margin({ top: CommonConstants.SPACE_M })
           .width('100%')
 
-        // 选项列表
+        // 选项列表：Column + ForEach（题目最多 4 个选项，够短，没必要上 List）
         Column({ space: CommonConstants.SPACE_M }) {
           ForEach(this.getCurrentQuestion().options, (option: OptionItem) => {
             Row() {
+              // 按题型分流：多选用 Checkbox（可多勾），单选/判断用 Radio（互斥单勾）
               if (this.getCurrentQuestion().type === 'MULTI') {
                 // 多选：Checkbox
+                // select(条件)：受控模式——勾选态由我们的 Set 决定，而非组件自己记忆
                 Checkbox()
                   .select(this.checkboxSelected.has(option.label))
                   .onChange((checked: boolean) => {
+                    // 勾选进 Set、取消从 Set 删，UI 与数据始终保持一致
                     if (checked) {
                       this.checkboxSelected.add(option.label)
                     } else {
@@ -118,9 +133,11 @@ struct ExamDetailPage {
                   })
               } else {
                 // 单选/判断：Radio
+                // 同一 group 的 Radio 天然互斥：选中一个，其余自动取消
                 Radio({ value: option.label, group: 'options' })
                   .checked(this.radioSelected === option.label)
                   .onChange((checked: boolean) => {
+                    // 只处理"被选中"分支：取消选中时不动状态（单选总有一个新选中项）
                     if (checked) {
                       this.radioSelected = option.label
                     }
@@ -134,12 +151,13 @@ struct ExamDetailPage {
             }
             .width('100%')
           }, (option: OptionItem) => option.label)
+          // ↑ 键值生成器：选项 label（A/B/C/D）在单题内唯一，用它当 key
         }
         .margin({ top: CommonConstants.SPACE_L })
         .width('100%')
       }
       .width('100%')
-      .layoutWeight(1)
+      .layoutWeight(1)   // 中部吃掉剩余高度，把顶部/底部压在两端
       .padding(CommonConstants.SPACE_M)
       .margin({ top: CommonConstants.SPACE_M })
       .backgroundColor(Color.White)
@@ -155,10 +173,10 @@ struct ExamDetailPage {
             .fontSize(CommonConstants.FONT_CAPTION)
             .backgroundColor(CommonConstants.COLOR_TEXT_HINT)
             .fontColor(Color.White)
-            .enabled(this.currentIndex > 0)
+            .enabled(this.currentIndex > 0)   // 第 1 题时禁用，防越界
             .onClick(() => {
               this.currentIndex--
-              this.resetSelection()
+              this.resetSelection()   // 换题后清空上一题的勾选
             })
 
           Button('下一题')
@@ -167,12 +185,13 @@ struct ExamDetailPage {
             .fontSize(CommonConstants.FONT_CAPTION)
             .backgroundColor(CommonConstants.COLOR_TEXT_HINT)
             .fontColor(Color.White)
-            .enabled(this.currentIndex < MOCK_QUESTIONS.length - 1)
+            .enabled(this.currentIndex < MOCK_QUESTIONS.length - 1)   // 最后一题时禁用
             .onClick(() => {
               this.currentIndex++
               this.resetSelection()
             })
 
+          // 标记存疑 / 答题卡：UI 先行，事件后续阶段补
           Button('标记存疑')
             .type(ButtonType.Normal)
             .height(CommonConstants.BTN_HEIGHT)
@@ -190,9 +209,9 @@ struct ExamDetailPage {
             .border({ width: 1, color: CommonConstants.COLOR_TEXT_HINT })
         }
         .width('100%')
-        .justifyContent(FlexAlign.SpaceBetween)
+        .justifyContent(FlexAlign.SpaceBetween)   // 四个按钮两端对齐铺满一行
 
-        // 提交试卷按钮
+        // 提交试卷按钮：渐变主按钮（整页视觉重心）
         Button('提交试卷')
           .type(ButtonType.Normal)
           .width('100%')
@@ -205,7 +224,7 @@ struct ExamDetailPage {
           })
           .margin({ top: CommonConstants.SPACE_M })
           .onClick(() => {
-            console.info('提交试卷')
+            console.info('提交试卷')   // 占位：后续跳转 AnswerResultPage
           })
       }
       .width('100%')

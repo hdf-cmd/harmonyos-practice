@@ -1,42 +1,27 @@
 // 我的页面：用户信息区 + 功能列表区 + 退出登录按钮
-import { CommonConstants } from '../constants/CommomConstants'
+//
+// 【分层说明】本文件位于 features/mine/view/：
+//   MineView 是"我的"Tab 的内容组件——没加 @Entry，不是路由页，
+//   由 pages/MainPage.ets 的 TabContent 直接嵌套使用，因此不需要注册到 main_pages.json。
+//   本 feature 私有的子组件已抽到 ./components/SettingItem.ets。
+// 目前全部静态占位：用户名/签名写死，菜单项无跳转，退出登录只打日志。
+// 后续阶段：接入登录态显示真实用户信息，菜单项逐个接页面。
+import { CommonConstants } from '../../../common/constants/CommonConstants'
+import { SettingItem } from './components/SettingItem'
 
-// 设置项行组件：标题 + 右箭头，一次封装四处复用（DRY）
 @ComponentV2
-struct SettingItem {
-  @Param @Require title: string
-
-  build() {
-    Row() {
-      Text(this.title)
-        .fontSize(CommonConstants.FONT_BODY)
-        .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-      Blank()
-      Text('>')
-        .fontSize(CommonConstants.FONT_BODY)
-        .fontColor(CommonConstants.COLOR_TEXT_HINT)
-    }
-    .width('100%')
-    .height(52)
-    .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
-  }
-}
-
-@Preview
-@Entry
-@ComponentV2
-struct MinePage {
+export struct MineView {
   build() {
     Column() {
-      // 用户信息区
+      // 用户信息区：头像 + 名字签名，横排（Row 套 Column 的经典组合）
       Row() {
-        // 头像
+        // 头像：正方形图片 + borderRadius 一半边长 = 正圆
         Image($r('app.media.ic_app'))
           .width(60)
           .height(60)
           .borderRadius(30)
 
-        // 用户名 + 签名
+        // 用户名 + 签名：右侧纵向排两行
         Column() {
           Text('用户名')
             .fontSize(CommonConstants.FONT_SUBTITLE)
@@ -56,7 +41,7 @@ struct MinePage {
       .backgroundColor(Color.White)
       .borderRadius(12)
 
-      // 功能列表区
+      // 功能列表区：四个菜单行共用 SettingItem，只是标题不同
       Column() {
         SettingItem({ title: '考试记录' })
         SettingItem({ title: '我的证书' })
@@ -68,7 +53,7 @@ struct MinePage {
       .borderRadius(12)
       .margin({ top: CommonConstants.SPACE_M })
 
-      // 退出登录按钮
+      // 退出登录按钮：Blank() 把它推到页面底部
       Blank()
       Button('退出登录')
         .type(ButtonType.Normal)
@@ -76,11 +61,11 @@ struct MinePage {
         .height(CommonConstants.BTN_HEIGHT)
         .fontSize(CommonConstants.FONT_BODY)
         .backgroundColor(Color.White)
-        .fontColor(CommonConstants.COLOR_ERROR)
+        .fontColor(CommonConstants.COLOR_ERROR)   // 危险操作用错误色提示
         .borderRadius(8)
         .margin({ top: CommonConstants.SPACE_L })
         .onClick(() => {
-          console.info('退出登录')
+          console.info('退出登录')   // 占位：后续清登录态并跳回 LoginPage
         })
     }
     .width('100%')
