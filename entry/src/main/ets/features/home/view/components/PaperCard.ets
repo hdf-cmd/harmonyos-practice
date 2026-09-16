@@ -5,12 +5,16 @@
 //   所以不放进 common/（common 是跨 feature 共享层），也没有 @Entry（不是路由页）。
 // 没加 @Entry：它是列表项子组件，只被 HomeView 复用，不构成独立页面
 import { CommonConstants } from '../../../../common/constants/CommonConstants'
+import { RouteConstants } from '../../../../common/constants/RouteConstants'
 import { PaperInfo } from '../../../../common/model/QuestionModel'
 
 @ComponentV2
 export struct PaperCard {
   // @Param：接收父组件传入的数据（单向）；@Require：必填，父组件不传会编译报错
   @Param @Require paper: PaperInfo
+  // 跨层级直取根栈：卡片嵌在 HomeView > List > ListItem 里也算"深处"，
+  // @Consumer 按 key 取 AppNavigation 提供的 pageStack，不需要层层传参
+  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
 
   build() {
     Row() {
@@ -66,5 +70,10 @@ export struct PaperCard {
     .padding(CommonConstants.SPACE_M)
     .borderRadius(12)
     .backgroundColor('#FFFFFF')
+    .onClick(() => {
+      // 沉浸式详情：push 到**根栈**，答题页会盖住底部 Tab（对比"刷题"Tab 里的域内跳转，
+      // 后者 push 到 examStack，底部 Tab 仍在——两种栈的行为差异是本章的教学点）
+      this.pageStack.pushPathByName(RouteConstants.EXAM_DETAIL, this.paper.id)
+    })
   }
 }

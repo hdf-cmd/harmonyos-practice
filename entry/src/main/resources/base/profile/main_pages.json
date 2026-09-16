@@ -1,8 +1,5 @@
 {
   "src": [
-    "pages/MainPage",
-    "features/login/view/LoginPage",
-    "features/exam/view/ExamDetailPage",
-    "features/exam/view/AnswerResultPage"
+    "pages/AppNavigation"
   ]
 }

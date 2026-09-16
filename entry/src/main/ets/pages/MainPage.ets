@@ -1,7 +1,10 @@
-// 主页面：Tabs 装配首页/刷题/我的三个 Tab，本组件只负责装配
+// 主页面（TabDomain）：只负责 Tab 装配，不持有子栈、不注册路由
+// 每个 Tab 对应的 Feature 根页面（HomeView / ExamSubjectView / MineView）自持 Navigation + 子栈 + 域内路由
 //
-// 【分层说明】MainPage 是全局唯一的"应用外壳页"，不属于任何业务 feature，
-//   所以它留在 pages/ 下；三个 Tab 的内容组件分别来自 features/home、features/exam、features/mine。
+// 【分层说明】MainPage 是"应用外壳页"，不属于任何业务 feature，所以留在 pages/ 下。
+//   实训 4-2 起它不再是 @Entry（全应用唯一入口是 pages/AppNavigation.ets），
+//   而是根栈里的一个路由页（RouteConstants.MAIN）——所以要去掉 @Entry、加上 export，
+//   并在 build 的根节点用 NavDestination 包住整页。
 // 【知识点 3.2.4 Tabs 选项卡组件】本文件是 Tabs 的重点示例：
 //   Tabs = "内容区(TabContent) + 导航栏(tabBar)" 的组合容器，用于同层级页面间的切换，
 //   最典型的场景就是 App 底部导航（本页：首页 / 刷题 / 我的）。
@@ -15,12 +18,10 @@ import { HomeView } from '../features/home/view/HomeView'
 import { ExamSubjectView } from '../features/exam/view/ExamSubjectView'
 import { MineView } from '../features/mine/view/MineView'
 
-// @Entry：把这个组件标记为"独立页面"，才能被 EntryAbility 的 loadContent('pages/MainPage') 加载。
-//   一个文件只能有一个 @Entry；没加 @Entry 的文件（如 HomeView）只能作为子组件被嵌进来用。
-// @ComponentV2：声明自定义组件，走 V2 状态管理（配 @Local / @Param，不能用 V1 的 @State）。
-@Entry
+// 注意这里是 @ComponentV2 + export，没有 @Entry——
+// @Entry 只能有一个（在 AppNavigation 上），本组件是被 RootRouter 装配进来的路由页。
 @ComponentV2
-struct MainPage {
+export struct MainPage {
   // 当前选中的 Tab 下标（0=首页，1=刷题，2=我的）
   // @Local：V2 的组件内部状态，值一变，引用它的 UI 自动刷新
   @Local currentIndex: number = 0
@@ -46,36 +47,39 @@ struct MainPage {
   }
 
   build() {
-    // barPosition: BarPosition.End —— 导航栏放底部（手机 App 惯例）
-    // scrollable(false) —— 禁止"左右滑动内容区切换 Tab"，只允许点导航栏切换，
-    //   避免和 Tab 页内部自己的横向手势（如 Swiper 轮播）打架
-    Tabs({ barPosition: BarPosition.End }) {
-      // 每个 TabContent 是一页"抽屉"：叠在一起，切到谁显示谁。
-      // 注意：HomeView/ExamSubjectView/MineView 都没有 @Entry，是普通组件，
-      // 被 import 进来直接嵌进 TabContent 即可，因此它们不需要注册到 main_pages.json 路由表；
-      // 它们的文件位置在各自 feature 的 view/ 目录下（见顶部 import 路径）。
-      TabContent() {
-        HomeView()
-      }
-      .tabBar(this.tabBarBuilder('首页', 0))   // 第 0 个 Tab 的导航按钮
+    // NavDestination：本页作为"根栈里的一个页面"的根节点（替代原来 @Entry 页面的角色）
+    NavDestination() {
+      // barPosition: BarPosition.End —— 导航栏放底部（手机 App 惯例）
+      // scrollable(false) —— 禁止"左右滑动内容区切换 Tab"，只允许点导航栏切换，
+      //   避免和 Tab 页内部自己的横向手势（如 Swiper 轮播）打架
+      Tabs({ barPosition: BarPosition.End }) {
+        // 每个 TabContent 是一页"抽屉"：叠在一起，切到谁显示谁。
+        // 三个 View 都没有 @Entry，是普通组件，被 import 进来直接嵌进 TabContent 即可，
+        // 因此它们不需要注册到 main_pages.json 路由表；文件位置在各自 feature 的 view/ 目录下。
+        TabContent() {
+          HomeView()
+        }
+        .tabBar(this.tabBarBuilder('首页', 0))   // 第 0 个 Tab 的导航按钮
 
-      TabContent() {
-        ExamSubjectView()
-      }
-      .tabBar(this.tabBarBuilder('刷题', 1))   // 第 1 个 Tab
+        TabContent() {
+          ExamSubjectView()
+        }
+        .tabBar(this.tabBarBuilder('刷题', 1))   // 第 1 个 Tab
 
-      TabContent() {
-        MineView()
+        TabContent() {
+          MineView()
+        }
+        .tabBar(this.tabBarBuilder('我的', 2))   // 第 2 个 Tab
       }
-      .tabBar(this.tabBarBuilder('我的', 2))   // 第 2 个 Tab
+      .scrollable(false)
+      // onChange：Tab 切换完成后回调，参数是新选中的下标。
+      // 在这里同步 @Local 状态 → tabBarBuilder 里依赖 currentIndex 的选中样式随之刷新。
+      .onChange((index: number) => {
+        this.currentIndex = index
+      })
+      .width('100%')
+      .height('100%')   // 撑满整屏：容器想铺满父组件必须显式给尺寸，否则包内容
     }
-    .scrollable(false)
-    // onChange：Tab 切换完成后回调，参数是新选中的下标。
-    // 在这里同步 @Local 状态 → tabBarBuilder 里依赖 currentIndex 的选中样式随之刷新。
-    .onChange((index: number) => {
-      this.currentIndex = index
-    })
-    .width('100%')
-    .height('100%')   // 撑满整屏：容器想铺满父组件必须显式给尺寸，否则包内容
+    .hideTitleBar(true)   // 隐藏系统标题栏：底部 Tab 页不需要顶部标题栏
   }
 }
