@@ -14,6 +14,7 @@ import examSubjectViewModelTest from './ExamSubjectViewModel.test';
 import examListViewModelTest from './ExamListViewModel.test';
 import examDetailViewModelTest from './ExamDetailViewModel.test';
 import answerResultViewModelTest from './AnswerResultViewModel.test';
+import mineViewModelTest from './MineViewModel.test';
 
 // 测试入口：函数名固定为 testsuite，由框架约定调用
 export default function testsuite() {
@@ -29,4 +30,5 @@ export default function testsuite() {
   examListViewModelTest();
   examDetailViewModelTest();
   answerResultViewModelTest();
+  mineViewModelTest();
 }
