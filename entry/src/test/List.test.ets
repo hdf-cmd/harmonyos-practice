@@ -10,6 +10,7 @@ import timeUtilsTest from './TimeUtil.test';
 import validationUtilTest from './ValidationUtil.test';
 import loginViewModelTest from './LoginViewModel.test';
 import homeViewModelTest from './HomeViewModel.test';
+import examSubjectViewModelTest from './ExamSubjectViewModel.test';
 
 // 测试入口：函数名固定为 testsuite，由框架约定调用
 export default function testsuite() {
@@ -21,4 +22,5 @@ export default function testsuite() {
   validationUtilTest();
   loginViewModelTest();
   homeViewModelTest();
+  examSubjectViewModelTest();
 }
