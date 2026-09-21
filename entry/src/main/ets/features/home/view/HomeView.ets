@@ -14,9 +14,8 @@
 // 三者嵌套关系：Navigation > Scroll(外层滚动) > Swiper(轮播) / List(列表)。
 import { CommonConstants } from '../../../common/constants/CommonConstants'
 import { PaperInfo } from '../../../common/model/QuestionModel'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
-import { getRandomPapers } from '../../../common/utils/PaperUtils'
 import { PaperCard } from './components/PaperCard'
+import { HomeViewModel } from '../viewmodel/HomeViewModel'
 
 // @Preview：让预览器能单独渲染 HomeView（不影响它继续被 MainPage 嵌套使用）
 @Preview
@@ -24,9 +23,15 @@ import { PaperCard } from './components/PaperCard'
 export struct HomeView {
   // 三级导航：Home 域自持子栈（本章 Home 域详情走根栈，子栈与路由先预留空架子）
   @Provider('homeStack') homeStack: NavPathStack = new NavPathStack()
-  // 推荐试卷：从 Mock 数据中随机抽取 4 张
-  // @Local 初始化：页面创建时执行一次 getRandomPapers，之后不再变化（静态 Demo 阶段）
-  @Local papers: PaperInfo[] = getRandomPapers(MOCK_PAPERS, 4)
+  // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
+  // @Local 持有 VM 实例；papers 是 @Trace 字段，VM 加载完成后列表自动刷新
+  @Local vm: HomeViewModel = new HomeViewModel()
+
+  // 页面创建时加载一次推荐试卷。返回的 Result 这里不处理——
+  // 失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 抽取不会失败
+  aboutToAppear(): void {
+    this.vm.loadRecommendedPapers()
+  }
 
   // Home 域内路由注册（预留：暂无域内子页，后续加"更多推荐""试卷详情"等往这里填）
   @Builder
@@ -95,7 +100,7 @@ export struct HomeView {
             //   1) 数据源 this.papers
             //   2) itemGenerator：每条数据生成一个 ListItem（数据变 → UI 自动跟着变）
             //   3) keyGenerator：键值生成器（见下方注释）
-            ForEach(this.papers, (paper: PaperInfo) => {
+            ForEach(this.vm.papers, (paper: PaperInfo) => {
               ListItem() {
                 // 点击跳转由 PaperCard 自己处理（它用 @Consumer 取根栈 push EXAM_DETAIL），
                 // 容器这里只管排版——"卡片管自己的交互"比在列表里堆 onClick 更好维护
