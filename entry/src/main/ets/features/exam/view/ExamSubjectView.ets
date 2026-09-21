@@ -12,8 +12,8 @@
 // 典型场景：九宫格、相册、分类入口（本页）。
 import { CommonConstants } from '../../../common/constants/CommonConstants'
 import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
-import { CategoryGroup, groupByCategory } from '../../../common/utils/PaperUtils'
+import { CategoryGroup } from '../../../common/utils/PaperUtils'
+import { ExamSubjectViewModel } from '../viewmodel/ExamSubjectViewModel'
 import { ExamSubjectCard } from './components/ExamSubjectCard'
 import { ExamListPage } from './ExamListPage'
 
@@ -21,9 +21,15 @@ import { ExamListPage } from './ExamListPage'
 export struct ExamSubjectView {
   // 三级导航：Exam 域自持子栈
   @Provider('examStack') examStack: NavPathStack = new NavPathStack()
-  // 科目分组：对 MOCK_PAPERS 按 categoryName 聚合，页面加载时计算一次
-  // （Mock 阶段数据固定，接入接口后只需替换这里的数据源，UI 不用动）
-  @Local groups: CategoryGroup[] = groupByCategory(MOCK_PAPERS)
+  // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
+  // @Local 持有 VM 实例；groups 是 @Trace 字段，VM 加载完成后 Grid 自动刷新
+  @Local vm: ExamSubjectViewModel = new ExamSubjectViewModel()
+
+  // 页面创建时加载一次科目分组。返回的 Result 这里不处理——
+  // 失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 聚合不会失败
+  aboutToAppear(): void {
+    this.vm.loadSubjectGroups()
+  }
 
   // Exam 域内路由注册：name 与 push 时用的 RouteConstants 常量一一对应
   @Builder
@@ -53,7 +59,7 @@ export struct ExamSubjectView {
         //   layoutWeight(1) —— 在外层 Column 里吃掉剩余高度；内容超出高度时 Grid 自带滚动能力。
         // 注意：Grid 的子项必须包在 GridItem 里，直接放组件会不参与网格布局。
         Grid() {
-          ForEach(this.groups, (group: CategoryGroup) => {
+          ForEach(this.vm.groups, (group: CategoryGroup) => {
             GridItem() {
               // 点击跳转由 ExamSubjectCard 自己处理（取 examStack push 域内路由）
               ExamSubjectCard({ group: group })
