@@ -6,10 +6,11 @@
 //   本 feature 私有的子组件已抽到 ./components/SettingItem.ets。
 // 【三级导航】Mine 域自持子栈（mineStack，本章先立空架子）；
 //   退出登录要操作的是**根栈**——清空根栈后 Navigation 回落到内容区（登录页），登出闭环。
-// 目前全部静态占位：用户名/签名写死，菜单项无跳转，退出登录只清栈。
-// 后续阶段：接入登录态显示真实用户信息，菜单项逐个接页面。
+// 【MVVM】用户信息与退出登录业务全在 MineViewModel（@Trace），本页只渲染与转发事件；
+//   菜单项由 vm.menuItems 驱动，点击行为（菜单跳转）后续阶段接。
 import { CommonConstants } from '../../../common/constants/CommonConstants'
 import { SettingItem } from './components/SettingItem'
+import { MineViewModel } from '../viewmodel/MineViewModel'
 
 @ComponentV2
 export struct MineView {
@@ -17,6 +18,15 @@ export struct MineView {
   @Provider('mineStack') mineStack: NavPathStack = new NavPathStack()
   // 登出要操作根栈
   @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
+  // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
+  // @Local 持有 VM 实例；字段都是 @Trace，VM 加载完成后页面自动刷新
+  @Local vm: MineViewModel = new MineViewModel()
+
+  // 页面创建时加载一次用户信息。返回的 Result 这里不处理——
+  // 失败态由 vm.errorMessage 承载，静态 Demo 阶段占位数据不会失败
+  aboutToAppear(): void {
+    this.vm.loadUserInfo()
+  }
 
   // Mine 域内路由注册（预留）
   @Builder
@@ -37,12 +47,12 @@ export struct MineView {
 
           // 用户名 + 签名：右侧纵向排两行
           Column() {
-            Text('用户名')
+            Text(this.vm.userName)
               .fontSize(CommonConstants.FONT_SUBTITLE)
               .fontWeight(FontWeight.Bold)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
 
-            Text('这个人很懒，什么都没写')
+            Text(this.vm.signature)
               .fontSize(CommonConstants.FONT_CAPTION)
               .fontColor(CommonConstants.COLOR_TEXT_HINT)
               .margin({ top: 4 })
@@ -55,12 +65,12 @@ export struct MineView {
         .backgroundColor(Color.White)
         .borderRadius(12)
 
-        // 功能列表区：四个菜单行共用 SettingItem，只是标题不同
+        // 功能列表区：菜单标题由 VM 驱动，ForEach 渲染（顺序即 vm.menuItems 顺序）
         Column() {
-          SettingItem({ title: '考试记录' })
-          SettingItem({ title: '我的证书' })
-          SettingItem({ title: '字体大小' })
-          SettingItem({ title: '关于智题通' })
+          ForEach(this.vm.menuItems, (title: string) => {
+            SettingItem({ title: title })
+          }, (title: string) => title)
+          // ↑ 键值生成器：菜单标题唯一，用它当 key
         }
         .width('100%')
         .backgroundColor(Color.White)
@@ -78,10 +88,15 @@ export struct MineView {
           .fontColor(CommonConstants.COLOR_ERROR)   // 危险操作用错误色提示
           .borderRadius(8)
           .margin({ top: CommonConstants.SPACE_L })
-          .onClick(() => {
-            // 清空根栈：栈空后 Navigation 回落到内容区，也就是登录页——登出闭环。
-            // 注意清的是根栈而不是 mineStack：要退出的是整个应用，不只是"我的"域
-            this.pageStack.clear()
+          .onClick(async () => {
+            // View 不做判断，只转发事件、消费结果：
+            // 登出业务（清 session 等）在 VM 里，成功才清根栈
+            const res = await this.vm.logout()
+            if (res.ok) {
+              // 清空根栈：栈空后 Navigation 回落到内容区，也就是登录页——登出闭环。
+              // 注意清的是根栈而不是 mineStack：要退出的是整个应用，不只是"我的"域
+              this.pageStack.clear()
+            }
           })
       }
       .width('100%')
