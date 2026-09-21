@@ -13,6 +13,12 @@ export function getRandomPapers(papers: PaperInfo[], n: number): PaperInfo[] {
   return n >= pool.length ? pool : pool.slice(0, n)
 }
 
+// 按 categoryName 过滤试卷：纯函数，不修改入参，返回新数组
+// 用于考卷列表页"进哪个科目就只看哪科的卷"；无匹配科目时返回空数组
+export function filterByCategory(papers: PaperInfo[], categoryName: string): PaperInfo[] {
+  return papers.filter((paper: PaperInfo): boolean => paper.categoryName === categoryName)
+}
+
 // 科目聚合结果：categoryName 为科目名，count 为该科目下的试卷数量
 export interface CategoryGroup {
   categoryName: string

@@ -1,4 +1,4 @@
-// 考卷列表页：按科目过滤 MOCK_PAPERS，用 List 渲染该科目下的考卷
+// 考卷列表页：用 List 渲染当前科目下的考卷（数据由 ExamListViewModel 按科目过滤 MOCK_PAPERS 提供）
 //
 // 【分层说明】本文件位于 features/exam/view/：
 //   它是 Exam 域的**域内路由页**——注册在 ExamSubjectView 的 ExamRouter 上
@@ -9,8 +9,8 @@
 //   onReady 是 Navigation 体系里接收路由参数的推荐时机（页面创建时触发一次）。
 import { CommonConstants } from '../../../common/constants/CommonConstants'
 import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
 import { PaperInfo } from '../../../common/model/QuestionModel'
+import { ExamListViewModel } from '../viewmodel/ExamListViewModel'
 
 // 考卷行组件：白底圆角，展示试卷名 / 等级标签 / 题量信息 / 已考次数 / 成绩角标
 // 独立成 @ComponentV2 子组件（而不是塞在页面的 ForEach 里），列表项逻辑才不糊成一团
@@ -93,8 +93,9 @@ struct PaperRow {
 export struct ExamListPage {
   // 上游传进来的科目名，onReady 里从路由参数读取
   @Local categoryName: string = ''
-  // 该科目下的考卷列表，onReady 里按 categoryName 过滤 MOCK_PAPERS 得到
-  @Local papers: PaperInfo[] = []
+  // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
+  // @Local 持有 VM 实例；papers 是 @Trace 字段，VM 加载完成后 List 自动刷新
+  @Local vm: ExamListViewModel = new ExamListViewModel()
 
   // 自定义标题栏：不能直接写 .title(this.categoryName)——字符串标题只在 NavDestination
   // 创建的那一刻求值一次，而 categoryName 要等 onReady 才拿到，那时标题早渲染完了（会显示空白）。
@@ -110,7 +111,7 @@ export struct ExamListPage {
   build() {
     NavDestination() {
       // 条件渲染：有卷就列出来，没卷显示空态
-      if (this.papers.length === 0) {
+      if (this.vm.papers.length === 0) {
         // 空态：某个科目一张卷都没有时（当前 Mock 数据里不存在这种科目，逻辑先备好）
         Column() {
           Text('该科目暂无考卷')
@@ -124,7 +125,7 @@ export struct ExamListPage {
         // ===== List 列表（3.2.1）=====
         // 考卷行用 List + ListItem + ForEach 驱动；考卷可能很多，List 的按需渲染正是为此
         List() {
-          ForEach(this.papers, (paper: PaperInfo) => {
+          ForEach(this.vm.papers, (paper: PaperInfo) => {
             ListItem() {
               // 点击跳转由 PaperRow 自己处理（取根栈 push 答题页），容器这里只管排版
               PaperRow({ paper: paper })
@@ -148,9 +149,9 @@ export struct ExamListPage {
       // ArkTS 不允许显式声明 unknown 变量（arkts-no-any-unknown 规则），
       // 所以这里直接断言成我们约定的类型——传参方 ExamSubjectCard 传的就是 string
       this.categoryName = ctx.pathInfo.param as string
-      // 按科目过滤：只留 categoryName 与上游一致的试卷
-      this.papers = MOCK_PAPERS.filter((paper: PaperInfo): boolean =>
-        paper.categoryName === this.categoryName)
+      // MVVM：按科目过滤属业务规则，收拢在 ViewModel；View 只转发事件与渲染
+      // 返回的 Result 这里不处理——失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 过滤不会失败
+      this.vm.loadPapersByCategory(this.categoryName)
     })
   }
 }
