@@ -8,10 +8,7 @@
 //   注册在**根栈**（RootDomain）的 RootRouter 上（路由名 RouteConstants.ANSWER_RESULT），
 //   由答题页交卷后 push 进入，页面根节点用 NavDestination。
 // 【MVVM】交卷结果与答题卡布局计算全在 AnswerResultViewModel（@Trace），本页只渲染与转发事件。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { AnswerItem } from '../../../common/model/QuestionModel'
-import { formatDuration } from '../../../common/utils/TimeUtils'
+import { CommonConstants, RouteConstants, AnswerItem, formatDuration } from '@zhititong/common'
 import { AnswerResultViewModel, ANSWER_CARD_CELL_HEIGHT, ANSWER_CARD_GAP } from '../viewmodel/AnswerResultViewModel'
 
 @Preview

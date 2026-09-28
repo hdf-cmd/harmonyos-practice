@@ -7,11 +7,7 @@
  *   项目 6 换接口取考卷时改这里，View 层零改动。
  *   数据流：ExamListPage.onReady → loadPapersByCategory(categoryName) → @Trace papers 变更 → List 自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
-import { PaperInfo } from '../../../common/model/QuestionModel'
-import { filterByCategory } from '../../../common/utils/PaperUtils'
+import { BaseViewModel, Result, MOCK_PAPERS, PaperInfo, filterByCategory } from '@zhititong/common'
 
 @ObservedV2
 export class ExamListViewModel extends BaseViewModel {

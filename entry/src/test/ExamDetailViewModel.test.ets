@@ -4,8 +4,7 @@
 //   换题重置选中、单选/多选选中流转、loadPaper 按 id 命中与回退、loading 复位。
 import { describe, it, expect } from '@ohos/hypium'
 import { ExamDetailViewModel } from '../main/ets/features/exam/viewmodel/ExamDetailViewModel'
-import { OptionItem } from '../main/ets/common/model/QuestionModel'
-import { MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from '../main/ets/common/mock/MockExamData'
+import { OptionItem, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from '@zhititong/common'
 
 export default function examDetailViewModelTest() {
   describe('examDetailViewModelTest', () => {

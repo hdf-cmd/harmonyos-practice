@@ -3,7 +3,7 @@
 // 四条用例分别覆盖：常规值 / 整分钟（60）/ 不足一分钟（59）/ 零值（0）。
 // 另外两条格式约定也被断言固定下来：秒位不省略、分位不省略（防止后人"优化"格式破坏契约）。
 import { describe, it, expect } from '@ohos/hypium'
-import { formatDuration } from '../main/ets/common/utils/TimeUtils'
+import { formatDuration } from '@zhititong/common'
 
 export default function timeUtilsTest() {
   describe('formatDurationTest', () => {

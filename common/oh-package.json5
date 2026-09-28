@@ -1,0 +1,9 @@
+{
+  "name": "@zhititong/common",
+  "version": "1.0.0",
+  "description": "智题通公共能力库：base / constants / model / mock / utils / log",
+  "main": "Index.ets",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {}
+}

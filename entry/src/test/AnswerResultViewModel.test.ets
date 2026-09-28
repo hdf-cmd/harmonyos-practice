@@ -4,8 +4,7 @@
 //   答题卡行数按列数向上取整、Grid 高度公式（行数×格高+(行数−1)×行间距）。
 import { describe, it, expect } from '@ohos/hypium'
 import { AnswerResultViewModel } from '../main/ets/features/exam/viewmodel/AnswerResultViewModel'
-import { ExamResult, AnswerItem } from '../main/ets/common/model/QuestionModel'
-import { MOCK_RESULT } from '../main/ets/common/mock/MockResultData'
+import { ExamResult, AnswerItem, MOCK_RESULT } from '@zhititong/common'
 
 // 构造 n 道题的作答记录：全部已作答，对错交替
 function makeAnswers(n: number): AnswerItem[] {

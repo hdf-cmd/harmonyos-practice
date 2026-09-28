@@ -4,12 +4,10 @@
 // 注意：本页不是独立路由页——它注册在**根栈**（RootDomain）的 RootRouter 上
 //   （路由名 RouteConstants.EXAM_DETAIL），由试卷卡片 push 进入，push 后盖住底部 Tab（沉浸式详情页）。
 // 【分层说明】本文件位于 features/exam/view/：它是"考试"feature 的页面，
-//   页面根节点用 NavDestination（Navigation 体系的要求），路由名统一见 common/constants/RouteConstants.ets。
+//   页面根节点用 NavDestination（Navigation 体系的要求），路由名统一见 @zhititong/common 的 RouteConstants。
 // 【MVVM】试卷名/题目/索引/选中状态全在 ExamDetailViewModel（@Trace），本页只渲染与转发事件；
 //   onReady 从路由参数取 paperId 调 vm.loadPaper(paperId)，按 id 命中试卷名（Mock 阶段题目固定 MOCK_QUESTIONS）。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { OptionItem } from '../../../common/model/QuestionModel'
+import { CommonConstants, RouteConstants, OptionItem } from '@zhititong/common'
 import { ExamDetailViewModel } from '../viewmodel/ExamDetailViewModel'
 
 @Preview

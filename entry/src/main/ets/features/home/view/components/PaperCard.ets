@@ -4,9 +4,7 @@
 //   它是"首页"这个业务 feature 私有的展示型子组件，只被同 feature 的 HomeView 复用，
 //   所以不放进 common/（common 是跨 feature 共享层），也没有 @Entry（不是路由页）。
 // 没加 @Entry：它是列表项子组件，只被 HomeView 复用，不构成独立页面
-import { CommonConstants } from '../../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../../common/constants/RouteConstants'
-import { PaperInfo } from '../../../../common/model/QuestionModel'
+import { CommonConstants, RouteConstants, PaperInfo } from '@zhititong/common'
 
 @ComponentV2
 export struct PaperCard {

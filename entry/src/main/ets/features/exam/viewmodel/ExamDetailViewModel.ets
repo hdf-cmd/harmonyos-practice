@@ -7,10 +7,7 @@
  *   项目 6 换接口取卷/取题时改这里，View 层零改动。
  *   数据流：ExamDetailPage.onReady → loadPaper(paperId) → @Trace 状态变更 → 页面自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from '../../../common/mock/MockExamData'
-import { PaperInfo, QuestionItem, OptionItem } from '../../../common/model/QuestionModel'
+import { BaseViewModel, Result, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS, PaperInfo, QuestionItem, OptionItem } from '@zhititong/common'
 
 // 题型标签映射：后端存的是枚举码（JUDGE/SINGLE/MULTI），展示时翻成中文
 // 用 Record 集中管理映射关系，新增题型只改这一处

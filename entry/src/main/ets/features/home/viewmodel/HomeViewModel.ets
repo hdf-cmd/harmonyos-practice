@@ -6,11 +6,7 @@
  *   HomeView 只渲染 papers 字段——项目 6 换"接口推荐"时改这里，View 层零改动。
  *   数据流：HomeView.aboutToAppear → loadRecommendedPapers() → @Trace papers 变更 → 列表自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { PaperInfo } from '../../../common/model/QuestionModel'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
-import { getRandomPapers } from '../../../common/utils/PaperUtils'
+import { BaseViewModel, Result, PaperInfo, MOCK_PAPERS, getRandomPapers } from '@zhititong/common'
 
 // 推荐位数量：首页固定抽 4 张（收成常量，避免魔法数散落）
 const RECOMMEND_COUNT: number = 4

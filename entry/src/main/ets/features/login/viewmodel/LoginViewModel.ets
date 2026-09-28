@@ -6,9 +6,7 @@
  *   所以它能在单测里直接 new 出来跑（实训 4-5 兑现这条红利）。
  *   数据流：View 事件 → 调这里的 submit() → @Trace 字段变更 → View 自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { ValidationUtil } from '../../../common/utils/ValidationUtil'
+import { BaseViewModel, Result, ValidationUtil } from '@zhititong/common'
 import { LoginResponseModel, UserInfoModel } from '../model/LoginResponseModel'
 
 @ObservedV2

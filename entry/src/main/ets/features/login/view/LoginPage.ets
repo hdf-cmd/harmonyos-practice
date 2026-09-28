@@ -9,8 +9,7 @@
 //   - 确认密码框、错误提示、按钮文案，全是"跟着 viewModel 状态自动变"的条件渲染
 //   通读一遍你会发现：View 里找不到一个业务判断（没有 if 校验、没有 if 网络结果），
 //   这就是 4.2.9 说的单一职责——业务归 ViewModel，渲染归 View。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../common/constants/RouteConstants'
+import { CommonConstants, RouteConstants } from '@zhititong/common'
 import { LoginViewModel } from '../viewmodel/LoginViewModel'
 
 @ComponentV2

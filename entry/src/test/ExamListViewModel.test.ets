@@ -4,7 +4,7 @@
 //   不存在的科目返回空数组、Result.ok 包装正确、loading 无论成败最终复位。
 import { describe, it, expect } from '@ohos/hypium'
 import { ExamListViewModel } from '../main/ets/features/exam/viewmodel/ExamListViewModel'
-import { MOCK_PAPERS } from '../main/ets/common/mock/MockExamData'
+import { MOCK_PAPERS } from '@zhititong/common'
 
 export default function examListViewModelTest() {
   describe('examListViewModelTest', () => {

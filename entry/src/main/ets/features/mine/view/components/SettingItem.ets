@@ -4,7 +4,7 @@
 //   它是"我的"这个业务 feature 私有的展示型子组件，只被同 feature 的 MineView 复用，
 //   所以不放进 common/（common 是跨 feature 共享层），也没有 @Entry（不是路由页）。
 // 没加 @Entry：纯子组件。列表项长得一样只是文字不同，抽组件比 @Builder 更适合这种"自带样式"的单元
-import { CommonConstants } from '../../../../common/constants/CommonConstants'
+import { CommonConstants } from '@zhititong/common'
 
 @ComponentV2
 export struct SettingItem {

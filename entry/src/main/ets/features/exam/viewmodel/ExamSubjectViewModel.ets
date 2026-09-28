@@ -7,10 +7,7 @@
  *   项目 6 换接口取科目时改这里，View 层零改动。
  *   数据流：ExamSubjectView.aboutToAppear → loadSubjectGroups() → @Trace groups 变更 → Grid 自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { MOCK_PAPERS } from '../../../common/mock/MockExamData'
-import { CategoryGroup, groupByCategory } from '../../../common/utils/PaperUtils'
+import { BaseViewModel, Result, MOCK_PAPERS, CategoryGroup, groupByCategory } from '@zhititong/common'
 
 @ObservedV2
 export class ExamSubjectViewModel extends BaseViewModel {

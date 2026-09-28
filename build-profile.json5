@@ -39,6 +39,18 @@
       ]
     },
     {
+      "name": "common",
+      "srcPath": "./common",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "application",
       "srcPath": "./application",
       "targets": [

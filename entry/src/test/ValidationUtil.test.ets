@@ -4,7 +4,7 @@
 //   不碰 UI、不碰状态，所以测试里直接喂参数断言结果就行，不用启动预览器、不用点界面。
 // 【用例设计】沿用 3.2.8 的四类框架：常规 / 边界（临界值两侧都要踩）/ 隐含约定 / 无副作用。
 import { describe, it, expect } from '@ohos/hypium'
-import { ValidationUtil } from '../main/ets/common/utils/ValidationUtil'
+import { ValidationUtil } from '@zhititong/common'
 
 export default function validationUtilTest() {
   describe('validateUsernameTest', () => {

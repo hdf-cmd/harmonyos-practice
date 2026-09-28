@@ -4,8 +4,7 @@
 //   全部来自试卷池、loading 无论成败最终复位。
 import { describe, it, expect } from '@ohos/hypium'
 import { HomeViewModel } from '../main/ets/features/home/viewmodel/HomeViewModel'
-import { PaperInfo } from '../main/ets/common/model/QuestionModel'
-import { MOCK_PAPERS } from '../main/ets/common/mock/MockExamData'
+import { PaperInfo, MOCK_PAPERS } from '@zhititong/common'
 
 export default function homeViewModelTest() {
   describe('homeViewModelTest', () => {

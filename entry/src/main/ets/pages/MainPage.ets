@@ -13,7 +13,7 @@
 //     2) TabContent() { ... }  —— 每个 Tab 对应的页面内容，同一时刻只有选中的那个会展示
 //     3) .tabBar(...)          —— 挂在内容区上的"导航按钮"，可以只给文字，也可以像本页一样自定义样式
 //   切换行为由 Tabs 内部管理（点导航栏自动换内容区），我们只需在 onChange 里同步状态做视觉反馈。
-import { CommonConstants } from '../common/constants/CommonConstants'
+import { CommonConstants } from '@zhititong/common'
 import { HomeView } from '../features/home/view/HomeView'
 import { ExamSubjectView } from '../features/exam/view/ExamSubjectView'
 import { MineView } from '../features/mine/view/MineView'

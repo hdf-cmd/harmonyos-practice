@@ -6,8 +6,7 @@
 //   ③ 不变式：结果不含重复（随机抽取不能抽重）
 //   ④ 不变式：入参数组不被修改（纯函数约定，调用方的数据必须安全）
 import { describe, it, expect } from '@ohos/hypium'
-import { getRandomPapers } from '../main/ets/common/utils/PaperUtils'
-import { PaperInfo } from '../main/ets/common/model/QuestionModel'
+import { getRandomPapers, PaperInfo } from '@zhititong/common'
 
 // 造 count 张最简测试试卷：测试里只需 id 有区分度，其余字段给合法值即可
 // 把"造数据"抽成函数：每条用例都要用，避免重复代码（测试代码也要 DRY）

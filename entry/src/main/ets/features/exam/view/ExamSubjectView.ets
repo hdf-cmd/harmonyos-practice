@@ -10,9 +10,7 @@
 // Grid 是"二维网格容器"，子项必须包在 GridItem 里，按"行 × 列"铺排。
 // 与 List 的分工：List 是一维流式列表（一列/一行）；Grid 天生管"多列对齐"的布局，
 // 典型场景：九宫格、相册、分类入口（本页）。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { CategoryGroup } from '../../../common/utils/PaperUtils'
+import { CommonConstants, RouteConstants, CategoryGroup } from '@zhititong/common'
 import { ExamSubjectViewModel } from '../viewmodel/ExamSubjectViewModel'
 import { ExamSubjectCard } from './components/ExamSubjectCard'
 import { ExamListPage } from './ExamListPage'

@@ -12,8 +12,7 @@
 // 【知识点 3.2.3 Swiper 轮播组件】顶部 banner 用 Swiper 自动轮播。
 // 【知识点 3.2.1 List 列表组件】推荐试卷区用 List + ListItem + ForEach 驱动。
 // 三者嵌套关系：Navigation > Scroll(外层滚动) > Swiper(轮播) / List(列表)。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { PaperInfo } from '../../../common/model/QuestionModel'
+import { CommonConstants, PaperInfo } from '@zhititong/common'
 import { PaperCard } from './components/PaperCard'
 import { HomeViewModel } from '../viewmodel/HomeViewModel'
 

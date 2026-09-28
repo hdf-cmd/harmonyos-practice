@@ -4,9 +4,7 @@
 //   它是"考试"这个业务 feature 私有的展示型子组件，只被同 feature 的 ExamSubjectView 复用，
 //   所以不放进 common/（common 是跨 feature 共享层），也没有 @Entry（不是路由页）。
 // 没加 @Entry：它是 GridItem 里的子组件，只被 ExamSubjectView 复用
-import { CommonConstants } from '../../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../../common/constants/RouteConstants'
-import { CategoryGroup } from '../../../../common/utils/PaperUtils'
+import { CommonConstants, RouteConstants, CategoryGroup } from '@zhititong/common'
 
 @ComponentV2
 export struct ExamSubjectCard {

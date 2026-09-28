@@ -8,7 +8,7 @@
 //   退出登录要操作的是**根栈**——清空根栈后 Navigation 回落到内容区（登录页），登出闭环。
 // 【MVVM】用户信息与退出登录业务全在 MineViewModel（@Trace），本页只渲染与转发事件；
 //   菜单项由 vm.menuItems 驱动，点击行为（菜单跳转）后续阶段接。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
+import { CommonConstants } from '@zhititong/common'
 import { SettingItem } from './components/SettingItem'
 import { MineViewModel } from '../viewmodel/MineViewModel'
 

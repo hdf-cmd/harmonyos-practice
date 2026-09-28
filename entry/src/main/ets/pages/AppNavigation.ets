@@ -7,7 +7,7 @@
 //     ②"沉浸式详情页"（答题 ExamDetail / 结果 AnswerResult）——这类页面 push 后盖住底部 Tab
 //   - @Provider('pageStack') 把根栈实例递到组件树下方，任意层级（哪怕嵌在卡片深处）都能用
 //     @Consumer('pageStack') 直接取到，不必层层传参
-import { RouteConstants } from '../common/constants/RouteConstants'
+import { RouteConstants } from '@zhititong/common'
 import { MainPage } from './MainPage'
 import { LoginPage } from '../features/login/view/LoginPage'
 import { ExamDetailPage } from '../features/exam/view/ExamDetailPage'

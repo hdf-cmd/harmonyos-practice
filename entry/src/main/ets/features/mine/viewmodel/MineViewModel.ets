@@ -7,8 +7,7 @@
  *   项目 6 接入真实用户接口/登录态时改这里，View 层零改动。
  *   数据流：MineView.aboutToAppear → loadUserInfo() → @Trace 字段变更 → 页面自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
+import { BaseViewModel, Result } from '@zhititong/common'
 import { MOCK_MINE_USER, MineUserInfo } from '../model/MockMineData'
 
 @ObservedV2

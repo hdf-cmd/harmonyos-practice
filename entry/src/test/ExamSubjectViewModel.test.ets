@@ -4,8 +4,7 @@
 //   每组 count = 该科目在试卷池中的实际套数、组顺序与首次出现顺序一致。
 import { describe, it, expect } from '@ohos/hypium'
 import { ExamSubjectViewModel } from '../main/ets/features/exam/viewmodel/ExamSubjectViewModel'
-import { PaperInfo } from '../main/ets/common/model/QuestionModel'
-import { MOCK_PAPERS } from '../main/ets/common/mock/MockExamData'
+import { PaperInfo, MOCK_PAPERS } from '@zhititong/common'
 
 export default function examSubjectViewModelTest() {
   describe('examSubjectViewModelTest', () => {

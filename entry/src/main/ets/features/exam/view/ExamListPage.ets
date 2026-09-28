@@ -7,9 +7,7 @@
 // 【参数怎么传进来】上游用 pushPathByName(EXAM_LIST, group.categoryName) 压栈，
 //   本页在 NavDestination 的 onReady 里从 ctx.pathInfo.param 取出——
 //   onReady 是 Navigation 体系里接收路由参数的推荐时机（页面创建时触发一次）。
-import { CommonConstants } from '../../../common/constants/CommonConstants'
-import { RouteConstants } from '../../../common/constants/RouteConstants'
-import { PaperInfo } from '../../../common/model/QuestionModel'
+import { CommonConstants, RouteConstants, PaperInfo } from '@zhititong/common'
 import { ExamListViewModel } from '../viewmodel/ExamListViewModel'
 
 // 考卷行组件：白底圆角，展示试卷名 / 等级标签 / 题量信息 / 已考次数 / 成绩角标

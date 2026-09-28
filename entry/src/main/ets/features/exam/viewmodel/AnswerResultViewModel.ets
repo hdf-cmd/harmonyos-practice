@@ -7,10 +7,7 @@
  *   项目 6 接入真实判分接口时改这里，View 层零改动。
  *   数据流：AnswerResultPage.aboutToAppear → loadResult() → @Trace result 变更 → 页面自动刷新。
  */
-import { BaseViewModel } from '../../../common/base/BaseViewModel'
-import { Result } from '../../../common/base/Result'
-import { MOCK_RESULT } from '../../../common/mock/MockResultData'
-import { ExamResult } from '../../../common/model/QuestionModel'
+import { BaseViewModel, Result, MOCK_RESULT, ExamResult } from '@zhititong/common'
 
 // 答题卡布局参数：列数 / 格子高度 / 格子间距（vp）
 // 抽成导出常量：高度公式与 View 的格子渲染共用同一份，改任何一个都不会失联（避免魔法数散落）
