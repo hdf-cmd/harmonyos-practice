@@ -7,13 +7,16 @@
 // base：ViewModel 基座与统一结果封装
 export { BaseViewModel } from './src/main/ets/base/BaseViewModel';
 export { Result } from './src/main/ets/base/Result';
-// constants：样式常量与路由常量
+// constants：样式常量、路由常量与应用级状态 key
 export { CommonConstants } from './src/main/ets/constants/CommonConstants';
 export { RouteConstants } from './src/main/ets/constants/RouteConstants';
+export { StateKeys } from './src/main/ets/constants/StateKeys';
 // log：hilog 薄封装
 export { Logger } from './src/main/ets/log/Logger';
 // model：跨 feature 共享的数据契约
 export { OptionItem, QuestionItem, PaperInfo, AnswerItem, ExamResult } from './src/main/ets/model/QuestionModel';
+// 状态模型：字号设置（应用级持久化状态，落盘由 PersistenceV2 接管）
+export { FontSetting, FONT_LEVELS, FontLevel } from './src/main/ets/model/FontSetting';
 // mock：多 feature 共用的假数据
 export { MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from './src/main/ets/mock/MockExamData';
 export { MOCK_RESULT } from './src/main/ets/mock/MockResultData';

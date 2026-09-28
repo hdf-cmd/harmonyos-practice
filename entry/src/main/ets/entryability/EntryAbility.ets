@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window } from '@kit.ArkUI';
+import { PersistenceV2, window } from '@kit.ArkUI';
+import { FontSetting, StateKeys } from '@zhititong/common';
 
 const DOMAIN = 0x0000;
 
@@ -24,6 +25,8 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      // V2 应用级状态：建立全局字号"内存单例 + 自动持久化"
+      PersistenceV2.connect(FontSetting, StateKeys.FONT_SETTING, () => new FontSetting());
     });
 
     try {

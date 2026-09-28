@@ -7,7 +7,8 @@
 //   页面根节点用 NavDestination（Navigation 体系的要求），路由名统一见 @zhititong/common 的 RouteConstants。
 // 【MVVM】试卷名/题目/索引/选中状态全在 ExamDetailViewModel（@Trace），本页只渲染与转发事件；
 //   onReady 从路由参数取 paperId 调 vm.loadPaper(paperId)，按 id 命中试卷名（Mock 阶段题目固定 MOCK_QUESTIONS）。
-import { CommonConstants, RouteConstants, OptionItem } from '@zhititong/common'
+import { CommonConstants, RouteConstants, OptionItem, FontSetting, StateKeys } from '@zhititong/common'
+import { PersistenceV2 } from '@kit.ArkUI'
 import { ExamDetailViewModel } from '../viewmodel/ExamDetailViewModel'
 
 @Preview
@@ -18,6 +19,10 @@ export struct ExamDetailPage {
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；paperName/questions/index/选中态都是 @Trace 字段，变更自动刷新
   @Local vm: ExamDetailViewModel = new ExamDetailViewModel()
+  // 全局字号：与"我的"页用同一个 key connect，拿回来的是同一个实例——
+  //   所以在设置页拨档位，本页的题干/选项会跟着即时变（应用级状态的"全局"就落在这）
+  @Local font: FontSetting = PersistenceV2.connect(FontSetting, StateKeys.FONT_SETTING,
+    () => new FontSetting())!
 
   build() {
     // NavDestination：Navigation 体系里"一个页面"的根节点，替代原来 @Entry 页面的角色
@@ -86,9 +91,10 @@ export struct ExamDetailPage {
 
             // 题干
             Text(this.vm.getCurrentQuestion().content)
-              .fontSize(CommonConstants.FONT_BODY)
+              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY))
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-              .lineHeight(24)
+              // 行高与字号走同一个偏移量：只放大字不动行高，五档下会越挤越近（24/16=1.5 的余量被吃掉）
+              .lineHeight(this.font.sizeOf(24))
               .margin({ top: CommonConstants.SPACE_M })
               .width('100%')
 
@@ -120,7 +126,7 @@ export struct ExamDetailPage {
                   }
 
                   Text(this.vm.getOptionText(option))
-                    .fontSize(CommonConstants.FONT_BODY)
+                    .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY))
                     .fontColor(CommonConstants.COLOR_TEXT_MAIN)
                     .margin({ left: 8 })
                 }

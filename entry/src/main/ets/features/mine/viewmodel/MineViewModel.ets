@@ -15,8 +15,9 @@ export class MineViewModel extends BaseViewModel {
   // 用户名与签名（@Trace：变更自动刷新 View；loadUserInfo 前为空串，页面不显示占位文案）
   @Trace userName: string = ''
   @Trace signature: string = ''
-  // 菜单项标题：应用静态配置（不是接口数据），默认值即为最终顺序
-  @Trace menuItems: string[] = ['考试记录', '我的证书', '字体大小', '关于智题通']
+  // 菜单项标题：应用静态配置（不是接口数据），默认值即为最终顺序。
+  // 原第三项"字体大小"已删——字号改成了可交互的档位行，由 MineView 插在同一位置顶替它
+  @Trace menuItems: string[] = ['考试记录', '我的证书', '关于智题通']
 
   /**
    * 加载用户信息（占位数据；接入登录态后只改这里的取数来源）

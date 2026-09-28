@@ -1,7 +1,7 @@
 // MineViewModel 单元测试：个人中心业务规则的验证
 //
 // 【被测规则】loadUserInfo 与占位数据自洽、loading 复位、
-//   菜单四项且顺序固定、logout 返回 Result.ok。
+//   菜单三项且顺序固定、logout 返回 Result.ok。
 import { describe, it, expect } from '@ohos/hypium'
 import { MineViewModel } from '../main/ets/features/mine/viewmodel/MineViewModel'
 import { MOCK_MINE_USER } from '../main/ets/features/mine/model/MockMineData'
@@ -25,14 +25,14 @@ export default function mineViewModelTest() {
       expect(vm.errorMessage).assertEqual('')
     })
 
-    // 业务承诺：菜单固定四项且顺序正确（顺序=页面渲染顺序，改错顺序即视觉回归）
-    it('should_have_four_menu_items_in_order', 0, () => {
+    // 业务承诺：菜单固定三项且顺序正确（顺序=页面渲染顺序，改错顺序即视觉回归）；
+    //   原第三项"字体大小"已改由 MineView 在同位置渲染成字号档位行，不再属于菜单数据
+    it('should_have_three_menu_items_in_order', 0, () => {
       const vm = new MineViewModel()
-      expect(vm.menuItems.length).assertEqual(4)
+      expect(vm.menuItems.length).assertEqual(3)
       expect(vm.menuItems[0]).assertEqual('考试记录')
       expect(vm.menuItems[1]).assertEqual('我的证书')
-      expect(vm.menuItems[2]).assertEqual('字体大小')
-      expect(vm.menuItems[3]).assertEqual('关于智题通')
+      expect(vm.menuItems[2]).assertEqual('关于智题通')
     })
 
     // 业务承诺：logout 返回 ok（View 凭 res.ok 决定是否清根栈），且 loading 复位
