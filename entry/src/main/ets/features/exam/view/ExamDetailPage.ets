@@ -7,8 +7,11 @@
 //   页面根节点用 NavDestination（Navigation 体系的要求），路由名统一见 @zhititong/common 的 RouteConstants。
 // 【MVVM】试卷名/题目/索引/选中状态全在 ExamDetailViewModel（@Trace），本页只渲染与转发事件；
 //   onReady 从路由参数取 paperId 调 vm.loadPaper(paperId)，按 id 命中试卷名（Mock 阶段题目固定 MOCK_QUESTIONS）。
-import { CommonConstants, RouteConstants, OptionItem, FontSetting, StateKeys } from '@zhititong/common'
-import { PersistenceV2 } from '@kit.ArkUI'
+// 【切后台防作弊】进页 onReady 调 vm.startExam() 开始监视、交卷前先调 vm.submitPaper() 定格计数；
+//   计数本身由 EntryAbility.onBackground 累加，本页只用 @Monitor 盯 count 弹提醒。
+import { CommonConstants, RouteConstants, OptionItem, FontSetting, StateKeys, BackgroundMonitor, Logger } from '@zhititong/common'
+import { AppStorageV2, PersistenceV2 } from '@kit.ArkUI'
+import { BusinessError } from '@kit.BasicServicesKit'
 import { ExamDetailViewModel } from '../viewmodel/ExamDetailViewModel'
 
 @Preview
@@ -23,6 +26,29 @@ export struct ExamDetailPage {
   //   所以在设置页拨档位，本页的题干/选项会跟着即时变（应用级状态的"全局"就落在这）
   @Local font: FontSetting = PersistenceV2.connect(FontSetting, StateKeys.FONT_SETTING,
     () => new FontSetting())!
+  // 切后台监视器：与 EntryAbility.onBackground、ExamDetailViewModel 同一个 key，取回同一个实例。
+  // 在页面里持有它只为让下面的 @Monitor 能盯住 count —— 计数是在 Ability 侧加的，本页不参与计数。
+  @Local monitor: BackgroundMonitor = AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
+    () => new BackgroundMonitor())!
+  private logger: Logger = new Logger('[ExamDetailPage]')
+
+  // 切后台次数一变就提醒。monitoring 要一起判：交卷之后 count 仍可能被下一场之前读到，
+  // 只有"考试进行中"的切出才需要劝。
+  @Monitor('monitor.count')
+  onBackgroundCountChanged(): void {
+    if (!this.monitor.monitoring || this.monitor.count <= 0) {
+      return
+    }
+    try {
+      this.getUIContext().getPromptAction().showToast({
+        message: `检测到切出应用，已记录 ${this.monitor.count} 次，请专心作答`,
+        duration: 3000
+      })
+    } catch (err) {
+      const e: BusinessError = err as BusinessError
+      this.logger.warn(`切后台提醒 Toast 弹出失败 code=${e.code} message=${e.message}`)
+    }
+  }
 
   build() {
     // NavDestination：Navigation 体系里"一个页面"的根节点，替代原来 @Entry 页面的角色
@@ -204,6 +230,9 @@ export struct ExamDetailPage {
               })
               .margin({ top: CommonConstants.SPACE_M })
               .onClick(() => {
+                // 先停监视再跳转：计数在此刻定格，结果页读到的就是本场最终次数，
+                // 跳转之后用户再怎么切后台都不会污染这一场的数字
+                this.vm.submitPaper()
                 // 交卷后进结果页：push 到根栈（同样盖住底部 Tab，与答题页同一套"沉浸式"口径）
                 this.pageStack.pushPathByName(RouteConstants.ANSWER_RESULT, null)
               })
@@ -225,6 +254,11 @@ export struct ExamDetailPage {
       // pathInfo.param 的静态类型是 unknown，ArkTS 禁止显式声明 unknown（arkts-no-any-unknown），
       // 直接 as string 断言成约定的类型
       this.vm.loadPaper(ctx.pathInfo.param as string)
+      // 开考：开启监视并把计数归零。
+      // 【为什么必须是 onReady，不能是 onShown】onShown 在应用从后台切回前台时同样会触发，
+      //   用户一旦切出去，回来就把刚记下的次数清零——防作弊计数直接失效。
+      //   onReady 只在导航进入这个 NavDestination 时走一次，正好等于"这一场开始"。
+      this.vm.startExam()
     })
   }
 }

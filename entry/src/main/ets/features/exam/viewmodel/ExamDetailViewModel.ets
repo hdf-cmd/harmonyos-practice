@@ -6,8 +6,16 @@
  *   （Mock 三条铁律：Mock 只能被 ViewModel 消费），ExamDetailPage 只渲染状态、转发事件——
  *   项目 6 换接口取卷/取题时改这里，View 层零改动。
  *   数据流：ExamDetailPage.onReady → loadPaper(paperId) → @Trace 状态变更 → 页面自动刷新。
+ *
+ * 【切后台计数怎么分工】计数发生在 EntryAbility.onBackground（应用级事件只有 Ability 收得到），
+ *   本类只负责"什么时候算一场"：开考 start() 让监视生效并清零，交卷 stop() 让计数定格。
+ *   两边靠 StateKeys.BACKGROUND_MONITOR 这同一个 key 拿到同一个实例，不需要互相持有引用。
  */
-import { BaseViewModel, Result, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS, PaperInfo, QuestionItem, OptionItem } from '@zhititong/common'
+import { AppStorageV2 } from '@kit.ArkUI'
+import {
+  BaseViewModel, Result, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS,
+  PaperInfo, QuestionItem, OptionItem, BackgroundMonitor, StateKeys
+} from '@zhititong/common'
 
 // 题型标签映射：后端存的是枚举码（JUDGE/SINGLE/MULTI），展示时翻成中文
 // 用 Record 集中管理映射关系，新增题型只改这一处
@@ -31,6 +39,21 @@ export class ExamDetailViewModel extends BaseViewModel {
   // 多选选中项集合：Set 天然去重，勾选/取消对应加/删
   // 注意 Set 整体替换（toggleMultiOption 里 new 一个新的）才会触发 V2 状态刷新
   @Trace checkboxSelected: Set<string> = new Set<string>()
+
+  // 切后台监视器：懒连接——第一次真要用的时候才 connect。
+  // 为什么不写成字段初始化就 connect：本地单测跑在非 UI 环境，既有 10 条用例只测取题/切题/选中，
+  //   压根不会走到 startExam/submitPaper；懒连接让它们一行都不用动。
+  // 不加 @Trace：本类不需要因它刷新 UI（提醒 Toast 由页面自己 @Monitor 这个实例），
+  //   @ObservedV2 类里放普通字段是合法的，只是不触发刷新。
+  private monitorInstance: BackgroundMonitor | undefined = undefined
+
+  private get monitor(): BackgroundMonitor {
+    if (this.monitorInstance === undefined) {
+      this.monitorInstance = AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
+        () => new BackgroundMonitor())!
+    }
+    return this.monitorInstance
+  }
 
   // 获取当前题目：题目区 UI 都经由它取数据，改 currentIndex 即整体换题
   getCurrentQuestion(): QuestionItem {
@@ -88,6 +111,18 @@ export class ExamDetailViewModel extends BaseViewModel {
   resetSelection(): void {
     this.radioSelected = ''
     this.checkboxSelected = new Set<string>()
+  }
+
+  // 开考：进入监视态并把切后台计数清零（"每场独立计数"就落在这一次调用上）
+  startExam(): void {
+    this.monitor.start()
+    this.logger.info('开考：切后台监视已开启')
+  }
+
+  // 交卷：停止监视，计数定格（不清零，结果页还要读这一场的次数）
+  submitPaper(): void {
+    this.monitor.stop()
+    this.logger.info(`交卷：切后台监视已停止，本场共切出 ${this.monitor.count} 次`)
   }
 
   /**

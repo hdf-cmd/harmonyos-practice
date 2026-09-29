@@ -64,6 +64,13 @@ export struct AnswerResultPage {
             .fontSize(12)
             .fontColor(CommonConstants.COLOR_TEXT_SUB)
             .margin({ top: CommonConstants.SPACE_M })
+
+          // 防作弊提示（成绩区下方一行）：文案由 VM 派生，本页不读 AppStorageV2——
+          // 与"数据归 VM、View 只渲染"同一口径，样式沿用上面那行说明文字（12 号 + 次文本色）
+          Text(this.vm.getBackgroundHint())
+            .fontSize(12)
+            .fontColor(CommonConstants.COLOR_TEXT_SUB)
+            .margin({ top: CommonConstants.SPACE_M })
         }
         .width('100%')
         .padding(CommonConstants.SPACE_L)

@@ -7,7 +7,10 @@
  *   项目 6 接入真实判分接口时改这里，View 层零改动。
  *   数据流：AnswerResultPage.aboutToAppear → loadResult() → @Trace result 变更 → 页面自动刷新。
  */
-import { BaseViewModel, Result, MOCK_RESULT, ExamResult } from '@zhititong/common'
+import { AppStorageV2 } from '@kit.ArkUI'
+import {
+  BaseViewModel, Result, MOCK_RESULT, ExamResult, BackgroundMonitor, StateKeys
+} from '@zhititong/common'
 
 // 答题卡布局参数：列数 / 格子高度 / 格子间距（vp）
 // 抽成导出常量：高度公式与 View 的格子渲染共用同一份，改任何一个都不会失联（避免魔法数散落）
@@ -26,6 +29,18 @@ export class AnswerResultViewModel extends BaseViewModel {
     usedTime: 0,
     submitType: 'MANUAL',
     answers: []
+  }
+
+  // 切后台监视器：与 EntryAbility/答题页同一个 key，取回的是同一个实例，读到的就是本场定格的次数。
+  // 懒连接（同 ExamDetailViewModel 的口径）：既有 6 条单测不碰 getBackgroundHint，就不会走到 connect。
+  private monitorInstance: BackgroundMonitor | undefined = undefined
+
+  private get monitor(): BackgroundMonitor {
+    if (this.monitorInstance === undefined) {
+      this.monitorInstance = AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
+        () => new BackgroundMonitor())!
+    }
+    return this.monitorInstance
   }
 
   /**
@@ -56,6 +71,14 @@ export class AnswerResultViewModel extends BaseViewModel {
   // 交卷方式文案：MANUAL → 手动交卷，其余（TIMEOUT）→ 超时自动交卷（纯逻辑，可单测）
   getSubmitTypeLabel(): string {
     return this.result.submitType === 'MANUAL' ? '手动交卷' : '超时自动交卷'
+  }
+
+  // 本场切后台提示文案：一次没切也要明说，别让访客以为功能没做
+  // 用方法而不是属性 getter：与本类既有的 getSubmitTypeLabel/getAnswerCardHeight 同口径，
+  // 页面 Text() 里写 this.vm.getBackgroundHint() 即可，View 不留三元表达式
+  getBackgroundHint(): string {
+    const count: number = this.monitor.count
+    return count > 0 ? `本场切出应用 ${count} 次` : '本场未切出应用'
   }
 
   // 答题卡行数：题目数按列数向上取整
