@@ -10,4 +10,6 @@
 export class StateKeys {
   // 字号设置的落盘 key（PersistenceV2）；带应用前缀，避免与其他库的 key 撞名
   static readonly FONT_SETTING: string = 'zhititong.fontSetting'
+  // 切后台监视器的共享实例 key（AppStorageV2，仅进程内，不落盘）
+  static readonly BACKGROUND_MONITOR: string = 'zhititong.backgroundMonitor'
 }

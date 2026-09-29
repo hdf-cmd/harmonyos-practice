@@ -17,6 +17,8 @@ export { Logger } from './src/main/ets/log/Logger';
 export { OptionItem, QuestionItem, PaperInfo, AnswerItem, ExamResult } from './src/main/ets/model/QuestionModel';
 // 状态模型：字号设置（应用级持久化状态，落盘由 PersistenceV2 接管）
 export { FontSetting, FONT_LEVELS, FontLevel } from './src/main/ets/model/FontSetting';
+// 状态模型：切后台监视器（应用级运行状态，AppStorageV2 共享，不落盘）
+export { BackgroundMonitor } from './src/main/ets/model/BackgroundMonitor';
 // mock：多 feature 共用的假数据
 export { MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from './src/main/ets/mock/MockExamData';
 export { MOCK_RESULT } from './src/main/ets/mock/MockResultData';
