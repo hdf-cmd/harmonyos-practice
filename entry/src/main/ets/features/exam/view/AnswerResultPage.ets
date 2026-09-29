@@ -8,7 +8,7 @@
 //   注册在**根栈**（RootDomain）的 RootRouter 上（路由名 RouteConstants.ANSWER_RESULT），
 //   由答题页交卷后 push 进入，页面根节点用 NavDestination。
 // 【MVVM】交卷结果与答题卡布局计算全在 AnswerResultViewModel（@Trace），本页只渲染与转发事件。
-import { CommonConstants, RouteConstants, AnswerItem, formatDuration } from '@zhititong/common'
+import { CommonConstants, RouteConstants, AnswerItem, formatDuration, Logger } from '@zhititong/common'
 import { AnswerResultViewModel, ANSWER_CARD_CELL_HEIGHT, ANSWER_CARD_GAP } from '../viewmodel/AnswerResultViewModel'
 
 @Preview
@@ -19,6 +19,7 @@ export struct AnswerResultPage {
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；result 是 @Trace 字段，VM 加载完成后页面自动刷新
   @Local vm: AnswerResultViewModel = new AnswerResultViewModel()
+  private logger: Logger = new Logger('[AnswerResultPage]')
 
   // 页面创建时加载一次交卷结果。返回的 Result 这里不处理——
   // 失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 结果不会失败
@@ -148,7 +149,7 @@ export struct AnswerResultPage {
             .fontColor(CommonConstants.COLOR_PRIMARY)
             .border({ width: 1, color: CommonConstants.COLOR_PRIMARY })
             .onClick(() => {
-              console.info('查看回顾')
+              this.logger.info('查看回顾')
             })
 
           Button('重新刷题')
