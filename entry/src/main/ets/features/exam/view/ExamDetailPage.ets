@@ -8,7 +8,8 @@
 // 【MVVM】试卷名/题目/索引/选中状态全在 ExamDetailViewModel（@Trace），本页只渲染与转发事件；
 //   onReady 从路由参数取 paperId 调 vm.loadPaper(paperId)，按 id 命中试卷名（Mock 阶段题目固定 MOCK_QUESTIONS）。
 // 【切后台防作弊】进页 onReady 调 vm.startExam() 开始监视、交卷前先调 vm.submitPaper() 定格计数；
-//   计数本身由 EntryAbility.onBackground 累加，本页只用 @Monitor 盯 count 弹提醒。
+//   计数本身由 EntryAbility.onBackground 累加；提醒用 @Monitor 记账、onShown 补弹
+//   （count 变更那一刻应用在后台，当场弹等于弹给空气，原因见 hintPending 的注释）。
 import { CommonConstants, RouteConstants, OptionItem, FontSetting, StateKeys, BackgroundMonitor, Logger } from '@zhititong/common'
 import { AppStorageV2, PersistenceV2 } from '@kit.ArkUI'
 import { BusinessError } from '@kit.BasicServicesKit'
@@ -31,14 +32,29 @@ export struct ExamDetailPage {
   @Local monitor: BackgroundMonitor = AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
     () => new BackgroundMonitor())!
   private logger: Logger = new Logger('[ExamDetailPage]')
+  // 有切出待提示：@Monitor 置位、onShown 消费。
+  // 为什么要拆两处 —— 实测（Pura 90，09:32:50 那轮）：count 变更发生在 onBackground 那一刻，
+  // 应用已在后台，Toast 虽然真的挂载了（AceOverlay: Toast node mount to root node），
+  // 但 3 秒生命周期整个烧在没人看的窗口里，回到前台时只剩退场日志。
+  // 所以"记账"留在 @Monitor（它才是 count 变化的第一现场），"弹给人看"交给回前台必走的 onShown。
+  @Local hintPending: boolean = false
 
-  // 切后台次数一变就提醒。monitoring 要一起判：交卷之后 count 仍可能被下一场之前读到，
-  // 只有"考试进行中"的切出才需要劝。
+  // 切后台次数一变就记一笔待提示。monitoring 与 count>0 都要判：
+  // 开考 start() 里 count 会从上一场的值归 0，那是一次"变更"但不是一次"切出"，不能弹。
   @Monitor('monitor.count')
   onBackgroundCountChanged(): void {
-    if (!this.monitor.monitoring || this.monitor.count <= 0) {
+    if (this.monitor.monitoring && this.monitor.count > 0) {
+      this.hintPending = true
+    }
+  }
+
+  // 回前台补提示：一次切出弹一次（hintPending 消费后即复位），连切多次回来只弹一次总数——
+  // 观众只有一个，逐条弹反而刷不完。
+  private showBackgroundHint(): void {
+    if (!this.hintPending) {
       return
     }
+    this.hintPending = false
     try {
       this.getUIContext().getPromptAction().showToast({
         message: `检测到切出应用，已记录 ${this.monitor.count} 次，请专心作答`,
@@ -259,6 +275,10 @@ export struct ExamDetailPage {
       //   用户一旦切出去，回来就把刚记下的次数清零——防作弊计数直接失效。
       //   onReady 只在导航进入这个 NavDestination 时走一次，正好等于"这一场开始"。
       this.vm.startExam()
+    })
+    .onShown(() => {
+      // 回到本页/回到前台都走这里：把后台期间欠下的切出提醒补弹出来
+      this.showBackgroundHint()
     })
   }
 }
