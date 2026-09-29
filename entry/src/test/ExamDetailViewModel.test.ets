@@ -1,10 +1,19 @@
 // ExamDetailViewModel 单元测试：答题流程业务规则的验证
 //
 // 【被测规则】题型标签映射与兜底、选项文本拼接、切题边界防越界、
-//   换题重置选中、单选/多选选中流转、loadPaper 按 id 命中与回退、loading 复位。
+//   换题重置选中、单选/多选选中流转、loadPaper 按 id 命中与回退、loading 复位、
+//   考试生命周期（startExam 开监视并清零 / submitPaper 关监视并定格计数）。
 import { describe, it, expect } from '@ohos/hypium'
+import { AppStorageV2 } from '@kit.ArkUI'
 import { ExamDetailViewModel } from '../main/ets/features/exam/viewmodel/ExamDetailViewModel'
-import { OptionItem, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS } from '@zhititong/common'
+import { OptionItem, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS, BackgroundMonitor, StateKeys } from '@zhititong/common'
+
+// 取共享监视器实例：与 VM 内部同一个 key，AppStorageV2 同 key 必返同实例（本机 LocalUnit 实测）。
+// 断言写在这个外部句柄上才有意义——它证明 VM 动的确实是那个全局实例，而不是自己 new 的私有对象。
+function sharedMonitor(): BackgroundMonitor {
+  return AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
+    () => new BackgroundMonitor())!
+}
 
 export default function examDetailViewModelTest() {
   describe('examDetailViewModelTest', () => {
@@ -97,6 +106,32 @@ export default function examDetailViewModelTest() {
       vm.toggleMultiOption('A', false)
       expect(vm.checkboxSelected.size).assertEqual(1)
       expect(vm.checkboxSelected.has('C')).assertEqual(true)
+    })
+
+    // 业务承诺：开考 = 进入监视态 + 把上一场残留的计数清零。
+    // 先把共享实例故意弄脏（count=5、monitoring=false），否则"清零"和"本来就是 0"分不开
+    it('should_start_exam_enable_monitoring_and_reset_count', 0, () => {
+      const monitor: BackgroundMonitor = sharedMonitor()
+      monitor.count = 5
+      monitor.monitoring = false
+      const vm = new ExamDetailViewModel()
+      vm.startExam()
+      expect(monitor.monitoring).assertEqual(true)
+      expect(monitor.count).assertEqual(0)
+    })
+
+    // 业务承诺：交卷只关监视、计数定格（结果页还要读这一场的次数，清零就丢数据了）
+    it('should_stop_monitoring_and_freeze_count_on_submit', 0, () => {
+      const monitor: BackgroundMonitor = sharedMonitor()
+      const vm = new ExamDetailViewModel()
+      vm.startExam()
+      // 模拟 EntryAbility.onBackground 侧累加两次：VM 不参与计数，只负责开关监视
+      monitor.increase()
+      monitor.increase()
+      expect(monitor.count).assertEqual(2)
+      vm.submitPaper()
+      expect(monitor.monitoring).assertEqual(false)
+      expect(monitor.count).assertEqual(2)
     })
   })
 }
