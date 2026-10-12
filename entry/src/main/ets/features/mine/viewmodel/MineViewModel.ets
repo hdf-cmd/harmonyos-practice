@@ -7,7 +7,7 @@
  *   项目 6 接入真实用户接口/登录态时改这里，View 层零改动。
  *   数据流：MineView.aboutToAppear → loadUserInfo() → @Trace 字段变更 → 页面自动刷新。
  */
-import { BaseViewModel, Result } from '@zhititong/common'
+import { BaseViewModel, Result, SessionManager, SessionUser } from '@zhititong/common'
 import { MOCK_MINE_USER, MineUserInfo } from '../model/MockMineData'
 
 @ObservedV2
@@ -28,11 +28,16 @@ export class MineViewModel extends BaseViewModel {
     this.setLoading(true)
 
     try {
-      // 2. 取数：用户信息属业务数据——住在 ViewModel，不住在 View
-      //    （改造前用户名/签名写死在 MineView 的 Text 里，view 直连了静态文案）
+      // 2. 取数：用户名来自登录态（SessionManager 的 AppStorageV2 运行态半身）；
+      //    签名仍是 Mock——后端没有个人资料接口，按剧本留到后续章节接真数据。
+      //    用户名属业务数据，住在 ViewModel 而不是 View，所以 MineView 一行不用改。
+      const session: SessionUser = SessionManager.getUser()
       const user: MineUserInfo = MOCK_MINE_USER
-      this.userName = user.userName
+      this.userName = session.username
       this.signature = user.signature
+      if (this.userName === '') {
+        this.logger.warn('登录态用户名为空：会话未建立或 token 已过期')
+      }
       this.logger.info(`用户信息加载完成：${this.userName}`)
       return Result.ok<MineUserInfo>(user)
     } catch (e) {
@@ -54,6 +59,11 @@ export class MineViewModel extends BaseViewModel {
     this.clearError()
     this.setLoading(true)
     try {
+      // 真登出：清内存 token + 清运行态用户 + 异步清盘，全部收口在 SessionManager。
+      // 顺序敏感——先清会话，View 才按返回值清根栈，否则回落登录页时旧 token 还在。
+      SessionManager.logout()
+      this.userName = ''
+      this.signature = ''
       this.logger.info('用户退出登录')
       return Result.ok<void>(undefined)
     } catch (e) {

@@ -1,6 +1,6 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { AppStorageV2, PersistenceV2, window } from '@kit.ArkUI';
-import { BackgroundMonitor, FontSetting, Logger, StateKeys } from '@zhititong/common';
+import { BackgroundMonitor, FontSetting, Logger, PreferencesUtil, SessionManager, setTokenProvider, StateKeys } from '@zhititong/common';
 
 export default class EntryAbility extends UIAbility {
   // 全应用日志统一走 Logger：模板自带的 hilog + 'testTag' 会把每条生命周期日志
@@ -10,6 +10,13 @@ export default class EntryAbility extends UIAbility {
 
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     this.logger.info('Ability onCreate');
+    // ① 注入上下文：PreferencesUtil 从此可读写磁盘（必须最先，②③都依赖它）
+    PreferencesUtil.init(this.context)
+    // ② 把上次会话从磁盘恢复到内存与运行态
+    SessionManager.loadFromDisk()
+    // ③ 激活 6-1 埋好的 TokenProvider 注入点——整条 Token 自动注入链路通电。
+    //    放 onCreate 没问题：Preferences 与窗口无关（对照 PersistenceV2 必须等 loadContent 回调）。
+    setTokenProvider(() => SessionManager.getToken())
   }
 
   onDestroy(): void {

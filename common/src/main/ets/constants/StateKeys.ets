@@ -12,4 +12,6 @@ export class StateKeys {
   static readonly FONT_SETTING: string = 'zhititong.fontSetting'
   // 切后台监视器的共享实例 key（AppStorageV2，仅进程内，不落盘）
   static readonly BACKGROUND_MONITOR: string = 'zhititong.backgroundMonitor'
+  // 当前登录用户的共享实例 key（AppStorageV2 运行态；落盘那份归 PreferencesUtil 管）
+  static readonly SESSION_USER: string = 'zhititong.sessionUser'
 }

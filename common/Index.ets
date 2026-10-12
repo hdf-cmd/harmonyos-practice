@@ -35,3 +35,8 @@ export { MOCK_RESULT } from './src/main/ets/mock/MockResultData';
 export { CategoryGroup, getRandomPapers, filterByCategory, groupByCategory } from './src/main/ets/utils/PaperUtils';
 export { formatDuration } from './src/main/ets/utils/TimeUtils';
 export { ValidationResult, ValidationUtil } from './src/main/ets/utils/ValidationUtil';
+// utils：Preferences 薄封装（flush 收口，业务侧不可能漏）
+export { PreferencesUtil } from './src/main/ets/utils/PreferencesUtil';
+// session：登录态三层存储（token→Preferences、用户→AppStorageV2、cachedToken→内存零 IO）
+export { SessionManager } from './src/main/ets/session/SessionManager';
+export { SessionUser, SessionUserData } from './src/main/ets/session/SessionUser';
