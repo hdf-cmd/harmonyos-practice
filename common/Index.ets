@@ -4,9 +4,18 @@
  * 【为什么只能从这里导出】HAR 是包级依赖：entry 只能 import 本文件导出的符号，
  *   模块内部的目录结构（base/、utils/ 等）对外不可见，内部实现可自由调整而不波及调用方。
  */
-// base：ViewModel 基座与统一结果封装
+// base：ViewModel 基座、统一结果封装、Service 两层拆包基类
 export { BaseViewModel } from './src/main/ets/base/BaseViewModel';
 export { Result } from './src/main/ets/base/Result';
+export { ApiResponse, BaseService } from './src/main/ets/base/BaseService';
+// config：会变的运行参数（后端地址、超时、日志开关）集中一处
+export { AppConfig } from './src/main/ets/config/AppConfig';
+// network：HTTP 客户端与拦截器链。业务侧通常只用 httpClient（或继承 BaseService），
+//   四个类型与拦截器一并导出，是为了单测与自定义拦截器可寻址。
+export { RequestConfig, HttpResult, Interceptor } from './src/main/ets/network/types';
+export { HttpClient } from './src/main/ets/network/HttpClient';
+export { TokenProvider, TokenInterceptor, LoggingInterceptor } from './src/main/ets/network/interceptors';
+export { httpClient, setTokenProvider } from './src/main/ets/network/http';
 // constants：样式常量、路由常量与应用级状态 key
 export { CommonConstants } from './src/main/ets/constants/CommonConstants';
 export { RouteConstants } from './src/main/ets/constants/RouteConstants';
