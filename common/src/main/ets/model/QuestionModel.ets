@@ -11,6 +11,9 @@ export interface QuestionItem {
   content: string
   options: OptionItem[]
   score: number
+  // 断点续考回填：开考时后端随题目下发我已答的内容（未答为 null/undefined）。
+  // 作答面不下发 correctAnswer——判分与逐题对错只在交卷后的 result/review 接口出现。
+  myAnswer?: string
 }
 
 // 试卷信息：字段名与契约对齐，项目 6 接入真实接口时只换数据源

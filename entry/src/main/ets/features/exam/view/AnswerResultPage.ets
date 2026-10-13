@@ -21,12 +21,6 @@ export struct AnswerResultPage {
   @Local vm: AnswerResultViewModel = new AnswerResultViewModel()
   private logger: Logger = new Logger('[AnswerResultPage]')
 
-  // 页面创建时加载一次交卷结果。返回的 Result 这里不处理——
-  // 失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 结果不会失败
-  aboutToAppear(): void {
-    this.vm.loadResult()
-  }
-
   build() {
     // NavDestination：Navigation 体系里"一个页面"的根节点
     NavDestination() {
@@ -175,5 +169,10 @@ export struct AnswerResultPage {
       .padding(CommonConstants.SPACE_M)
     }
     .hideTitleBar(true)   // 沉浸式：页面自带结果卡当头部，不要系统标题栏
+    .onReady((ctx: NavDestinationContext) => {
+      // 答题页交卷后 replacePathByName(ANSWER_RESULT, attemptId) 把场次号传进来
+      // 按场次号拉真实判分与答题卡；失败态由 vm.errorMessage 承载，这里不处理返回值
+      this.vm.loadResult(ctx.pathInfo.param as string)
+    })
   }
 }

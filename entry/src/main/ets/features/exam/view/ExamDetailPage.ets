@@ -48,6 +48,15 @@ export struct ExamDetailPage {
     }
   }
 
+  // 交卷信号灯：VM 把 finishedAttemptId 从空串点亮为场次号，这里看灯跳结果页。
+  // 用 replace 而不是 push——交卷后不允许物理返回返回答题页（导航单一出口，VM 不碰栈）。
+  @Monitor('vm.finishedAttemptId')
+  onExamFinished(): void {
+    if (this.vm.finishedAttemptId !== '') {
+      this.pageStack.replacePathByName(RouteConstants.ANSWER_RESULT, this.vm.finishedAttemptId)
+    }
+  }
+
   // 回前台补提示：一次切出弹一次（hintPending 消费后即复位），连切多次回来只弹一次总数——
   // 观众只有一个，逐条弹反而刷不完。
   private showBackgroundHint(): void {
@@ -108,8 +117,8 @@ export struct ExamDetailPage {
 
               Blank()   // 弹性空隙：把倒计时推到行尾
 
-              // 倒计时目前是写死的静态值，后续阶段换成定时器驱动
-              Text('29:59')
+              // 倒计时：绑服务端权威剩余秒数格式化结果（6-4 起不再是写死的静态值）
+              Text(this.vm.getRemainingText())
                 .fontSize(CommonConstants.FONT_CAPTION)
                 .fontColor(CommonConstants.COLOR_WARN)
                 .fontWeight(FontWeight.Bold)
@@ -246,11 +255,9 @@ export struct ExamDetailPage {
               })
               .margin({ top: CommonConstants.SPACE_M })
               .onClick(() => {
-                // 先停监视再跳转：计数在此刻定格，结果页读到的就是本场最终次数，
-                // 跳转之后用户再怎么切后台都不会污染这一场的数字
-                this.vm.submitPaper()
-                // 交卷后进结果页：push 到根栈（同样盖住底部 Tab，与答题页同一套"沉浸式"口径）
-                this.pageStack.pushPathByName(RouteConstants.ANSWER_RESULT, null)
+                // 手动交卷：VM 内部会停表、定格切后台计数、点亮 finishedAttemptId；
+                // 跳转不在这做——统一由下面的 @Monitor('vm.finishedAttemptId') 看灯导航（单一出口）
+                this.vm.submit('MANUAL')
               })
           }
           .width('100%')
@@ -267,18 +274,19 @@ export struct ExamDetailPage {
     .onReady((ctx: NavDestinationContext) => {
       // onReady：NavDestination 创建时触发一次，是接收路由参数的推荐时机。
       // 上游试卷卡片 pushPathByName(EXAM_DETAIL, paper.id) 传的就是试卷 id。
-      // pathInfo.param 的静态类型是 unknown，ArkTS 禁止显式声明 unknown（arkts-no-any-unknown），
-      // 直接 as string 断言成约定的类型
-      this.vm.loadPaper(ctx.pathInfo.param as string)
-      // 开考：开启监视并把计数归零。
-      // 【为什么必须是 onReady，不能是 onShown】onShown 在应用从后台切回前台时同样会触发，
-      //   用户一旦切出去，回来就把刚记下的次数清零——防作弊计数直接失效。
-      //   onReady 只在导航进入这个 NavDestination 时走一次，正好等于"这一场开始"。
-      this.vm.startExam()
+      // pathInfo.param 静态类型 unknown，ArkTS 禁显式声明 unknown，直接 as string。
+      // 开考（或断点续考）：一次性装载场次/题目/倒计时并开启切后台监视。
+      // 【为什么必须 onReady 不能 onShown】onShown 在应用从后台切回时也会触发，
+      //   一旦用它开考，用户切出去再回来就把这一场重开/清零了——防作弊计数与场次都乱。
+      this.vm.startExam(ctx.pathInfo.param as string)
     })
     .onShown(() => {
       // 回到本页/回到前台都走这里：把后台期间欠下的切出提醒补弹出来
       this.showBackgroundHint()
+    })
+    .onWillDisappear(() => {
+      // 兜底清定时器：交卷成功路径已 dispose，这里是用户物理返回时的保险，防定时器泄漏
+      this.vm.dispose()
     })
   }
 }
