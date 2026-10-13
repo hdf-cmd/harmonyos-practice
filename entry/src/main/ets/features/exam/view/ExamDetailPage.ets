@@ -182,8 +182,10 @@ export struct ExamDetailPage {
                     .margin({ left: 8 })
                 }
                 .width('100%')
-              }, (option: OptionItem) => option.label)
-              // ↑ 键值生成器：选项 label（A/B/C/D）在单题内唯一，用它当 key
+              }, (option: OptionItem) => this.vm.getCurrentQuestion().id + '_' + option.label)
+              // ↑ 键值生成器：必须带题目 id。选项 label 只有 A/B/C/D，跨题重复——
+              //   若只用 label 当 key，切题时 key 不变，ForEach 判定"没变"就复用旧节点，
+              //   选项文字会永远卡在第一题（实测：高级卷 12/13/14 题全显示第 1 题选项）。
             }
             .margin({ top: CommonConstants.SPACE_L })
             .width('100%')
