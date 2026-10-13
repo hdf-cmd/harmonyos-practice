@@ -1,13 +1,31 @@
-// MineViewModel 单元测试：个人中心业务规则的验证
+// MineViewModel 单元测试：个人中心业务规则的验证（hamock 化）
 //
-// 【被测规则】loadUserInfo 与占位数据自洽、loading 复位、
+// 【被测规则】loadUserInfo 与登录态/Mock 数据自洽、loading 复位、
 //   菜单三项且顺序固定、logout 返回 Result.ok。
-import { describe, it, expect } from '@ohos/hypium'
+// 【为什么用 hamock】loadUserInfo 现在从 SessionManager.getUser() 取用户名，
+//   单测环境没有真实登录态，需要 mock 掉 SessionManager.getUser 返回固定用户。
+import { describe, it, expect, beforeEach } from '@ohos/hypium'
+import { MockKit, when } from '@ohos/hamock'
 import { MineViewModel } from '../main/ets/features/mine/viewmodel/MineViewModel'
 import { MOCK_MINE_USER } from '../main/ets/features/mine/model/MockMineData'
+import { SessionManager, SessionUser } from '@zhititong/common'
 
 export default function mineViewModelTest() {
   describe('mineViewModelTest', () => {
+    let mocker: MockKit
+
+    beforeEach(() => {
+      mocker = new MockKit()
+      const getUserMock: Function = mocker.mockFunc(SessionManager, SessionManager.getUser)
+      // 把 mock 出来的用户填成测试期望的占位用户名
+      const user: SessionUser = new SessionUser()
+      user.username = MOCK_MINE_USER.userName
+      user.id = '1'
+      user.role = '考生'
+      user.loggedIn = true
+      when(getUserMock)().afterReturn(user)
+    })
+
     // 常规：加载成功，Result.ok，用户名/签名与占位数据逐字一致（视觉零变化的底线）
     it('should_load_user_info_ok', 0, async () => {
       const vm = new MineViewModel()
