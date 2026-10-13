@@ -1,137 +1,194 @@
-// ExamDetailViewModel 单元测试：答题流程业务规则的验证
+// ExamDetailViewModel 单元测试：考试链路业务规则的验证（hamock 化）
 //
-// 【被测规则】题型标签映射与兜底、选项文本拼接、切题边界防越界、
-//   换题重置选中、单选/多选选中流转、loadPaper 按 id 命中与回退、loading 复位、
-//   考试生命周期（startExam 开监视并清零 / submitPaper 关监视并定格计数）。
-import { describe, it, expect } from '@ohos/hypium'
-import { AppStorageV2 } from '@kit.ArkUI'
+// 【被测规则】开考装载场次/题目/剩余时间、断点续考 myAnswer 回填、换题重置选中、
+//   单选/多选选中流转、倒计时 tick 递减与归零触发交卷、submitting 闸门只交一次、
+//   交卷成功点亮 finishedAttemptId、题型标签映射与兜底、mm:ss 格式化、切题边界防越界。
+// 【为什么用 hamock】6-4 后 startExam/submit/saveAnswer 全打后端。这里 mock 掉 ExamService，
+//   单测毫秒级、零网络、可重复；tick() 直调模拟时间流逝。
+import { describe, it, expect, beforeEach, afterEach } from '@ohos/hypium'
+import { MockKit, when, ArgumentMatchers } from '@ohos/hamock'
 import { ExamDetailViewModel } from '../main/ets/features/exam/viewmodel/ExamDetailViewModel'
-import { OptionItem, MOCK_PAPER, MOCK_PAPERS, MOCK_QUESTIONS, BackgroundMonitor, StateKeys } from '@zhititong/common'
+import { ExamService, AttemptInfo, SubmitResult } from '../main/ets/features/exam/service/ExamService'
+import { OptionItem, QuestionItem } from '@zhititong/common'
 
-// 取共享监视器实例：与 VM 内部同一个 key，AppStorageV2 同 key 必返同实例（本机 LocalUnit 实测）。
-// 断言写在这个外部句柄上才有意义——它证明 VM 动的确实是那个全局实例，而不是自己 new 的私有对象。
-function sharedMonitor(): BackgroundMonitor {
-  return AppStorageV2.connect(BackgroundMonitor, StateKeys.BACKGROUND_MONITOR,
-    () => new BackgroundMonitor())!
+// 3 题小卷夹具：q0 单选已答 A（测回填）、q1 多选未答、q2 判断未答
+function fixtureQuestions(): QuestionItem[] {
+  const a: QuestionItem = { id: 'q0', type: 'SINGLE', content: '单选干', score: 10,
+    options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }], myAnswer: 'A' }
+  const b: QuestionItem = { id: 'q1', type: 'MULTI', content: '多选干', score: 10,
+    options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }, { label: 'C', content: '丙' }] }
+  const c: QuestionItem = { id: 'q2', type: 'JUDGE', content: '判断干', score: 10,
+    options: [{ label: 'A', content: '正确' }, { label: 'B', content: '错误' }] }
+  return [a, b, c]
+}
+
+function fixtureAttempt(): AttemptInfo {
+  return {
+    attemptId: 'A1', paperName: '3 题小卷', totalScore: 30, passScore: 18,
+    duration: 1, remainingSeconds: 3600, questions: fixtureQuestions()
+  }
+}
+
+function fixtureSubmit(): SubmitResult {
+  return { score: 20, totalScore: 30, passScore: 18, passed: true, usedTime: 100,
+    submitType: 'MANUAL', certificateGenerated: true }
 }
 
 export default function examDetailViewModelTest() {
   describe('examDetailViewModelTest', () => {
-    // 常规：加载成功，Result.ok，题目就位、索引归零
-    it('should_load_paper_by_id', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      const target = MOCK_PAPERS[3]   // 用一张非默认卷验证 id 命中
-      const res = await vm.loadPaper(target.id)
-      expect(res.ok).assertEqual(true)
-      expect(vm.paperName).assertEqual(target.paperName)
-      expect(vm.questions.length).assertEqual(MOCK_QUESTIONS.length)
-      expect(vm.currentIndex).assertEqual(0)
+    let service: ExamService
+    let mocker: MockKit
+
+    beforeEach(() => {
+      mocker = new MockKit()
+      service = new ExamService()
+      const mStart: Function = mocker.mockFunc(service, service.startExam)
+      when(mStart)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureAttempt()))
+      const mSubmit: Function = mocker.mockFunc(service, service.submit)
+      when(mSubmit)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureSubmit()))
+      const mSave: Function = mocker.mockFunc(service, service.saveAnswer)
+      when(mSave)(ArgumentMatchers.any).afterReturn(Promise.resolve())
     })
 
-    // 业务承诺：未知 id 回退默认卷，不崩、不空屏
-    it('should_fallback_to_default_paper_for_unknown_id', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      await vm.loadPaper('不存在的试卷 id')
-      expect(vm.paperName).assertEqual(MOCK_PAPER.paperName)
-      expect(vm.questions.length > 0).assertEqual(true)
+    afterEach(() => {
+      mocker.clearAll()
     })
 
-    // 隐含约定：无论成败，loading 最终必须回到 false（finally 兜底）
-    it('should_reset_loading_after_load', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      await vm.loadPaper(MOCK_PAPERS[0].id)
-      expect(vm.loading).assertEqual(false)
-      expect(vm.errorMessage).assertEqual('')
+    // 开考：装载场次号、题目、服务端剩余时间
+    it('should_load_attempt_on_start', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      expect(vm.attemptId).assertEqual('A1')
+      expect(vm.questions.length).assertEqual(3)
+      expect(vm.remainingSeconds).assertEqual(3600)
+      vm.dispose()
     })
 
-    // 纯逻辑：三种题型码都翻成中文
-    it('should_map_type_labels', 0, () => {
-      const vm = new ExamDetailViewModel()
-      expect(vm.getTypeLabel('JUDGE')).assertEqual('判断题')
-      expect(vm.getTypeLabel('SINGLE')).assertEqual('单选题')
-      expect(vm.getTypeLabel('MULTI')).assertEqual('多选题')
+    // 断点续考：myAnswer 回填到当前题选中态
+    it('should_backfill_single_answer_from_my_answer', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      expect(vm.radioSelected).assertEqual('A')
+      vm.dispose()
     })
 
-    // 纯逻辑：映射表查不到时兜底"未知题型"，避免 undefined 上屏
-    it('should_fallback_unknown_type', 0, () => {
-      const vm = new ExamDetailViewModel()
-      expect(vm.getTypeLabel('ESSAY')).assertEqual('未知题型')
-    })
-
-    // 纯逻辑：选项文本 = label + '. ' + content
-    it('should_concat_option_text', 0, () => {
-      const vm = new ExamDetailViewModel()
-      const option: OptionItem = { label: 'A', content: '正确' }
-      expect(vm.getOptionText(option)).assertEqual('A. 正确')
-    })
-
-    // 边界：首题时"上一题"不动（防越界）
-    it('should_block_prev_at_first_question', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      await vm.loadPaper(MOCK_PAPERS[0].id)
-      vm.goToPrev()
-      expect(vm.currentIndex).assertEqual(0)
-    })
-
-    // 边界：末题时"下一题"不动（防越界）
-    it('should_block_next_at_last_question', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      await vm.loadPaper(MOCK_PAPERS[0].id)
-      const last = vm.questions.length - 1
-      for (let i = 0; i < last; i++) {
-        vm.goToNext()
-      }
-      expect(vm.currentIndex).assertEqual(last)
-      vm.goToNext()
-      expect(vm.currentIndex).assertEqual(last)
-    })
-
-    // 业务承诺：换题必须重置选中——上一题的勾选不许"串"到下一题
+    // 换题重置：q1 多选未答，切过去后单选清空、多选空集
     it('should_reset_selection_on_switch', 0, async () => {
-      const vm = new ExamDetailViewModel()
-      await vm.loadPaper(MOCK_PAPERS[0].id)
-      vm.selectSingleOption('A')
-      vm.toggleMultiOption('B', true)
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
       vm.goToNext()
       expect(vm.radioSelected).assertEqual('')
       expect(vm.checkboxSelected.size).assertEqual(0)
+      vm.dispose()
     })
 
-    // 业务承诺：多选勾选进 Set、取消从 Set 删，互不干扰
-    it('should_toggle_multi_options', 0, () => {
-      const vm = new ExamDetailViewModel()
+    // 多选勾选：整体替换 Set，连勾两个再取消一个（在多选题 q1 上操作）
+    it('should_toggle_multi_options', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToNext()   // 切到 q1（MULTI）
       vm.toggleMultiOption('A', true)
       vm.toggleMultiOption('C', true)
       expect(vm.checkboxSelected.size).assertEqual(2)
       vm.toggleMultiOption('A', false)
       expect(vm.checkboxSelected.size).assertEqual(1)
       expect(vm.checkboxSelected.has('C')).assertEqual(true)
+      vm.dispose()
     })
 
-    // 业务承诺：开考 = 进入监视态 + 把上一场残留的计数清零。
-    // 先把共享实例故意弄脏（count=5、monitoring=false），否则"清零"和"本来就是 0"分不开
-    it('should_start_exam_enable_monitoring_and_reset_count', 0, () => {
-      const monitor: BackgroundMonitor = sharedMonitor()
-      monitor.count = 5
-      monitor.monitoring = false
-      const vm = new ExamDetailViewModel()
-      vm.startExam()
-      expect(monitor.monitoring).assertEqual(true)
-      expect(monitor.count).assertEqual(0)
+    // 倒计时：tick 每秒减一
+    it('should_decrement_remaining_on_tick', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.remainingSeconds = 5
+      vm.tick()
+      expect(vm.remainingSeconds).assertEqual(4)
+      vm.dispose()
     })
 
-    // 业务承诺：交卷只关监视、计数定格（结果页还要读这一场的次数，清零就丢数据了）
-    it('should_stop_monitoring_and_freeze_count_on_submit', 0, () => {
-      const monitor: BackgroundMonitor = sharedMonitor()
-      const vm = new ExamDetailViewModel()
-      vm.startExam()
-      // 模拟 EntryAbility.onBackground 侧累加两次：VM 不参与计数，只负责开关监视
-      monitor.increase()
-      monitor.increase()
-      expect(monitor.count).assertEqual(2)
-      vm.submitPaper()
-      expect(monitor.monitoring).assertEqual(false)
-      expect(monitor.count).assertEqual(2)
+    // 超时自动交卷：remainingSeconds 归零时 tick 触发 submit 并点灯
+    it('should_autosubmit_when_timeout', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.remainingSeconds = 1
+      vm.tick()   // 归零 → 内部调 submit('TIMEOUT')
+      await Promise.resolve()   // 让 submit 的 await 链跑完
+      expect(vm.remainingSeconds).assertEqual(0)
+      expect(vm.finishedAttemptId).assertEqual('A1')
+      vm.dispose()
+    })
+
+    // 手动交卷：成功后点亮 finishedAttemptId
+    it('should_light_finished_on_manual_submit', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.dispose()   // 先停表，避免定时器干扰
+      await vm.submit('MANUAL')
+      expect(vm.finishedAttemptId).assertEqual('A1')
+    })
+
+    // 防重复交卷闸门：连交两次只点亮一次、不报错
+    it('should_submit_only_once', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.dispose()
+      const p1: Promise<void> = vm.submit('MANUAL')
+      const p2: Promise<void> = vm.submit('MANUAL')   // 第二次被闸门挡下，立即 return
+      await p1
+      await p2
+      expect(vm.finishedAttemptId).assertEqual('A1')
+    })
+
+    // 边界：首题"上一题"不动
+    it('should_block_prev_at_first_question', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToPrev()
+      expect(vm.currentIndex).assertEqual(0)
+      vm.dispose()
+    })
+
+    // 边界：末题"下一题"不动
+    it('should_block_next_at_last_question', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToNext()
+      vm.goToNext()
+      vm.goToNext()   // 已在末题，再点不动
+      expect(vm.currentIndex).assertEqual(2)
+      vm.dispose()
+    })
+
+    // 纯逻辑：三种题型码翻中文
+    it('should_map_type_labels', 0, () => {
+      const vm = new ExamDetailViewModel(service)
+      expect(vm.getTypeLabel('JUDGE')).assertEqual('判断题')
+      expect(vm.getTypeLabel('SINGLE')).assertEqual('单选题')
+      expect(vm.getTypeLabel('MULTI')).assertEqual('多选题')
+    })
+
+    // 纯逻辑：未知题型兜底
+    it('should_fallback_unknown_type', 0, () => {
+      const vm = new ExamDetailViewModel(service)
+      expect(vm.getTypeLabel('ESSAY')).assertEqual('未知题型')
+    })
+
+    // 纯逻辑：选项文本 = label + '. ' + content
+    it('should_concat_option_text', 0, () => {
+      const vm = new ExamDetailViewModel(service)
+      const option: OptionItem = { label: 'A', content: '正确' }
+      expect(vm.getOptionText(option)).assertEqual('A. 正确')
+    })
+
+    // 纯逻辑：倒计时 mm:ss 格式化（3599 → 59:59）
+    it('should_format_remaining_as_mmss', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.remainingSeconds = 3599
+      expect(vm.getRemainingText()).assertEqual('59:59')
+      vm.remainingSeconds = 5
+      expect(vm.getRemainingText()).assertEqual('00:05')
+      vm.dispose()
     })
   })
 }
