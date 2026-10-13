@@ -1,16 +1,30 @@
-// ExamListViewModel 单元测试：按科目过滤考卷业务的规则验证
+// ExamListViewModel 单元测试：按科目过滤考卷业务的规则验证（hamock 化）
 //
 // 【被测规则】loadPapersByCategory 的业务承诺：结果只含该科目的卷、
 //   不存在的科目返回空数组、Result.ok 包装正确、loading 无论成败最终复位。
-import { describe, it, expect } from '@ohos/hypium'
+// 【为什么用 hamock】把 PaperService.getPapers mock 成返回固定夹具 MOCK_PAPERS，
+//   根除后端依赖与数据污染，单测可重复。
+import { describe, it, expect, beforeEach } from '@ohos/hypium'
+import { MockKit, when } from '@ohos/hamock'
 import { ExamListViewModel } from '../main/ets/features/exam/viewmodel/ExamListViewModel'
+import { PaperService } from '../main/ets/features/exam/service/PaperService'
 import { MOCK_PAPERS } from '@zhititong/common'
 
 export default function examListViewModelTest() {
   describe('examListViewModelTest', () => {
+    let service: PaperService
+    let mocker: MockKit
+
+    beforeEach(() => {
+      mocker = new MockKit()
+      service = new PaperService()
+      const mockGetPapers: Function = mocker.mockFunc(service, service.getPapers)
+      when(mockGetPapers)().afterReturn(Promise.resolve(MOCK_PAPERS))
+    })
+
     // 常规：加载成功，Result.ok，结果非空（Mock 试卷池里科目都有卷）
     it('should_load_papers_ok', 0, async () => {
-      const vm = new ExamListViewModel()
+      const vm = new ExamListViewModel(service)
       const res = await vm.loadPapersByCategory(MOCK_PAPERS[0].categoryName)
       expect(res.ok).assertEqual(true)
       expect(vm.papers.length > 0).assertEqual(true)
@@ -19,7 +33,7 @@ export default function examListViewModelTest() {
     // 业务承诺：结果只含目标科目的卷，一条都不许混进别的科目
     it('should_only_contain_target_category_papers', 0, async () => {
       const target: string = MOCK_PAPERS[0].categoryName
-      const vm = new ExamListViewModel()
+      const vm = new ExamListViewModel(service)
       await vm.loadPapersByCategory(target)
       // 逐条核对：结果数量 = 试卷池中该科目的实际套数，且 categoryName 全部命中
       let actual = 0
@@ -36,7 +50,7 @@ export default function examListViewModelTest() {
 
     // 边界：不存在的科目返回空数组（空态由 View 渲染，VM 不崩不报错）
     it('should_return_empty_for_unknown_category', 0, async () => {
-      const vm = new ExamListViewModel()
+      const vm = new ExamListViewModel(service)
       const res = await vm.loadPapersByCategory('不存在的科目')
       expect(res.ok).assertEqual(true)
       expect(vm.papers.length).assertEqual(0)
@@ -44,7 +58,7 @@ export default function examListViewModelTest() {
 
     // 隐含约定：无论成败，loading 最终必须回到 false（finally 兜底）
     it('should_reset_loading_after_load', 0, async () => {
-      const vm = new ExamListViewModel()
+      const vm = new ExamListViewModel(service)
       await vm.loadPapersByCategory(MOCK_PAPERS[0].categoryName)
       expect(vm.loading).assertEqual(false)
       expect(vm.errorMessage).assertEqual('')
