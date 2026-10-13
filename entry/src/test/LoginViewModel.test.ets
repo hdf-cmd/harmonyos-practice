@@ -56,21 +56,21 @@ export default function loginViewModelTest() {
     it('should_fail_with_wrong_password', 0, async () => {
       const mockLogin: Function = mocker.mockFunc(service, service.login)
       when(mockLogin)(ArgumentMatchers.any).afterReturn(
-        Promise.reject(new Error('TODO: 请对照真实后端填写错误密码文案')))
+        Promise.reject(new Error('账号或密码错误')))
 
       const vm = new LoginViewModel(service)
       vm.username = 'admin'
       vm.password = 'wrong-password'
       const res = await vm.submit()
       expect(res.ok).assertEqual(false)
-      expect(res.errorMessage).assertEqual('TODO: 请对照真实后端填写错误密码文案')
+      expect(res.errorMessage).assertEqual('账号或密码错误')
     })
 
     // 常规：注册已存在用户名
     it('should_fail_register_existing_username', 0, async () => {
       const mockRegister: Function = mocker.mockFunc(service, service.register)
       when(mockRegister)(ArgumentMatchers.any).afterReturn(
-        Promise.reject(new Error('TODO: 请对照真实后端填写账号已存在文案')))
+        Promise.reject(new Error('账号已存在')))
 
       const vm = new LoginViewModel(service)
       vm.isReg = true
@@ -79,7 +79,7 @@ export default function loginViewModelTest() {
       vm.confirmPwd = '123456'
       const res = await vm.submit()
       expect(res.ok).assertEqual(false)
-      expect(res.errorMessage).assertEqual('TODO: 请对照真实后端填写账号已存在文案')
+      expect(res.errorMessage).assertEqual('账号已存在')
     })
 
     // 常规：注册新用户成功并自动登录
@@ -112,7 +112,7 @@ export default function loginViewModelTest() {
     it('should_reset_loading_after_submit', 0, async () => {
       const mockLogin: Function = mocker.mockFunc(service, service.login)
       when(mockLogin)(ArgumentMatchers.any).afterReturn(
-        Promise.reject(new Error('TODO: 请对照真实后端填写错误密码文案')))
+        Promise.reject(new Error('账号或密码错误')))
 
       const vm = new LoginViewModel(service)
       vm.username = 'admin'
