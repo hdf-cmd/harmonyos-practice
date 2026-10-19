@@ -100,11 +100,11 @@ export default function answerResultViewModelTest() {
       expect(vm.getSubmitTypeLabel()).assertEqual('超时自动交卷')
     })
 
-    // 业务承诺：TAB_SWITCH → 切屏超限强制交卷
+    // 业务承诺：TAB_SWITCH → 切屏超限自动交卷
     it('should_label_tab_switch_submit', 0, () => {
       const vm = new AnswerResultViewModel(service)
       vm.result = makeResult(6, 'TAB_SWITCH')
-      expect(vm.getSubmitTypeLabel()).assertEqual('切屏超限强制交卷')
+      expect(vm.getSubmitTypeLabel()).assertEqual('切屏超限自动交卷')
     })
 
     // 业务承诺：行数 = 题目数按列数(6)向上取整

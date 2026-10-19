@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach } from '@ohos/hypium'
 import { MockKit, when, ArgumentMatchers } from '@ohos/hamock'
 import { ExamDetailViewModel } from '../main/ets/features/exam/viewmodel/ExamDetailViewModel'
-import { ExamService, AttemptInfo, SubmitResult } from '../main/ets/features/exam/service/ExamService'
+import { ExamService, AttemptInfo, SubmitResult, TabSwitchResult } from '../main/ets/features/exam/service/ExamService'
 import { OptionItem, QuestionItem } from '@zhititong/common'
 
 // 3 题小卷夹具：q0 单选已答 A 且标了存疑（测回填与 isFlagged 回传）、q1 多选未答、q2 判断未答
@@ -35,6 +35,11 @@ function fixtureSubmit(): SubmitResult {
     submitType: 'MANUAL', certificateGenerated: true }
 }
 
+// 切屏裁决夹具：limit=3，超过即由服务端判强制交卷
+function fixtureTabSwitch(shouldAuto: boolean): TabSwitchResult {
+  return { tabSwitchCount: 4, tabSwitchLimit: 3, shouldAutoSubmit: shouldAuto }
+}
+
 // 全新场次：一题都没答过（专供 restored 的 false 分支）
 function fixtureAttemptFresh(): AttemptInfo {
   const q: QuestionItem = { id: 'q0', type: 'SINGLE', content: '单选干', score: 10,
@@ -57,6 +62,8 @@ export default function examDetailViewModelTest() {
       when(mSubmit)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureSubmit()))
       const mSave: Function = mocker.mockFunc(service, service.saveAnswer)
       when(mSave)(ArgumentMatchers.any).afterReturn(Promise.resolve())
+      const mTab: Function = mocker.mockFunc(service, service.reportTabSwitch)
+      when(mTab)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureTabSwitch(false)))
     })
 
     afterEach(() => {
@@ -238,6 +245,102 @@ export default function examDetailViewModelTest() {
       vm.toggleMultiOption('A', true)
       vm.dispose()
       mocker.verify('saveAnswer', ['A1', 'q1', 'A', false]).times(1)
+    })
+    // ===== 6-5：存疑 / 答题卡 / 切屏裁决 =====
+
+    // 开考回填：夹具 q0 带 isFlagged=true → flaggedIds 只含 q0
+    it('should_backfill_flagged_ids_on_start', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      expect(vm.flaggedIds.length).assertEqual(1)
+      expect(vm.flaggedIds[0]).assertEqual('q0')
+      expect(vm.isQuestionFlagged('q0')).assertEqual(true)
+      expect(vm.isQuestionFlagged('q1')).assertEqual(false)
+      vm.dispose()
+    })
+
+    // 存疑取消：q0 本已存疑，点一次变未存疑，并把 isFlagged=false 连同答案上报
+    it('should_toggle_flag_off_and_report', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.toggleFlagCurrent()
+      expect(vm.isQuestionFlagged('q0')).assertEqual(false)
+      mocker.verify('saveAnswer', ['A1', 'q0', 'A', false]).times(1)
+      vm.dispose()
+    })
+
+    // 存疑再打一次：关→开，flaggedIds 恢复且上报 true
+    it('should_toggle_flag_on_and_report', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.toggleFlagCurrent()
+      vm.toggleFlagCurrent()
+      expect(vm.isQuestionFlagged('q0')).assertEqual(true)
+      mocker.verify('saveAnswer', ['A1', 'q0', 'A', true]).times(1)
+      vm.dispose()
+    })
+
+    // 未作答题目标存疑：answer 必须传空串（后端按未答处理）
+    it('should_report_empty_answer_when_flagging_unanswered', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToNext()               // q1 未作答
+      vm.toggleFlagCurrent()
+      expect(vm.isQuestionFlagged('q1')).assertEqual(true)
+      mocker.verify('saveAnswer', ['A1', 'q1', '', true]).times(1)
+      vm.dispose()
+    })
+
+    // 答题卡跳题：跳到已答题，选中态跟着答案表同步
+    it('should_jump_and_sync_selection', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToNext()               // 切到 q1（未答）→ 选中态清空
+      expect(vm.radioSelected).assertEqual('')
+      vm.jumpTo(0)                // 跳回 q0（已答 A）
+      expect(vm.currentIndex).assertEqual(0)
+      expect(vm.radioSelected).assertEqual('A')
+      vm.dispose()
+    })
+
+    // 跳题边界：越界与原地跳转都不动状态
+    it('should_ignore_invalid_jump', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.jumpTo(99)
+      expect(vm.currentIndex).assertEqual(0)
+      vm.jumpTo(-1)
+      expect(vm.currentIndex).assertEqual(0)
+      vm.dispose()
+    })
+
+    // 切屏上报但不判罚：服务端 shouldAutoSubmit=false → 绝不交卷
+    it('should_report_tab_switch_without_autosubmit', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      await vm.onTabSwitch(1)
+      expect(vm.finishedAttemptId).assertEqual('')
+      mocker.verify('reportTabSwitch', ['A1', 1]).times(1)
+      vm.dispose()
+    })
+
+    // 服务端裁决 true：自动交卷，submitType 必须是 TAB_SWITCH
+    it('should_autosubmit_on_server_verdict', 0, async () => {
+      const svc: ExamService = new ExamService()
+      const mStart: Function = mocker.mockFunc(svc, svc.startExam)
+      when(mStart)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureAttempt()))
+      const mSubmit: Function = mocker.mockFunc(svc, svc.submit)
+      when(mSubmit)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureSubmit()))
+      const mTab: Function = mocker.mockFunc(svc, svc.reportTabSwitch)
+      when(mTab)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureTabSwitch(true)))
+      const vm = new ExamDetailViewModel(svc)
+      await vm.startExam('P1')
+      await vm.onTabSwitch(4)
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(vm.finishedAttemptId).assertEqual('A1')
+      mocker.verify('submit', ['A1', 'TAB_SWITCH', 0]).times(1)
+      vm.dispose()
     })
   })
 }
