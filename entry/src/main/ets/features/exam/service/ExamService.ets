@@ -63,6 +63,7 @@ export interface StartExamRequest {
 export interface SaveAnswerRequest {
   questionId: string
   answer: string
+  isFlagged: boolean
 }
 
 export interface SubmitRequest {
@@ -77,9 +78,9 @@ export class ExamService extends BaseService {
     return this.postJson<AttemptInfo>('/api/exam/attempts', req)
   }
 
-  /** 实时保存单题答案 */
-  saveAnswer(attemptId: string, questionId: string, answer: string): Promise<void> {
-    const req: SaveAnswerRequest = { questionId: questionId, answer: answer }
+  /** 实时保存单题答案。isFlagged 由调用方给当前值：后端缺该字段即按 false 覆盖 */
+  saveAnswer(attemptId: string, questionId: string, answer: string, isFlagged: boolean): Promise<void> {
+    const req: SaveAnswerRequest = { questionId: questionId, answer: answer, isFlagged: isFlagged }
     return this.putJson<void>(`/api/exam/attempts/${attemptId}/answer`, req)
   }
 

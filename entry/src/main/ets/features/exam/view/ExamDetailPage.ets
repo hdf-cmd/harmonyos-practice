@@ -57,6 +57,24 @@ export struct ExamDetailPage {
     }
   }
 
+  // 断点续考提示：回填发生过就弹一次。restored 只在开考时置位，
+  // 不像切屏那样有"弹给空气"的时序问题（这一刻人已经在页面上了）。
+  @Monitor('vm.restored')
+  onExamRestored(): void {
+    if (!this.vm.restored) {
+      return
+    }
+    try {
+      this.getUIContext().getPromptAction().showToast({
+        message: '已恢复上次考试进度',
+        duration: 3000
+      })
+    } catch (err) {
+      const e: BusinessError = err as BusinessError
+      this.logger.warn(`续考提示 Toast 弹出失败 code=${e.code} message=${e.message}`)
+    }
+  }
+
   // 回前台补提示：一次切出弹一次（hintPending 消费后即复位），连切多次回来只弹一次总数——
   // 观众只有一个，逐条弹反而刷不完。
   private showBackgroundHint(): void {
@@ -78,12 +96,16 @@ export struct ExamDetailPage {
   build() {
     // NavDestination：Navigation 体系里"一个页面"的根节点，替代原来 @Entry 页面的角色
     NavDestination() {
-      // 渲染守卫：题目未就绪（loadPaper 完成前）先渲染占位，避免取空数组下标
+      // 渲染守卫：题目未就绪先渲染占位，避免取空数组下标。
+      // 文案按"错误优先"排：开考失败时 loading 已归 false，若照剧本的 loading ? 加载 : errorMessage
+      // 顺序，既不加载又没错的空卷会显示成空白——所以 errorMessage 判在最前，最后兜"暂无题目"。
       if (this.vm.questions.length === 0) {
         Column() {
-          Text('试卷加载中…')
+          Text(this.vm.errorMessage !== '' ? this.vm.errorMessage :
+            (this.vm.loading ? '试卷加载中…' : '本卷暂无题目'))
             .fontSize(CommonConstants.FONT_BODY)
-            .fontColor(CommonConstants.COLOR_TEXT_HINT)
+            .fontColor(this.vm.errorMessage !== ''
+              ? CommonConstants.COLOR_ERROR : CommonConstants.COLOR_TEXT_HINT)
         }
         .width('100%')
         .height('100%')

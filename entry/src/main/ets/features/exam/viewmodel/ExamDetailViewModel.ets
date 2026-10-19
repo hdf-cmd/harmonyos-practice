@@ -41,6 +41,8 @@ export class ExamDetailViewModel extends BaseViewModel {
   @Trace remainingSeconds: number = 0
   // 交卷完成信号灯：结果页导航的唯一出口（空串=未交卷）
   @Trace finishedAttemptId: string = ''
+  // 本场是否发生过断点续考回填：View @Monitor 它弹一次提示，不参与业务判断
+  @Trace restored: boolean = false
   // 单选/判断当前选中项（Radio 靠值相等判选中）
   @Trace radioSelected: string = ''
   // 多选当前选中集合（整体替换才触发 V2 刷新）
@@ -87,11 +89,14 @@ export class ExamDetailViewModel extends BaseViewModel {
 
       // 断点续考：把后端回传的 myAnswer 灌进唯一事实源
       this.answers.clear()
+      let restoredCount: number = 0
       for (const q of info.questions) {
         if (q.myAnswer !== undefined && q.myAnswer !== null && q.myAnswer !== '') {
           this.answers.set(q.id, q.myAnswer)
+          restoredCount++
         }
       }
+      this.restored = restoredCount > 0
       this.loadSelectionForCurrent()
 
       // 本地切后台监视归零起算（上报后端裁决留到 6-5）
@@ -99,7 +104,8 @@ export class ExamDetailViewModel extends BaseViewModel {
       // 服务端倒计时：每秒一跳，到点自动交卷
       this.timerId = setInterval((): void => this.tick(), 1000)
 
-      this.logger.info(`开考成功：场次 ${this.attemptId}，${this.questions.length} 题，剩余 ${this.remainingSeconds}s`)
+      this.logger.info(`开考成功：场次 ${this.attemptId}，${this.questions.length} 题，` +
+        `剩余 ${this.remainingSeconds}s${restoredCount > 0 ? `（续考回填 ${restoredCount} 题）` : ''}`)
       return Result.ok<void>(undefined)
     } catch (e) {
       const errorMsg = (e as Error).message || '开考失败，请稍后重试'
@@ -222,6 +228,13 @@ export class ExamDetailViewModel extends BaseViewModel {
     }
   }
 
+  /** 该题当前的存疑标记。实时保存要原样带回——后端缺该字段就按 false 覆盖写 */
+  private flagOf(questionId: string): boolean {
+    const q: QuestionItem | undefined = this.questions.find(
+      (it: QuestionItem): boolean => it.id === questionId)
+    return q !== undefined && q.isFlagged === true
+  }
+
   // 写唯一事实源并尽力实时保存（保存失败只记日志，不打断作答；交卷时以服务端记录为准）
   private persistAnswer(questionId: string, answer: string): void {
     if (answer === '') {
@@ -229,7 +242,7 @@ export class ExamDetailViewModel extends BaseViewModel {
     } else {
       this.answers.set(questionId, answer)
     }
-    this.examService.saveAnswer(this.attemptId, questionId, answer)
+    this.examService.saveAnswer(this.attemptId, questionId, answer, this.flagOf(questionId))
       .then((): void => {
         this.logger.info(`答案已保存：${questionId} → ${answer}`)
       })

@@ -33,8 +33,14 @@ export class SessionManager {
     return SessionManager.cachedToken
   }
 
+  /**
+   * 是否已登录：读运行态的 loggedIn，而不是 cachedToken 非空。
+   * 两者今天恰好同起同落，但语义不同——有 token 只说明"凭证还在"，
+   * loggedIn 才是"会话完整"（loadFromDisk 要求 token 与用户信息都在才置真）。
+   * 导航与 UI 要判的是后者；cachedToken 只服务拦截器的高频零 IO 读取。
+   */
   static isLoggedIn(): boolean {
-    return SessionManager.cachedToken !== ''
+    return SessionManager.getUser().loggedIn
   }
 
   /** 应用启动时调用一次：把上次会话从磁盘恢复到内存与运行态 */

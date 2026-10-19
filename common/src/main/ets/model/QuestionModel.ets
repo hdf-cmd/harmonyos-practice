@@ -14,6 +14,9 @@ export interface QuestionItem {
   // 断点续考回填：开考时后端随题目下发我已答的内容（未答为 null/undefined）。
   // 作答面不下发 correctAnswer——判分与逐题对错只在交卷后的 result/review 接口出现。
   myAnswer?: string
+  // 存疑标记。后端开考响应随题目下发，且 PUT answer 缺这个字段时按 false 覆盖写（本机实测），
+  // 所以实时保存必须原样带回——否则一标记存疑、再答一次题，标记就被悄悄抹掉。
+  isFlagged?: boolean
 }
 
 // 试卷信息：字段名与契约对齐，项目 6 接入真实接口时只换数据源
