@@ -11,10 +11,11 @@ import { ExamDetailViewModel } from '../main/ets/features/exam/viewmodel/ExamDet
 import { ExamService, AttemptInfo, SubmitResult } from '../main/ets/features/exam/service/ExamService'
 import { OptionItem, QuestionItem } from '@zhititong/common'
 
-// 3 题小卷夹具：q0 单选已答 A（测回填）、q1 多选未答、q2 判断未答
+// 3 题小卷夹具：q0 单选已答 A 且标了存疑（测回填与 isFlagged 回传）、q1 多选未答、q2 判断未答
 function fixtureQuestions(): QuestionItem[] {
   const a: QuestionItem = { id: 'q0', type: 'SINGLE', content: '单选干', score: 10,
-    options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }], myAnswer: 'A' }
+    options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }],
+    myAnswer: 'A', isFlagged: true }
   const b: QuestionItem = { id: 'q1', type: 'MULTI', content: '多选干', score: 10,
     options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }, { label: 'C', content: '丙' }] }
   const c: QuestionItem = { id: 'q2', type: 'JUDGE', content: '判断干', score: 10,
@@ -32,6 +33,14 @@ function fixtureAttempt(): AttemptInfo {
 function fixtureSubmit(): SubmitResult {
   return { score: 20, totalScore: 30, passScore: 18, passed: true, usedTime: 100,
     submitType: 'MANUAL', certificateGenerated: true }
+}
+
+// 全新场次：一题都没答过（专供 restored 的 false 分支）
+function fixtureAttemptFresh(): AttemptInfo {
+  const q: QuestionItem = { id: 'q0', type: 'SINGLE', content: '单选干', score: 10,
+    options: [{ label: 'A', content: '甲' }, { label: 'B', content: '乙' }] }
+  return { attemptId: 'A1', paperName: '全新小卷', totalScore: 10, passScore: 5,
+    duration: 1, remainingSeconds: 3600, questions: [q] }
 }
 
 export default function examDetailViewModelTest() {
@@ -189,6 +198,46 @@ export default function examDetailViewModelTest() {
       vm.remainingSeconds = 5
       expect(vm.getRemainingText()).assertEqual('00:05')
       vm.dispose()
+    })
+
+    // 断点续考标记：夹具 q0 带 myAnswer，回填发生过 → restored 为 true
+    it('should_mark_restored_when_answers_backfilled', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      expect(vm.restored).assertEqual(true)
+      vm.dispose()
+    })
+
+    // 全新场次：restored 必须为 false（挡住"恒置 true"这类写法）
+    it('should_not_mark_restored_on_fresh_attempt', 0, async () => {
+      const fresh: ExamService = new ExamService()
+      const mFreshStart: Function = mocker.mockFunc(fresh, fresh.startExam)
+      when(mFreshStart)(ArgumentMatchers.any).afterReturn(Promise.resolve(fixtureAttemptFresh()))
+      const vm = new ExamDetailViewModel(fresh)
+      await vm.startExam('P1')
+      expect(vm.restored).assertEqual(false)
+      expect(vm.radioSelected).assertEqual('')
+      vm.dispose()
+    })
+
+    // 实时保存要原样带回该题当前的存疑标记：
+    // 后端 PUT answer 缺该字段即按 false 覆盖写（本机实测），漏传等于把用户的存疑标记抹掉
+    it('should_send_current_is_flagged_when_saving', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.selectSingleOption('B')   // q0 当前 isFlagged=true
+      vm.dispose()
+      mocker.verify('saveAnswer', ['A1', 'q0', 'B', true]).times(1)
+    })
+
+    // 反向：未标记的题上报 false（挡住"恒置 true"）
+    it('should_send_false_is_flagged_for_unflagged_question', 0, async () => {
+      const vm = new ExamDetailViewModel(service)
+      await vm.startExam('P1')
+      vm.goToNext()                // 切到 q1（MULTI，无 isFlagged）
+      vm.toggleMultiOption('A', true)
+      vm.dispose()
+      mocker.verify('saveAnswer', ['A1', 'q1', 'A', false]).times(1)
     })
   })
 }
