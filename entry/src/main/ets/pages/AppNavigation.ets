@@ -12,6 +12,7 @@ import { MainPage } from './MainPage'
 import { LoginPage } from '../features/login/view/LoginPage'
 import { ExamDetailPage } from '../features/exam/view/ExamDetailPage'
 import { AnswerResultPage } from '../features/exam/view/AnswerResultPage'
+import { ReviewPage } from '../features/exam/view/ReviewPage'
 
 @Entry
 @ComponentV2
@@ -31,6 +32,8 @@ struct AppNavigation {
       ExamDetailPage()
     } else if (name === RouteConstants.ANSWER_RESULT) {
       AnswerResultPage()
+    } else if (name === RouteConstants.REVIEW) {
+      ReviewPage()
     }
   }
 

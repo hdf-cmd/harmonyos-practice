@@ -34,6 +34,8 @@ export { MOCK_RESULT } from './src/main/ets/mock/MockResultData';
 // utils：纯函数工具
 export { CategoryGroup, getRandomPapers, filterByCategory, groupByCategory } from './src/main/ets/utils/PaperUtils';
 export { formatDuration } from './src/main/ets/utils/TimeUtils';
+// utils：考试文案口径（交卷方式三态翻译，结果页与记录页共用）
+export { submitTypeLabel, questionTypeLabel } from './src/main/ets/utils/ExamTextUtils';
 export { ValidationResult, ValidationUtil } from './src/main/ets/utils/ValidationUtil';
 // utils：Preferences 薄封装（flush 收口，业务侧不可能漏）
 export { PreferencesUtil } from './src/main/ets/utils/PreferencesUtil';

@@ -10,6 +10,9 @@ import { CommonConstants } from '@zhititong/common'
 export struct SettingItem {
   // @Param @Require：标题由父组件传入
   @Param @Require title: string
+  // 点击行为由父组件给：默认空实现——不传就当纯展示行（如"关于智题通"）
+  @Param onTap: () => void = () => {
+  }
 
   build() {
     Row() {
@@ -24,5 +27,8 @@ export struct SettingItem {
     .width('100%')
     .height(52)   // 固定行高，四行菜单视觉统一
     .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+    .onClick(() => {
+      this.onTap()
+    })
   }
 }

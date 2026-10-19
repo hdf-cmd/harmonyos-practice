@@ -12,7 +12,12 @@ export class RouteConstants {
   // 沉浸式详情页：统一注册到根栈（push 后盖住底部 Tab）
   static readonly EXAM_DETAIL: string = 'ExamDetail'
   static readonly ANSWER_RESULT: string = 'AnswerResult'
+  static readonly REVIEW: string = 'Review'
 
   // Exam 域内路由（examStack，push 后保留底部 Tab）
   static readonly EXAM_LIST: string = 'ExamList'
+
+  // Mine 域内路由（mineStack，push 后保留底部 Tab）
+  static readonly HISTORY: string = 'AttemptHistory'
+  static readonly CERTIFICATE: string = 'Certificate'
 }

@@ -19,6 +19,8 @@ export struct AnswerResultPage {
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；result 是 @Trace 字段，VM 加载完成后页面自动刷新
   @Local vm: AnswerResultViewModel = new AnswerResultViewModel()
+  // 本场场次号：onReady 从路由参数取到后留住，供"查看逐题解析"二次跳转
+  @Local attemptId: string = ''
   private logger: Logger = new Logger('[AnswerResultPage]')
 
   build() {
@@ -143,7 +145,8 @@ export struct AnswerResultPage {
             .fontColor(CommonConstants.COLOR_PRIMARY)
             .border({ width: 1, color: CommonConstants.COLOR_PRIMARY })
             .onClick(() => {
-              this.logger.info('查看回顾')
+              // 逐题精讲：push 到根栈，带本场 attemptId（回顾页 onReady 读它拉全量）
+              this.pageStack.pushPathByName(RouteConstants.REVIEW, this.attemptId)
             })
 
           Button('重新刷题')
@@ -172,7 +175,8 @@ export struct AnswerResultPage {
     .onReady((ctx: NavDestinationContext) => {
       // 答题页交卷后 replacePathByName(ANSWER_RESULT, attemptId) 把场次号传进来
       // 按场次号拉真实判分与答题卡；失败态由 vm.errorMessage 承载，这里不处理返回值
-      this.vm.loadResult(ctx.pathInfo.param as string)
+      this.attemptId = ctx.pathInfo.param as string
+      this.vm.loadResult(this.attemptId)
     })
   }
 }

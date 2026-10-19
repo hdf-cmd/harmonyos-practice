@@ -54,6 +54,58 @@ export interface ReviewInfo {
   questions: ReviewQuestion[]
 }
 
+/** 逐题回顾·全量（契约 3.8）——回顾页精讲的数据源 */
+export interface ReviewQuestionDetail {
+  questionId: string
+  type: string
+  content: string
+  correctAnswer: string
+  userAnswer: string | null         // 未作答时后端下发 null
+  isCorrect: boolean
+  earnedScore: number
+  maxScore: number
+  analysis: string                  // 可为空串（该题无解析）
+  options: OptionItem[]
+}
+
+export interface ReviewDetail {
+  attemptId: string
+  paperName: string
+  score: number
+  totalScore: number
+  isPassed: number                  // 契约注意：数字 1/0，不是布尔
+  questions: ReviewQuestionDetail[]
+}
+
+/** 考试记录（契约 3.6，分页壳见契约 §一） */
+export interface AttemptRecord {
+  id: string
+  startTime: string
+  score: number
+  passed: boolean
+  usedTime: number
+  submitType: string
+  paperId: string
+  paperName: string
+}
+
+export interface AttemptPage {
+  records: AttemptRecord[]
+  total: number
+  page: number
+  size: number
+}
+
+/** 证书（契约 §四·列表接口；注意列表与详情字段名、状态值不同） */
+export interface CertificateItem {
+  id: string
+  certificateNo: string
+  name: string
+  issueDate: string
+  expiryDate: string
+  status: string                    // VALID | EXPIRED
+}
+
 // ---- 请求体接口 ----
 
 export interface StartExamRequest {
@@ -116,5 +168,20 @@ export class ExamService extends BaseService {
   /** 拉取逐题回顾（契约 3.8：用于结果页答题卡的对错着色） */
   getReview(attemptId: string): Promise<ReviewInfo> {
     return this.getJson<ReviewInfo>(`/api/exam/attempts/${attemptId}/review`)
+  }
+
+  /** 逐题回顾全量（契约 3.8）：回顾页精讲数据源 */
+  getFullReview(attemptId: string): Promise<ReviewDetail> {
+    return this.getJson<ReviewDetail>(`/api/exam/attempts/${attemptId}/review?wrongOnly=false`)
+  }
+
+  /** 考试记录分页（契约 3.6） */
+  getAttempts(page: number, size: number): Promise<AttemptPage> {
+    return this.getJson<AttemptPage>(`/api/exam/attempts?page=${page}&size=${size}`)
+  }
+
+  /** 我的证书列表（契约 §四） */
+  getCertificates(): Promise<CertificateItem[]> {
+    return this.getJson<CertificateItem[]>('/api/exam/certificates')
   }
 }

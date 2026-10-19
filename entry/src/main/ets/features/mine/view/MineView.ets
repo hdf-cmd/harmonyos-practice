@@ -8,10 +8,12 @@
 //   退出登录要操作的是**根栈**——清空根栈后 Navigation 回落到内容区（登录页），登出闭环。
 // 【MVVM】用户信息与退出登录业务全在 MineViewModel（@Trace），本页只渲染与转发事件；
 //   菜单项由 vm.menuItems 驱动，点击行为（菜单跳转）后续阶段接。
-import { CommonConstants, FONT_LEVELS, FontLevel, FontSetting, StateKeys } from '@zhititong/common'
+import { CommonConstants, FONT_LEVELS, FontLevel, FontSetting, RouteConstants, StateKeys } from '@zhititong/common'
 import { PersistenceV2 } from '@kit.ArkUI'
 import { SettingItem } from './components/SettingItem'
 import { MineViewModel } from '../viewmodel/MineViewModel'
+import { AttemptHistoryPage } from '../../exam/view/AttemptHistoryPage'
+import { CertificatePage } from '../../exam/view/CertificatePage'
 
 @ComponentV2
 export struct MineView {
@@ -39,9 +41,23 @@ export struct MineView {
     this.vm.loadUserInfo()
   }
 
-  // Mine 域内路由注册（预留）
+  // Mine 域内路由注册：考试记录 / 我的证书都挂 mineStack（底部 Tab 保留）
   @Builder
   MineRouter(name: string, param: Object) {
+    if (name === RouteConstants.HISTORY) {
+      AttemptHistoryPage()
+    } else if (name === RouteConstants.CERTIFICATE) {
+      CertificatePage()
+    }
+  }
+
+  // 菜单点击：下标与 vm.menuItems 顺序绑定（0 考试记录 / 1 我的证书 / 2 关于仅占位）
+  private onMenuClick(index: number): void {
+    if (index === 0) {
+      this.mineStack.pushPathByName(RouteConstants.HISTORY, null)
+    } else if (index === 1) {
+      this.mineStack.pushPathByName(RouteConstants.CERTIFICATE, null)
+    }
   }
 
   // 字号档位行：与 SettingItem 同宽同高同内边距，只是行尾的箭头换成 Select。
@@ -104,7 +120,12 @@ export struct MineView {
         // 功能列表区：菜单标题由 VM 驱动，ForEach 渲染（顺序即 vm.menuItems 顺序）
         Column() {
           ForEach(this.vm.menuItems, (title: string, index: number) => {
-            SettingItem({ title: title })
+            SettingItem({
+              title: title,
+              onTap: () => {
+                this.onMenuClick(index)
+              }
+            })
             // 字号档位行插在"我的证书"之后：它顶替的是原"字体大小"那一格——
             //   菜单少一项、这里补一行，页面总行数与顺序都和改造前一致
             if (index === 1) {
