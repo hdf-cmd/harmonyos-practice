@@ -9,7 +9,8 @@
 //   - 确认密码框、错误提示、按钮文案，全是"跟着 viewModel 状态自动变"的条件渲染
 //   通读一遍你会发现：View 里找不到一个业务判断（没有 if 校验、没有 if 网络结果），
 //   这就是 4.2.9 说的单一职责——业务归 ViewModel，渲染归 View。
-import { CommonConstants, RouteConstants } from '@zhititong/common'
+import { CommonConstants, RouteConstants, SessionUser, StateKeys } from '@zhititong/common'
+import { AppStorageV2 } from '@kit.ArkUI'
 import { LoginViewModel } from '../viewmodel/LoginViewModel'
 
 @ComponentV2
@@ -18,6 +19,27 @@ export struct LoginPage {
 
   // 持有 ViewModel 实例：页面所有状态都在它身上（@Local 保证它变了页面会重绘）
   @Local viewModel: LoginViewModel = new LoginViewModel()
+
+  // 全局会话运行态：loggedIn 是免登录分流的信号灯
+  @Local session: SessionUser = AppStorageV2.connect(SessionUser, StateKeys.SESSION_USER,
+    () => new SessionUser())!
+
+  aboutToAppear(): void {
+    // 时序 A：磁盘恢复先于页面出现（灯已亮，不会再变化，Monitor 等不到）
+    this.tryEnterMain()
+  }
+
+  @Monitor('session.loggedIn')
+  onLoggedInChanged(): void {
+    // 时序 B：页面已出现，恢复才完成（灯这时才亮）；手动登录成功也走这里
+    this.tryEnterMain()
+  }
+
+  private tryEnterMain(): void {
+    if (this.session.loggedIn) {
+      this.pageStack.replacePathByName(RouteConstants.MAIN, null)
+    }
+  }
 
   build() {
     NavDestination() {
@@ -87,12 +109,10 @@ export struct LoginPage {
             .fontColor(Color.White)
             .fontSize(CommonConstants.FONT_SUBTITLE)
             .enabled(!this.viewModel.loading)
-            .onClick(async () => {
-              // View 不做任何判断，只转发事件、消费结果
-              const res = await this.viewModel.submit()
-              if (res.ok) {
-                this.pageStack.replacePathByName(RouteConstants.MAIN, null)
-              }
+            .onClick(() => {
+              // View 不做任何判断，只转发事件。跳转不在这做——
+              // 登录成功会点亮 session.loggedIn，由上面的 @Monitor 统一接管（导航单一出口）
+              this.viewModel.submit()
             })
 
           // 登录/注册切换

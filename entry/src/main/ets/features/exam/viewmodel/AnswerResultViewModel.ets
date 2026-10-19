@@ -89,15 +89,16 @@ export class AnswerResultViewModel extends BaseViewModel {
     }
   }
 
-  // 交卷方式文案：MANUAL → 手动交卷，TIMEOUT → 超时自动交卷，TAB_SWITCH → 切屏强制交卷
+  // 交卷方式文案三态：MANUAL 手动 / TIMEOUT 超时 / TAB_SWITCH 切屏超限
+  // 顺序照契约：先把 MANUAL 判掉，剩下 TAB_SWITCH 单列，未知值兜到 TIMEOUT 口径
   getSubmitTypeLabel(): string {
-    if (this.result.submitType === 'TIMEOUT') {
-      return '超时自动交卷'
+    if (this.result.submitType === 'MANUAL') {
+      return '手动交卷'
     }
     if (this.result.submitType === 'TAB_SWITCH') {
-      return '切屏超限强制交卷'
+      return '切屏超限自动交卷'
     }
-    return '手动交卷'
+    return '超时自动交卷'
   }
 
   // 本场切后台提示文案：一次没切也要明说，别让访客以为功能没做

@@ -7,7 +7,7 @@
 //     ②"沉浸式详情页"（答题 ExamDetail / 结果 AnswerResult）——这类页面 push 后盖住底部 Tab
 //   - @Provider('pageStack') 把根栈实例递到组件树下方，任意层级（哪怕嵌在卡片深处）都能用
 //     @Consumer('pageStack') 直接取到，不必层层传参
-import { RouteConstants, SessionManager } from '@zhititong/common'
+import { RouteConstants } from '@zhititong/common'
 import { MainPage } from './MainPage'
 import { LoginPage } from '../features/login/view/LoginPage'
 import { ExamDetailPage } from '../features/exam/view/ExamDetailPage'
@@ -43,14 +43,8 @@ struct AppNavigation {
     .mode(NavigationMode.Stack)
     .navDestination(this.RootRouter)
     .hideTitleBar(true)
-    // 冷启动消费会话：EntryAbility.onCreate 已把上次的会话从磁盘回填进内存/运行态，
-    // 但回填只搬数据、没人据此改路由，所以重启仍落在登录页。这里补上那一步消费——
-    // 用与 LoginPage 完全同款的那一行 replace 进主页，不另造第二套导航机制。
-    // 放 onAppear 而不是 aboutToAppear：这一刻 Navigation 才挂载完，pageStack 才接得住路径。
-    .onAppear(() => {
-      if (SessionManager.isLoggedIn()) {
-        this.pageStack.replacePathByName(RouteConstants.MAIN, null)
-      }
-    })
+    // 免登录分流不在这做：LoginPage 用 loggedIn 信号灯自己决定去留
+    // （aboutToAppear 覆盖"恢复已完成"，@Monitor 覆盖"稍后才完成"+手动登录）。
+    // 导航出口只有一个，避免两处 replace 互相抢。
   }
 }

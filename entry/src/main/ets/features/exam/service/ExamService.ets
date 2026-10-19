@@ -71,6 +71,18 @@ export interface SubmitRequest {
   tabSwitchCount: number
 }
 
+/** 切屏上报请求（契约 3.4） */
+interface TabSwitchRequest {
+  tabSwitchCount: number
+}
+
+/** 切屏上报响应（契约 3.4）：服务端裁决是否强制交卷 */
+export interface TabSwitchResult {
+  tabSwitchCount: number
+  tabSwitchLimit: number
+  shouldAutoSubmit: boolean
+}
+
 export class ExamService extends BaseService {
   /** 开考（或断点续考：后端对进行中的同卷场次幂等返回） */
   startExam(paperId: string): Promise<AttemptInfo> {
@@ -84,10 +96,16 @@ export class ExamService extends BaseService {
     return this.putJson<void>(`/api/exam/attempts/${attemptId}/answer`, req)
   }
 
-  /** 交卷判分 */
-  submit(attemptId: string, submitType: string, tabSwitchCount: number): Promise<SubmitResult> {
+  /** 交卷判分：MANUAL 手动 / TIMEOUT 超时 / TAB_SWITCH 切屏超限 */
+  submit(attemptId: string, submitType: string, tabSwitchCount: number = 0): Promise<SubmitResult> {
     const req: SubmitRequest = { submitType: submitType, tabSwitchCount: tabSwitchCount }
     return this.postJson<SubmitResult>(`/api/exam/attempts/${attemptId}/submit`, req)
+  }
+
+  /** 切屏上报：客户端如实报数，裁决权在服务端（shouldAutoSubmit） */
+  reportTabSwitch(attemptId: string, count: number): Promise<TabSwitchResult> {
+    const req: TabSwitchRequest = { tabSwitchCount: count }
+    return this.putJson<TabSwitchResult>(`/api/exam/attempts/${attemptId}/tab-switch`, req)
   }
 
   /** 拉取成绩结构（契约 3.7 result：始终返回成绩，用于结果页判分卡） */

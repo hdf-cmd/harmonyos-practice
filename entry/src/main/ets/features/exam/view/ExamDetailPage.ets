@@ -10,7 +10,7 @@
 // 【切后台防作弊】进页 onReady 调 vm.startExam() 开始监视、交卷前先调 vm.submitPaper() 定格计数；
 //   计数本身由 EntryAbility.onBackground 累加；提醒用 @Monitor 记账、onShown 补弹
 //   （count 变更那一刻应用在后台，当场弹等于弹给空气，原因见 hintPending 的注释）。
-import { CommonConstants, RouteConstants, OptionItem, FontSetting, StateKeys, BackgroundMonitor, Logger } from '@zhititong/common'
+import { CommonConstants, RouteConstants, OptionItem, QuestionItem, FontSetting, StateKeys, BackgroundMonitor, Logger } from '@zhititong/common'
 import { AppStorageV2, PersistenceV2 } from '@kit.ArkUI'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ExamDetailViewModel } from '../viewmodel/ExamDetailViewModel'
@@ -39,12 +39,17 @@ export struct ExamDetailPage {
   // 所以"记账"留在 @Monitor（它才是 count 变化的第一现场），"弹给人看"交给回前台必走的 onShown。
   @Local hintPending: boolean = false
 
+  // 答题卡半模态开关
+  @Local showAnswerCard: boolean = false
+
   // 切后台次数一变就记一笔待提示。monitoring 与 count>0 都要判：
   // 开考 start() 里 count 会从上一场的值归 0，那是一次"变更"但不是一次"切出"，不能弹。
   @Monitor('monitor.count')
   onBackgroundCountChanged(): void {
     if (this.monitor.monitoring && this.monitor.count > 0) {
       this.hintPending = true
+      // 如实上报，裁决在服务端：超限由后端回 shouldAutoSubmit，VM 再走统一交卷出口
+      this.vm.onTabSwitch(this.monitor.count)
     }
   }
 
@@ -91,6 +96,55 @@ export struct ExamDetailPage {
       const e: BusinessError = err as BusinessError
       this.logger.warn(`切后台提醒 Toast 弹出失败 code=${e.code} message=${e.message}`)
     }
+  }
+
+  // 答题卡面板：四种格子态——当前=主色描边、已答=绿、存疑=橙、未答=灰
+  @Builder
+  AnswerCardSheet() {
+    Column({ space: CommonConstants.SPACE_M }) {
+      Text('答题卡')
+        .fontSize(CommonConstants.FONT_SUBTITLE)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+        .width('100%')
+
+      Text('绿色已答 · 橙色存疑 · 蓝框当前题 · 点击跳转')
+        .fontSize(CommonConstants.FONT_CAPTION)
+        .fontColor(CommonConstants.COLOR_TEXT_SUB)
+        .width('100%')
+
+      Grid() {
+        ForEach(this.vm.questions, (q: QuestionItem, index: number) => {
+          GridItem() {
+            Text(`${index + 1}`)
+              .fontSize(CommonConstants.FONT_BODY)
+              .fontColor(this.vm.isQuestionAnswered(q.id) ? Color.White : CommonConstants.COLOR_TEXT_MAIN)
+              .width(40)
+              .height(40)
+              .textAlign(TextAlign.Center)
+              .backgroundColor(this.vm.isQuestionFlagged(q.id)
+                ? CommonConstants.COLOR_WARN
+                : (this.vm.isQuestionAnswered(q.id) ? CommonConstants.COLOR_SUCCESS : '#EEEEEE'))
+              .borderRadius(8)
+              .border({
+                width: index === this.vm.currentIndex ? 2 : 0,
+                color: CommonConstants.COLOR_PRIMARY
+              })
+              .onClick(() => {
+                this.vm.jumpTo(index)
+                this.showAnswerCard = false
+              })
+          }
+        }, (q: QuestionItem) => q.id)
+      }
+      .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr')
+      .rowsGap(CommonConstants.SPACE_M)
+      .columnsGap(CommonConstants.SPACE_M)
+      .layoutWeight(1)
+    }
+    .padding(CommonConstants.SPACE_M)
+    .width('100%')
+    .height('100%')
   }
 
   build() {
@@ -246,14 +300,19 @@ export struct ExamDetailPage {
                   this.vm.goToNext()
                 })
 
-              // 标记存疑 / 答题卡：UI 先行，事件后续阶段补
-              Button('标记存疑')
+              // 标记存疑：再点一次取消；标记与答案一起实时上报（同一保存接口承载两者）
+              Button(this.vm.isQuestionFlagged(this.vm.getCurrentQuestion().id)
+                ? '已存疑' : '标记存疑')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
                 .fontSize(CommonConstants.FONT_CAPTION)
-                .backgroundColor(Color.White)
+                .backgroundColor(this.vm.isQuestionFlagged(this.vm.getCurrentQuestion().id)
+                  ? '#FFF3E0' : Color.White)
                 .fontColor(CommonConstants.COLOR_WARN)
                 .border({ width: 1, color: CommonConstants.COLOR_WARN })
+                .onClick(() => {
+                  this.vm.toggleFlagCurrent()
+                })
 
               Button('答题卡')
                 .type(ButtonType.Normal)
@@ -262,6 +321,16 @@ export struct ExamDetailPage {
                 .backgroundColor(Color.White)
                 .fontColor(CommonConstants.COLOR_TEXT_MAIN)
                 .border({ width: 1, color: CommonConstants.COLOR_TEXT_HINT })
+                .onClick(() => {
+                  this.showAnswerCard = true
+                })
+                .bindSheet(this.showAnswerCard, this.AnswerCardSheet(), {
+                  height: 440,
+                  showClose: true,
+                  onDisappear: () => {
+                    this.showAnswerCard = false
+                  }
+                })
             }
             .width('100%')
             .justifyContent(FlexAlign.SpaceBetween)   // 四个按钮两端对齐铺满一行

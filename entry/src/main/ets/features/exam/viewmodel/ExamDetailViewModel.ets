@@ -43,6 +43,8 @@ export class ExamDetailViewModel extends BaseViewModel {
   @Trace finishedAttemptId: string = ''
   // 本场是否发生过断点续考回填：View @Monitor 它弹一次提示，不参与业务判断
   @Trace restored: boolean = false
+  // 存疑题号表（@Trace 数组整体替换才触发刷新；QuestionItem 是普通接口，改它的字段 UI 不会动）
+  @Trace flaggedIds: string[] = []
   // 单选/判断当前选中项（Radio 靠值相等判选中）
   @Trace radioSelected: string = ''
   // 多选当前选中集合（整体替换才触发 V2 刷新）
@@ -97,6 +99,14 @@ export class ExamDetailViewModel extends BaseViewModel {
         }
       }
       this.restored = restoredCount > 0
+      // 断点续考：存疑标记同样由后端回填（6-4 透传先行的回报）
+      const flagged: string[] = []
+      for (const q of info.questions) {
+        if (q.isFlagged) {
+          flagged.push(q.id)
+        }
+      }
+      this.flaggedIds = flagged
       this.loadSelectionForCurrent()
 
       // 本地切后台监视归零起算（上报后端裁决留到 6-5）
@@ -211,6 +221,61 @@ export class ExamDetailViewModel extends BaseViewModel {
     this.persistAnswer(this.getCurrentQuestion().id, joined)
   }
 
+  // ===== 存疑与答题卡 =====
+
+  /** 某题是否已作答（答题卡格子用） */
+  isQuestionAnswered(questionId: string): boolean {
+    const saved: string = this.answers.get(questionId) ?? ''
+    return saved !== ''
+  }
+
+  /** 某题是否已标记存疑 */
+  isQuestionFlagged(questionId: string): boolean {
+    return this.flaggedIds.indexOf(questionId) !== -1
+  }
+
+  /** 切换当前题的存疑标记，并连同当前答案一起实时上报 */
+  toggleFlagCurrent(): void {
+    const q = this.getCurrentQuestion()
+    const idx: number = this.flaggedIds.indexOf(q.id)
+    this.flaggedIds = idx === -1
+      ? [...this.flaggedIds, q.id]
+      : this.flaggedIds.filter((id: string) => id !== q.id)
+    // 契约 3.3 的保存接口同时承载答案与存疑：未答题传空串，后端按未答处理
+    this.examService.saveAnswer(this.attemptId, q.id,
+      this.answers.get(q.id) ?? '', this.isQuestionFlagged(q.id))
+      .catch((e: Error) => this.logger.warn(`存疑上报失败（本地已留底）：${e.message}`))
+  }
+
+  /** 答题卡跳题（越界拦截 + 选中态同步） */
+  jumpTo(index: number): void {
+    if (index >= 0 && index < this.questions.length && index !== this.currentIndex) {
+      this.currentIndex = index
+      this.loadSelectionForCurrent()
+    }
+  }
+
+  /**
+   * 切屏上报：View 监听到计数变化后调用。
+   * 客户端只报数不判罚——超没超限、要不要强制交卷由服务端裁决（shouldAutoSubmit）。
+   * 上报失败只记日志：防作弊数据丢一拍，不能把正常考生卡在半路。
+   */
+  async onTabSwitch(count: number): Promise<void> {
+    if (this.attemptId === '' || this.finishedAttemptId !== '') {
+      return
+    }
+    try {
+      const verdict = await this.examService.reportTabSwitch(this.attemptId, count)
+      this.logger.info(`切屏上报：${verdict.tabSwitchCount}/${verdict.tabSwitchLimit}，` +
+        `强制交卷=${verdict.shouldAutoSubmit}`)
+      if (verdict.shouldAutoSubmit) {
+        this.submit('TAB_SWITCH')
+      }
+    } catch (e) {
+      this.logger.warn(`切屏上报失败：${(e as Error).message}`)
+    }
+  }
+
   // ===== 私有 =====
 
   // 把当前题的已存答案回填到渲染态（换题、开考回填都走它）
@@ -228,13 +293,6 @@ export class ExamDetailViewModel extends BaseViewModel {
     }
   }
 
-  /** 该题当前的存疑标记。实时保存要原样带回——后端缺该字段就按 false 覆盖写 */
-  private flagOf(questionId: string): boolean {
-    const q: QuestionItem | undefined = this.questions.find(
-      (it: QuestionItem): boolean => it.id === questionId)
-    return q !== undefined && q.isFlagged === true
-  }
-
   // 写唯一事实源并尽力实时保存（保存失败只记日志，不打断作答；交卷时以服务端记录为准）
   private persistAnswer(questionId: string, answer: string): void {
     if (answer === '') {
@@ -242,7 +300,9 @@ export class ExamDetailViewModel extends BaseViewModel {
     } else {
       this.answers.set(questionId, answer)
     }
-    this.examService.saveAnswer(this.attemptId, questionId, answer, this.flagOf(questionId))
+    // 存疑标记以 flaggedIds 为唯一事实源：questions[].isFlagged 只是开考那一刻的快照，
+    // 用它回传会把用户刚打的标记抹掉（后端缺该字段即按 false 覆盖写）。
+    this.examService.saveAnswer(this.attemptId, questionId, answer, this.isQuestionFlagged(questionId))
       .then((): void => {
         this.logger.info(`答案已保存：${questionId} → ${answer}`)
       })
