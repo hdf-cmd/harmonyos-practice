@@ -54,9 +54,13 @@ export struct LoginPage {
           // 标题跟着 isReg 变：登录态"欢迎使用智题通"、注册态"注册智题通账号"
           // FONT_HEADLINE_LG_MOBILE（22）是方案A 该屏 h1 的字阶，与旧别名 FONT_TITLE 同值，
           // 换名不换渲染，只为把本文件从待废弃的四个旧别名里迁出去（见计划的全局门禁）。
+          // 字重按 spec §3.3 该档＝600（WEIGHT_SEMI），不再用系统枚举的 Bold(700)。
+          // 行高按 controller 裁决"只给可能换行的文字配"：标题是整句文案，窄窗/折叠屏分屏下
+          // 会折行，且父容器是自适应高度（不裁切），故配 LINE_HEADLINE_LG_MOBILE(30)。
           Text(this.viewModel.isReg ? '注册智题通账号' : '欢迎使用智题通')
             .fontSize(CommonConstants.FONT_HEADLINE_LG_MOBILE)
-            .fontWeight(FontWeight.Bold)
+            .fontWeight(CommonConstants.WEIGHT_SEMI)
+            .lineHeight(CommonConstants.LINE_HEADLINE_LG_MOBILE)
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .margin({ top: CommonConstants.SPACE_M })
         }
@@ -66,31 +70,50 @@ export struct LoginPage {
 
         // 下部表单区：方案A 把 Logo 以下的表单整体收进一张白卡
         // 卡面令牌：圆角 RADIUS_CARD + 内边距 SPACE_M + Level 1 阴影
+        // 卡内子元素一律 width('100%')：卡本身已满宽且带 16 内边距，再套 80% 会变成
+        // "卡满宽、输入框悬空"的双层留白（计划 Task 4 修订条）。
         Column() {
           Column({ space: CommonConstants.SPACE_M }) {
+            // 输入框：静息灰底 + 发丝描边 → 聚焦转白底 + 1.5 主色描边（spec §4 F01）。
+            // 聚焦态走 stateStyles 的 focused 键，和下面按钮的 pressed 同一机制：
+            // 纯声明式样式，不加 onFocus/onBlur、不加页面状态、不改行为。
             TextInput({ placeholder: '请输入用户名', text: this.viewModel.username })
-              .width('80%')
+              .width('100%')
               .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
               .borderRadius(CommonConstants.RADIUS_INPUT)
-              .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+              .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
               .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
               .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
               .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
+              .stateStyles({
+                focused: {
+                  .backgroundColor(CommonConstants.COLOR_CARD_BG)
+                  .border({ width: 1.5, color: CommonConstants.COLOR_BORDER_FOCUS })
+                }
+              })
               .onChange((value: string) => {
                 this.viewModel.username = value
               })
 
             TextInput({ placeholder: '请输入密码', text: this.viewModel.password })
-              .width('80%')
+              .width('100%')
               .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
               .borderRadius(CommonConstants.RADIUS_INPUT)
-              .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+              .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
               .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
               .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
               .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
               .type(InputType.Password)
+              .stateStyles({
+                focused: {
+                  .backgroundColor(CommonConstants.COLOR_CARD_BG)
+                  .border({ width: 1.5, color: CommonConstants.COLOR_BORDER_FOCUS })
+                }
+              })
               .onChange((value: string) => {
                 this.viewModel.password = value
               })
@@ -98,26 +121,37 @@ export struct LoginPage {
             // 注册态才出现的确认密码框（条件渲染由 isReg 驱动）
             if (this.viewModel.isReg) {
               TextInput({ placeholder: '请再次输入密码', text: this.viewModel.confirmPwd })
-                .width('80%')
+                .width('100%')
                 .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
                 .borderRadius(CommonConstants.RADIUS_INPUT)
-                .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+                .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
                 .fontSize(CommonConstants.FONT_BODY_LG)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
                 .fontColor(CommonConstants.COLOR_TEXT_MAIN)
                 .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
                 .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
                 .type(InputType.Password)
+                .stateStyles({
+                  focused: {
+                    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+                    .border({ width: 1.5, color: CommonConstants.COLOR_BORDER_FOCUS })
+                  }
+                })
                 .onChange((value: string) => {
                   this.viewModel.confirmPwd = value
                 })
             }
 
             // 错误提示区（errorMessage 非空才渲染）
+            // 服务端/VM 下发的变长文案，会折行 → 属"可换行文字"，配 LINE_BODY_SM；
+            // 权重按字阶表 BODY_SM＝400。
             if (this.viewModel.errorMessage !== '') {
               Text(this.viewModel.errorMessage)
                 .fontSize(CommonConstants.FONT_BODY_SM)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                .lineHeight(CommonConstants.LINE_BODY_SM)
                 .fontColor(CommonConstants.COLOR_ERROR)
-                .width('80%')
+                .width('100%')
             }
 
             // 按钮文案三态：加载中 / 注册 / 登录；加载中禁用点击，防重复提交
@@ -127,7 +161,7 @@ export struct LoginPage {
               // ButtonType.Normal 不是装饰：Capsule 形态由组件自己定圆角，会把 .borderRadius() 吃掉，
               // 令牌里的 RADIUS_BUTTON(8) 落不了地。改 Normal 才让 8vp 圆角真正生效。
               .type(ButtonType.Normal)
-              .width('80%')
+              .width('100%')
               .height(CommonConstants.BTN_HEIGHT)
               .borderRadius(CommonConstants.RADIUS_BUTTON)
               .fontSize(CommonConstants.FONT_BODY_LG)
@@ -151,12 +185,16 @@ export struct LoginPage {
               })
 
             // 登录/注册切换
+            // 两段都是单行短标签（最多 5 字，Row 内不折行）→ 按裁决只配字重、不配行高，
+            // 套行高会把 Row 撑高并造成基线错位；字阶 BODY_MD 对应字重 400。
             Row() {
               Text(this.viewModel.isReg ? '已有账号？' : '没有账号？')
                 .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
                 .fontColor(CommonConstants.COLOR_TEXT_SUB)
               Text(this.viewModel.isReg ? '返回登录' : '立即注册')
                 .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
                 .fontColor(CommonConstants.COLOR_PRIMARY)
                 .onClick(() => {
                   this.viewModel.isReg = !this.viewModel.isReg
@@ -179,6 +217,11 @@ export struct LoginPage {
       }
       .width('100%')
       .height('100%')
+      // 页面左右边距 16（spec §3.4）。这层 padding 是白卡不贴屏边的前提：
+      // 卡自身是 width('100%')，父容器不给横向内边距的话，RADIUS_CARD 的圆角和
+      // Level 1 阴影会被屏边切半。ArkUI 的百分比宽度按父容器"减去 padding 后的内容区"
+      // 解析（子组件拿到的是收缩后的约束），所以卡不会被这 32vp 顶出屏外。
+      .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
       .backgroundColor(CommonConstants.COLOR_BG_PAGE)
       .justifyContent(FlexAlign.Start)
       .alignItems(HorizontalAlign.Center)
