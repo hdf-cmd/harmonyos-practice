@@ -112,9 +112,30 @@ export struct ExamDetailPage {
   // 答题卡面板：四种格子态——当前=主色描边、已答=成功浅底、存疑=告警浅底 + 右上实心点、未答=静息浅底。
   // 底色、描边、圆点是三层独立叠加，谁都不覆盖谁：第 7 题那种"存疑 + 当前"的复合态
   // 必须同时是告警浅底、主色 2vp 描边，并且带点（spec §4 F06 的复合态就靠叠放成立，不靠三元互斥）。
+  // 抽屉结构（F06）：手柄条 → 标题 → 图例 → 网格 → 进度汇总 → 左次右主双按钮。
   @Builder
   AnswerCardSheet() {
-    Column({ space: CommonConstants.SPACE_M }) {
+    // 根 Column 的 space 管的是"容器与容器之间"的纵向节奏（手柄块/标题/图例/网格/汇总/按钮行
+    // 是六个平级区块），正是 §3.4 两轴模型的纵向轴 → 12，与网格里 rowsGap 同源。
+    // 不受这条管的是元素内部排版偏移（边界条款）：下面手柄条自己那 12 的下边距、
+    // 以及抽屉 16 的内边距（横向 gutter / 卡内边距两轴），都按原值保留。
+    Column({ space: CommonConstants.SPACE_CARD_GAP }) {
+      // 手柄条（spec §4 F06「抽屉圆角 16 + 手柄条」）：外层 Column 只干一件事——把 36vp 的小条居中；
+      // 条自身那 12 下边距是它到标题的内部偏移，与根 Column 的 12 叠加后手柄与标题实际间距 24，
+      // 正是手柄要的"和标题拉开一点"。
+      Column() {
+        Column()
+          .width(36)
+          .height(4)
+          .borderRadius(2)
+          .backgroundColor(CommonConstants.COLOR_BORDER_HAIRLINE)
+          .margin({ bottom: CommonConstants.SPACE_COMPACT })
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Center)
+
+      // 标题行：左标题；右侧"关闭"由半模态自带的关闭钮承担（Step 3 明确保持 showClose: true）。
+      // 不再往内容里塞第二个关闭控件——同一张抽屉上两个关闭入口既重复，又会和系统 X 抢右上角。
       Text('答题卡')
         .fontSize(CommonConstants.FONT_HEADLINE_MD)
         .fontWeight(CommonConstants.WEIGHT_SEMI)
@@ -174,6 +195,63 @@ export struct ExamDetailPage {
       .rowsGap(CommonConstants.SPACE_CARD_GAP)
       .columnsGap(CommonConstants.SPACE_M)
       .layoutWeight(1)
+
+      // ===== 进度汇总行（DESIGN.md F06：抽屉底部要有"已答 x / y"与剩余时间）=====
+      // x 会当场跳，靠的是 answeredCount() 里读到的 answers 已 @Trace（VM 那个字段的注释）：
+      //   渲染依赖在 build 期建立，抽屉开着答下一题，这个 Text 与网格里那一格同时失效重绘。
+      // 两处都是单行短标签、不参与换行，故不配 lineHeight（§3.3 只给可换行正文配行高）。
+      Row() {
+        Text('已答 ' + this.vm.answeredCount() + ' / ' + this.vm.questions.length)
+          .fontSize(CommonConstants.FONT_BODY_SM)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
+          .fontColor(CommonConstants.COLOR_TEXT_SUB)
+        Blank()   // 弹性空隙：把剩余时间推到行尾
+        Text('剩余 ' + this.vm.getRemainingText())
+          .fontSize(CommonConstants.FONT_BODY_SM)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+          .fontColor(CommonConstants.COLOR_WARN)
+      }
+      .width('100%')
+
+      // ===== 双按钮：左次右主 40% / 60%（layoutWeight 2:3）=====
+      // 导航仍是单一出口：提交只调 vm.submit('MANUAL') 点灯，跳结果页由上面的
+      //   @Monitor('vm.finishedAttemptId') 负责——按钮里绝不 push/replace，与页内主按钮同一条路。
+      Row({ space: CommonConstants.SPACE_M }) {
+        Button('继续作答')
+          .type(ButtonType.Normal)
+          .layoutWeight(2)
+          .height(CommonConstants.BTN_HEIGHT)
+          .borderRadius(CommonConstants.RADIUS_BUTTON)
+          .fontSize(CommonConstants.FONT_BODY_LG)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // 按钮默认字重即 500，写明不改观感（与页内四钮一致）
+          .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+          .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+          .onClick(() => {
+            this.showAnswerCard = false
+          })
+
+        Button('提交试卷')
+          .type(ButtonType.Normal)
+          .layoutWeight(3)
+          .height(CommonConstants.BTN_HEIGHT)
+          .borderRadius(CommonConstants.RADIUS_BUTTON)
+          .fontSize(CommonConstants.FONT_BODY_LG)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+          .fontColor(CommonConstants.COLOR_CARD_BG)
+          .backgroundColor(CommonConstants.COLOR_PRIMARY)
+          // 按下态与页内那颗"提交试卷"完全同机制：同一个动作就该有同一种按压反馈，
+          //   否则抽屉里点下去不变色，用户会以为没按到。
+          .stateStyles({
+            pressed: {
+              .backgroundColor(CommonConstants.COLOR_PRIMARY_PRESSED)
+            }
+          })
+          .onClick(() => {
+            this.showAnswerCard = false
+            this.vm.submit('MANUAL')
+          })
+      }
+      .width('100%')
     }
     .padding(CommonConstants.SPACE_M)
     .width('100%')
@@ -452,8 +530,18 @@ export struct ExamDetailPage {
                   this.showAnswerCard = true
                 })
                 .bindSheet(this.showAnswerCard, this.AnswerCardSheet(), {
-                  height: 440,
+                  // 520 = 原 440 + 汇总行 + 按钮行这两块新内容的高度；
+                  // detents 给两档吸附：520 全量（含按钮），300 只看网格（网格自带滚动，压缩后不裁切）。
+                  height: 520,
+                  detents: [520, 300],
                   showClose: true,
+                  // 圆角 16 只给上方两角（§4 F06「抽屉圆角 16」）：半模态贴底弹出，下方两角在屏外，给了也看不见。
+                  radius: { topLeft: CommonConstants.RADIUS_CARD, topRight: CommonConstants.RADIUS_CARD },
+                  backgroundColor: CommonConstants.COLOR_CARD_BG,
+                  maskColor: CommonConstants.COLOR_OVERLAY,
+                  // §3.4 Level 4（对话框/抽屉）那一档阴影，此前 SHADOW_SHEET 在全仓零引用——
+                  //   本抽屉是它唯一的落点（bindSheet 的 shadow 收 ShadowOptions）。
+                  shadow: CommonConstants.SHADOW_SHEET,
                   onDisappear: () => {
                     this.showAnswerCard = false
                   }
