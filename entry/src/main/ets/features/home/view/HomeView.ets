@@ -140,6 +140,10 @@ export struct HomeView {
           .indicator(true)
           .height(160)
           .borderRadius(CommonConstants.RADIUS_CARD)
+          // clip(true) 是圆角真正生效的前提：ArkUI 容器默认不裁剪子节点，
+          // 而六个 Image 是 100% 宽 × 160 高的满铺内容——不裁剪就是"方图盖在圆框上"，
+          // 圆角轮播等于没落地（spec §4 F02）。视觉只装机可验，这里只保证属性链成立。
+          .clip(true)
           .margin({ bottom: CommonConstants.SPACE_L })
 
           // 推荐试卷标题（分区标题档 20/600 + 配对行高）
