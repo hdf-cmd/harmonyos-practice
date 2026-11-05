@@ -1,0 +1,285 @@
+<!DOCTYPE html><html class="h-full" lang="zh-CN" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><title>智题通</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#0050e3", "on-secondary-container": "#576475", "primary-fixed": "#dce1ff", "surface-variant": "#e0e3e5", "secondary": "#525f70", "primary": "#0044c4", "surface-container-high": "#e6e8ea", "tertiary-fixed": "#ffdbcd", "error-container": "#ffdad6", "outline": "#737687", "on-secondary-fixed": "#0f1c2b", "background": "#f8f9fb", "secondary-fixed": "#d6e4f8", "on-error-container": "#93000a", "on-error": "#ffffff", "on-surface": "#191c1e", "inverse-on-surface": "#eff1f3", "on-primary": "#ffffff", "tertiary-container": "#b34600", "surface-bright": "#f8f9fb", "on-tertiary-container": "#ffe3d8", "primary-fixed-dim": "#b5c4ff", "on-surface-variant": "#434656", "secondary-fixed-dim": "#bac8db", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00164e", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#003baf", "on-primary-container": "#e4e7ff", "secondary-container": "#d3e1f5", "surface-container-low": "#f2f4f6", "tertiary-fixed-dim": "#ffb596", "on-tertiary-fixed": "#360f00", "inverse-primary": "#b5c4ff", "surface-container-highest": "#e0e3e5", "surface-dim": "#d8dadc", "on-secondary-fixed-variant": "#3b4858", "on-tertiary-fixed-variant": "#7c2e00", "inverse-surface": "#2d3133", "on-background": "#191c1e", "surface": "#f8f9fb", "surface-container": "#eceef0", "primary-container": "#0a59f7", "tertiary": "#8c3500", "error": "#ba1a1a", "on-secondary": "#ffffff", "outline-variant": "#c3c5d8" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "1.5rem", "gutter": "1rem", "space-lg": "1rem", "margin": "1rem", "gutter-tablet": "1.25rem", "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2.5rem", "space-md": "0.75rem", "space-xs": "0.25rem", "space-2xl": "2rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "display-score-mobile": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-sm": ["Inter"], "label-sm": ["Inter"], "display-score": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "caption-unit": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"] }, "fontSize": { "display-score-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "display-score": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "caption-unit": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-14 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="返回" class="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="智题通 Logo" class="h-7 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1USIO1S7PktK3OtKmi69jQPtEdbckNsCVdt74_vST7ktL85yl9QELropqY9Itx_q1GkfxkSgMbwSzM31OjV1lfZFyjpl58zIM6MnIrmxsW6aRo9_y52Lg1Aj5OOFQ3xrHzDux8LzrSthJmwnzZj-AEPzEcpooBbB7nAa42Edsg9-B7yivNFYIQLe18ecJBUZ_lnzyOHpMPbkgEjQs4NHBbyMGrlGluvb0hUugIfGdSJ3Q"><h1 class="text-headline-sm font-headline-sm text-on-surface truncate">HarmonyOS 应用开发 · 阶段测验 03</h1></div></div></header><main class="flex-1 w-full pt-14 pb-safe bg-surface"><div class="flex flex-col w-full pb-24">
+<!-- Persistent Anti-Cheat Monitor Banner -->
+<div class="px-margin pt-space-md pb-space-xs">
+<div class="w-full bg-tertiary-fixed text-on-tertiary-fixed rounded-xl p-space-md shadow-sm flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-tertiary flex-shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-tertiary-fixed font-semibold tracking-tight">检测到切出应用，已记录 2 次，请专心作答</p>
+<p class="font-body-sm text-body-sm text-tertiary mt-0.5">防作弊系统已处于严密监控状态，多次违规将自动强制交卷</p>
+</div>
+</div>
+</div>
+<!-- Paper Title & Real-time Exam HUD Card -->
+<div class="px-margin py-space-sm">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between gap-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">HarmonyOS 应用开发 · 阶段测验 03</h2>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-caption-unit text-caption-unit uppercase font-bold tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          在线监考
+        </span>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<!-- Progress Counter -->
+<div class="flex items-baseline gap-1">
+<span class="font-body-sm text-body-sm text-secondary">第</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary-container font-bold">7</span>
+<span class="font-body-sm text-body-sm text-secondary">题 / 共 25 题</span>
+</div>
+<!-- Countdown Timer -->
+<div class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[18px] text-secondary">schedule</span>
+<span class="font-label-md text-label-md font-mono font-semibold text-on-surface tracking-tight" id="exam-timer">00:37:12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Question Content Card -->
+<div class="px-margin py-space-xs">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-lg">
+<!-- Question Type & Header Details -->
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">
+          多选题
+        </span>
+<span class="font-body-sm text-body-sm text-secondary">本题 4 分 · 漏选得 2 分</span>
+</div>
+<!-- Question Stem -->
+<div class="space-y-1">
+<p class="font-headline-sm text-headline-sm text-on-surface leading-relaxed">
+          关于 HarmonyOS 的 Stage 模型，下列说法正确的是？
+        </p>
+</div>
+<!-- Options List -->
+<div class="flex flex-col gap-space-md" id="options-group">
+<!-- Option A (Checked) -->
+<div aria-checked="true" class="cursor-pointer select-none rounded-xl p-space-md bg-secondary-fixed/30 text-on-surface transition-all flex items-start gap-space-md active:scale-[0.99]" data-option="A" role="checkbox">
+<div class="w-6 h-6 rounded-md bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[18px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-label-md text-label-md font-bold text-primary-container">A.</span>
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">UIAbility 是应用的基本组成单元，具备完整生命周期</p>
+</div>
+</div>
+</div>
+<!-- Option B (Unchecked) -->
+<div aria-checked="false" class="cursor-pointer select-none rounded-xl p-space-md bg-surface-container-low text-secondary hover:bg-surface-container transition-all flex items-start gap-space-md active:scale-[0.99]" data-option="B" role="checkbox">
+<div class="w-6 h-6 rounded-md bg-surface-container-highest text-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="font-caption-unit text-caption-unit font-bold">B</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-label-md text-label-md font-semibold text-secondary">B.</span>
+<p class="font-body-md text-body-md text-secondary leading-snug">每个 UIAbility 都运行在独立线程与独立窗口中</p>
+</div>
+</div>
+</div>
+<!-- Option C (Checked) -->
+<div aria-checked="true" class="cursor-pointer select-none rounded-xl p-space-md bg-secondary-fixed/30 text-on-surface transition-all flex items-start gap-space-md active:scale-[0.99]" data-option="C" role="checkbox">
+<div class="w-6 h-6 rounded-md bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[18px] font-bold">check</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-label-md text-label-md font-bold text-primary-container">C.</span>
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">ExtensionAbility 用于提供应用对用户的扩展能力</p>
+</div>
+</div>
+</div>
+<!-- Option D (Unchecked) -->
+<div aria-checked="false" class="cursor-pointer select-none rounded-xl p-space-md bg-surface-container-low text-secondary hover:bg-surface-container transition-all flex items-start gap-space-md active:scale-[0.99]" data-option="D" role="checkbox">
+<div class="w-6 h-6 rounded-md bg-surface-container-highest text-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="font-caption-unit text-caption-unit font-bold">D</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-label-md text-label-md font-semibold text-secondary">D.</span>
+<p class="font-body-md text-body-md text-secondary leading-snug">Stage 模型与 FA 模型可以在同一应用内直接混用</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation & Action Row -->
+<div class="px-margin py-space-md">
+<div class="grid grid-cols-4 gap-space-sm">
+<!-- Previous Question Button -->
+<button class="flex flex-col items-center justify-center py-2.5 px-1 bg-surface-container-lowest text-secondary rounded-xl shadow-sm hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] mb-0.5">arrow_back_ios_new</span>
+<span class="font-label-sm text-label-sm">上一题</span>
+</button>
+<!-- Next Question Button -->
+<button class="flex flex-col items-center justify-center py-2.5 px-1 bg-surface-container-lowest text-primary-container rounded-xl shadow-sm hover:bg-surface-container active:scale-95 transition-all font-semibold" type="button">
+<span class="material-symbols-outlined text-[20px] mb-0.5">arrow_forward_ios</span>
+<span class="font-label-sm text-label-sm">下一题</span>
+</button>
+<!-- Flagged State (Active Highlighted) -->
+<button class="flex flex-col items-center justify-center py-2.5 px-1 bg-tertiary-fixed text-tertiary rounded-xl shadow-sm active:scale-95 transition-all font-semibold" id="flag-button" type="button">
+<span class="material-symbols-outlined text-[20px] mb-0.5 text-tertiary" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+<span class="font-label-sm text-label-sm">已存疑</span>
+</button>
+<!-- Answer Card / Matrix Trigger -->
+<button class="flex flex-col items-center justify-center py-2.5 px-1 bg-surface-container-lowest text-secondary rounded-xl shadow-sm hover:bg-surface-container active:scale-95 transition-all" id="card-trigger" type="button">
+<span class="material-symbols-outlined text-[20px] mb-0.5">grid_view</span>
+<span class="font-label-sm text-label-sm">答题卡</span>
+</button>
+</div>
+</div>
+<!-- Answer Sheet Drawer Modal (Hidden by Default) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-end justify-center" id="answer-modal">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-t-2xl p-space-lg shadow-xl flex flex-col gap-space-lg max-h-[663px]">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">答题总览</h3>
+<p class="font-body-sm text-body-sm text-secondary">已完成 18 / 25 题 · 存疑 2 题</p>
+</div>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary active:scale-95" id="close-modal" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Overview Chips / Indicators -->
+<div class="flex items-center gap-space-md font-caption-unit text-caption-unit text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-primary-container"></span>
+<span class="">已作答</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-tertiary-fixed"></span>
+<span class="">存疑</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-surface-container-high"></span>
+<span class="">未答</span>
+</div>
+</div>
+<!-- Question Number Matrix Grid -->
+<div class="grid grid-cols-5 gap-space-sm overflow-y-auto py-1">
+<!-- 1-6 completed -->
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center" type="button">1</button>
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center" type="button">2</button>
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center" type="button">3</button>
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center" type="button">4</button>
+<button class="h-10 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md font-bold flex items-center justify-center" type="button">5</button>
+<button class="h-10 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center" type="button">6</button>
+<!-- Current Question 7 -->
+<button class="h-10 rounded-lg bg-secondary-container text-on-secondary-container font-label-md text-label-md font-bold flex items-center justify-center shadow-sm" type="button">7</button>
+<button class="h-10 rounded-lg bg-surface-container-high text-secondary font-label-md text-label-md flex items-center justify-center" type="button">8</button>
+<button class="h-10 rounded-lg bg-surface-container-high text-secondary font-label-md text-label-md flex items-center justify-center" type="button">9</button>
+<button class="h-10 rounded-lg bg-surface-container-high text-secondary font-label-md text-label-md flex items-center justify-center" type="button">10</button>
+</div>
+<button class="w-full py-3 bg-primary-container hover:bg-primary active:scale-[0.98] transition-all text-on-primary font-label-md text-label-md font-semibold rounded-xl text-center shadow-md" id="modal-submit-btn" type="button">
+        确认并返回答题
+      </button>
+</div>
+</div>
+<!-- Bottom Fixed Submission Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-md px-margin py-space-md pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.03)]">
+<div class="w-full max-w-md mx-auto">
+<button class="w-full h-12 bg-primary-container hover:bg-primary active:scale-[0.98] text-on-primary rounded-xl font-label-md text-label-md font-semibold flex items-center justify-center gap-space-sm shadow-md transition-all" id="submit-exam-button" type="button">
+<span class="material-symbols-outlined text-[20px]">task_alt</span>
+<span class="">提交试卷</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Countdown Timer Micro-interaction
+  (function initExamTimer() {
+    let secondsLeft = 37 * 60 + 12;
+    const timerElem = document.getElementById('exam-timer');
+    if (!timerElem) return;
+
+    setInterval(() => {
+      if (secondsLeft <= 0) return;
+      secondsLeft--;
+      const hours = String(Math.floor(secondsLeft / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((secondsLeft % 3600) / 60)).padStart(2, '0');
+      const secs = String(secondsLeft % 60).padStart(2, '0');
+      timerElem.textContent = `${hours}:${mins}:${secs}`;
+    }, 1000);
+  })();
+
+  // Multi-Select Option Toggle Interaction
+  document.querySelectorAll('#options-group > div').forEach((option) => {
+    option.addEventListener('click', () => {
+      const isChecked = option.getAttribute('aria-checked') === 'true';
+      const indicator = option.querySelector('div:first-child');
+      const letterSpan = option.querySelector('p')?.previousElementSibling;
+      const textElem = option.querySelector('p');
+      const labelChar = option.getAttribute('data-option');
+
+      if (isChecked) {
+        option.setAttribute('aria-checked', 'false');
+        option.className = 'cursor-pointer select-none rounded-xl p-space-md bg-surface-container-low text-secondary hover:bg-surface-container transition-all flex items-start gap-space-md active:scale-[0.99]';
+        indicator.className = 'w-6 h-6 rounded-md bg-surface-container-highest text-secondary flex items-center justify-center flex-shrink-0 mt-0.5';
+        indicator.innerHTML = `<span class="font-caption-unit text-caption-unit font-bold">${labelChar}</span>`;
+        if (letterSpan) letterSpan.className = 'font-label-md text-label-md font-semibold text-secondary';
+        if (textElem) textElem.className = 'font-body-md text-body-md text-secondary leading-snug';
+      } else {
+        option.setAttribute('aria-checked', 'true');
+        option.className = 'cursor-pointer select-none rounded-xl p-space-md bg-secondary-fixed/30 text-on-surface transition-all flex items-start gap-space-md active:scale-[0.99]';
+        indicator.className = 'w-6 h-6 rounded-md bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm';
+        indicator.innerHTML = '<span class="material-symbols-outlined text-[18px] font-bold">check</span>';
+        if (letterSpan) letterSpan.className = 'font-label-md text-label-md font-bold text-primary-container';
+        if (textElem) textElem.className = 'font-body-md text-body-md text-on-surface font-medium leading-snug';
+      }
+    });
+  });
+
+  // Flag Toggle
+  const flagBtn = document.getElementById('flag-button');
+  if (flagBtn) {
+    flagBtn.addEventListener('click', () => {
+      const isFlagged = flagBtn.classList.contains('bg-tertiary-fixed');
+      if (isFlagged) {
+        flagBtn.className = 'flex flex-col items-center justify-center py-2.5 px-1 bg-surface-container-lowest text-secondary rounded-xl shadow-sm hover:bg-surface-container active:scale-95 transition-all';
+        flagBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[20px] mb-0.5 text-secondary">bookmark_border</span>
+          <span class="font-label-sm text-label-sm">标记存疑</span>
+        `;
+      } else {
+        flagBtn.className = 'flex flex-col items-center justify-center py-2.5 px-1 bg-tertiary-fixed text-tertiary rounded-xl shadow-sm active:scale-95 transition-all font-semibold';
+        flagBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[20px] mb-0.5 text-tertiary" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+          <span class="font-label-sm text-label-sm">已存疑</span>
+        `;
+      }
+    });
+  }
+
+  // Answer Card Modal Handling
+  const answerModal = document.getElementById('answer-modal');
+  const cardTrigger = document.getElementById('card-trigger');
+  const closeModal = document.getElementById('close-modal');
+  const modalSubmitBtn = document.getElementById('modal-submit-btn');
+
+  if (cardTrigger && answerModal) {
+    cardTrigger.addEventListener('click', () => {
+      answerModal.classList.remove('hidden');
+      answerModal.classList.add('flex');
+    });
+  }
+
+  const hideModal = () => {
+    if (answerModal) {
+      answerModal.classList.add('hidden');
+      answerModal.classList.remove('flex');
+    }
+  };
+
+  if (closeModal) closeModal.addEventListener('click', hideModal);
+  if (modalSubmitBtn) modalSubmitBtn.addEventListener('click', hideModal);
+</script></main>
+
+
+
+</body></html>

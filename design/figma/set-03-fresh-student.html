@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>智题通 · 方向三 明快年轻 · 学生向</title>
+<style>
+:root{
+  --paper:#F7F5F0; --card:#FFFFFF; --ink:#2B2440; --ink2:#6B6482; --ink3:#A9A3BC;
+  --violet:#6C5CE7; --coral:#FF7A59; --mint:#35C8A0; --sun:#FFC94D; --blue:#4A90E2;
+  --violet-s:#EFEAFE; --coral-s:#FFF0EA; --mint-s:#E6F8F3; --sun-s:#FFF6E0; --blue-s:#EDF4FD;
+  --r-l:28px; --r-m:20px; --r-s:14px;
+  --sh-v:0 12px 30px rgba(108,92,231,.14);
+  --sh-c:0 10px 26px rgba(255,122,89,.16);
+  --sh-m:0 10px 24px rgba(53,200,160,.15);
+  --sh-w:0 8px 22px rgba(43,36,64,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#E9E6DF;color:var(--ink);font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;padding:48px 56px 80px;}
+.page-title{font-size:30px;font-weight:800;letter-spacing:1px;margin-bottom:8px;}
+.page-sub{font-size:14px;color:var(--ink2);margin-bottom:40px;}
+.frames{display:flex;flex-wrap:wrap;gap:64px 40px;align-items:flex-start;}
+.cell{display:flex;flex-direction:column;align-items:flex-start;}
+.frame-label{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--ink);}
+.phone{width:390px;height:844px;background:var(--paper);border-radius:34px;overflow:hidden;box-shadow:var(--sh-w);display:flex;flex-direction:column;}
+.board{width:590px;height:844px;overflow:hidden;background:var(--paper);border-radius:34px;box-shadow:var(--sh-w);padding:24px 26px;}
+.body{flex:1;display:flex;flex-direction:column;padding:0 16px;gap:12px;overflow:hidden;}
+.h1{font-size:22px;font-weight:800;}
+.h2{font-size:17px;font-weight:800;}
+.h3{font-size:15px;font-weight:700;}
+.t1{font-size:14px;}
+.t2{font-size:12px;}
+.t3{font-size:10px;}
+.muted{color:var(--ink2);}
+.faint{color:var(--ink3);}
+.row{display:flex;align-items:center;}
+.between{justify-content:space-between;}
+.gap6{gap:6px;}.gap8{gap:8px;}.gap10{gap:10px;}.gap12{gap:12px;}.gap14{gap:14px;}
+.card{background:var(--card);border-radius:var(--r-m);box-shadow:var(--sh-w);padding:14px;}
+.chip{border-radius:999px;padding:7px 14px;font-size:13px;font-weight:600;background:var(--card);color:var(--ink2);box-shadow:var(--sh-w);}
+.chip.on{background:var(--violet);color:#fff;box-shadow:var(--sh-v);}
+.tag{border-radius:999px;padding:3px 9px;font-size:11px;font-weight:700;}
+.tag.v{background:var(--violet-s);color:var(--violet);}
+.tag.c{background:var(--coral-s);color:var(--coral);}
+.tag.m{background:var(--mint-s);color:#1E9E7C;}
+.tag.s{background:var(--sun-s);color:#B8860B;}
+.tag.b{background:var(--blue-s);color:var(--blue);}
+.btn{border-radius:999px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.btn.pri{background:linear-gradient(135deg,#7D6BFF,#6C5CE7 55%,#5A48D6);color:#fff;box-shadow:var(--sh-v);}
+.btn.ghost{background:var(--violet-s);color:var(--violet);}
+.btn.line{background:var(--card);color:var(--ink2);border:1.5px solid #E4E0F2;}
+.bar{height:8px;border-radius:999px;background:#ECE8F6;overflow:hidden;}
+.bar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFC94D,#FF7A59);}
+.statusbar{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 20px 0 22px;font-size:12px;font-weight:700;}
+.navbar{height:48px;display:flex;align-items:center;justify-content:space-between;}
+.tabbar{height:74px;background:var(--card);border-radius:28px 28px 0 0;box-shadow:0 -8px 24px rgba(43,36,64,.06);display:flex;align-items:flex-start;padding-top:12px;}
+.tabbar .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--ink3);font-weight:600;}
+.tabbar .tab.on{color:var(--violet);}
+.ico{width:22px;height:22px;display:block;flex:none;}
+.ico.s{width:18px;height:18px;}
+.scroll{flex:1;display:flex;flex-direction:column;gap:12px;overflow:hidden;}
+.sec-title{display:flex;align-items:center;justify-content:space-between;}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex:none;}
+/* ---- F00–F03 ---- */
+.homebar{height:26px;display:flex;align-items:center;justify-content:center;flex:none;}
+.homebar>i{width:126px;height:5px;border-radius:999px;background:rgba(43,36,64,.24);display:block;}
+.board-h{font-size:19px;font-weight:800;}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.sw{display:flex;gap:7px;align-items:center;background:#fff;border-radius:11px;padding:4px 7px;}
+.sw span{white-space:nowrap;}
+.sw b{width:18px;height:18px;border-radius:6px;flex:none;box-shadow:inset 0 0 0 1px rgba(43,36,64,.10);}
+.blk{background:#fff;border-radius:20px;padding:12px 13px;box-shadow:var(--sh-w);}
+.blk-t{font-size:12px;font-weight:800;color:var(--violet);letter-spacing:1px;margin-bottom:8px;}
+.demo-r{border-radius:999px;background:var(--violet-s);height:26px;}
+.demo-s{border-radius:8px;background:var(--violet-s);height:26px;}
+.field{background:#fff;border-radius:14px;padding:11px 14px;box-shadow:var(--sh-w);display:flex;align-items:center;gap:9px;}
+.field.ph{color:var(--ink3);font-size:13px;}
+.field.vl{color:var(--ink);font-size:15px;font-weight:600;}
+.field.on{box-shadow:0 0 0 2px rgba(108,92,231,.5),var(--sh-w);}
+.dots{display:flex;gap:5px;align-items:center;}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--ink);display:block;}
+.sw-on{width:46px;height:27px;border-radius:999px;background:var(--mint);display:flex;align-items:center;padding:0 3px;justify-content:flex-end;}
+.sw-off{width:46px;height:27px;border-radius:999px;background:#DCD7EA;display:flex;align-items:center;padding:0 3px;justify-content:flex-start;}
+.sw-on i,.sw-off i{width:21px;height:21px;border-radius:50%;background:#fff;display:block;box-shadow:0 2px 5px rgba(43,36,64,.18);}
+.subject{display:flex;flex-direction:column;justify-content:space-between;border-radius:20px;padding:12px;height:104px;color:#fff;}
+.subject .nm{font-size:15px;font-weight:800;line-height:1.25;}
+.dash{flex:1;display:flex;flex-direction:column;gap:8px;justify-content:flex-end;align-items:flex-start;padding-bottom:8px;}
+.tick{display:flex;gap:5px;align-items:center;}
+.tick i{width:7px;height:7px;border-radius:50%;background:#DDD6EE;display:block;}
+.tick i.on{width:20px;border-radius:999px;background:var(--violet);}
+.peek{width:14px;border-radius:0 20px 20px 0;flex:none;}
+/* ---- F04–F06 ---- */
+.spine{width:6px;border-radius:999px;flex:none;}
+.rowcard{display:flex;background:#fff;border-radius:20px;box-shadow:var(--sh-w);overflow:hidden;}
+.pips{display:flex;gap:4px;align-items:center;}
+.pips i{width:8px;height:8px;border-radius:50%;background:#E4E0F2;display:block;}
+.pips i.f{background:var(--violet);}
+.badge{border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800;flex:none;}
+.badge.g{background:var(--mint);color:#fff;}
+.badge.o{background:var(--coral);color:#fff;}
+.badge.n{background:#EFEDF6;color:var(--ink3);}
+.bub{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;}
+.bub.d{width:21px;height:21px;font-size:10px;background:var(--mint);color:#fff;}
+.bub.f{width:21px;height:21px;font-size:10px;background:var(--coral);color:#fff;}
+.bub.n{width:21px;height:21px;font-size:10px;background:#fff;box-shadow:inset 0 0 0 1.6px #E2DDEC;color:var(--ink3);}
+.bub.c{width:29px;height:29px;font-size:14px;background:linear-gradient(135deg,#7D6BFF,#6C5CE7);color:#fff;box-shadow:var(--sh-v);}
+.trail{display:flex;align-items:center;gap:3px;}
+.opt{display:flex;gap:11px;align-items:flex-start;background:#fff;border-radius:20px;padding:12px 13px;box-shadow:var(--sh-w);border:2px solid rgba(226,222,239,.9);}
+.opt.on{border-color:var(--violet);background:var(--violet-s);box-shadow:var(--sh-v);}
+.lt{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:#F1EFF7;color:var(--ink2);flex:none;}
+.opt.on .lt{background:var(--violet);color:#fff;}
+.pill{height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:800;}
+.phone.rel{position:relative;}
+.mask{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(43,36,64,.42);}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-radius:28px 28px 0 0;padding:15px 16px 10px;box-shadow:0 -16px 40px rgba(43,36,64,.22);}
+.cell-g{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.qc{height:47px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;position:relative;}
+.qc.d{background:var(--mint);color:#fff;}
+.qc.f{background:var(--coral);color:#fff;}
+.qc.n{background:#fff;color:var(--ink3);box-shadow:inset 0 0 0 1.6px #E2DDEC;}
+.qc.cur{box-shadow:0 0 0 3px #4A90E2;}
+.qc.sm{width:26px;height:26px;border-radius:8px;font-size:10px;}
+.bkm{position:absolute;top:-5px;right:-5px;flex:none;}
+/* ---- F07–F09 ---- */
+.qc.mini{height:34px;border-radius:11px;font-size:12px;}
+.stat{flex:1;background:#fff;border-radius:16px;padding:8px 6px;text-align:center;box-shadow:var(--sh-w);}
+.strip{border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:9px;}
+.rib{width:8px;flex:none;}
+.talk{background:var(--violet-s);border-radius:4px 18px 18px 18px;padding:9px 12px;}
+.menu{display:flex;align-items:center;gap:11px;background:#fff;padding:12px 13px;box-shadow:var(--sh-w);}
+.menu+.menu{border-top:1px solid #F1EEF7;}
+.tile{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+.fab{align-self:flex-end;background:linear-gradient(135deg,#7D6BFF,#6C5CE7);color:#fff;border-radius:999px;height:46px;padding:0 18px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;box-shadow:var(--sh-v);}
+.opt.slim{padding:7px 11px;gap:9px;}
+.opt.slim .lt{width:24px;height:24px;font-size:12px;}
+.f08 .opt.slim{padding:5px 8px;gap:7px;}
+.f08 .opt2{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.f08 .qcard{padding:8px 10px !important;}
+/* ---- F10–F12 ---- */
+.score-ring{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;position:static;}
+.rec{display:flex;gap:11px;align-items:center;background:#fff;border-radius:20px;padding:11px 12px;box-shadow:var(--sh-w);}
+.cert{border-radius:22px;padding:6px;}
+.cert-in{border-radius:16px;padding:13px 14px;height:100%;display:flex;flex-direction:column;}
+.cert-line{height:1.6px;border-radius:999px;background:linear-gradient(90deg,rgba(176,132,38,.05),rgba(176,132,38,.42),rgba(176,132,38,.05));}
+.fieldrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;}
+.empty{border-radius:20px;background:#fff;box-shadow:var(--sh-w);padding:14px;display:flex;flex-direction:column;align-items:center;gap:7px;}
+</style>
+</head>
+<body>
+<div class="page-title">智题通 · 方向三 明快年轻 · 学生向</div>
+<div class="page-sub">纸感米白底 + 五色学科系统 + 大圆角柔和彩色阴影 · 13 帧（F00–F12）</div>
+<div class="frames">
+<div class="cell">
+<div class="frame-label">F00 设计令牌板</div>
+<div class="board">
+  <div class="row between" style="margin-bottom:12px">
+    <div><div class="board-h">智题通 · 方向三 设计令牌</div><div class="t2 muted">明快年轻 · 学生向 ｜ 纸感米白 + 五色学科系统</div></div>
+    <div class="row gap6"><span class="tag v">v1.0</span><span class="tag m">备考工具</span></div>
+  </div>
+  <div class="grid2" style="grid-template-columns:176px 176px 1fr;gap:10px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="blk">
+        <div class="blk-t">配色系统</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div class="sw"><b style="background:#F7F5F0"></b><span class="t3" style="font-weight:800">#F7F5F0</span><span class="t3 faint" style="margin-left:auto">纸感米白</span></div>
+          <div class="sw"><b style="background:#FFFFFF"></b><span class="t3" style="font-weight:800">#FFFFFF</span><span class="t3 faint" style="margin-left:auto">卡片容器</span></div>
+          <div class="sw"><b style="background:#2B2440"></b><span class="t3" style="font-weight:800">#2B2440</span><span class="t3 faint" style="margin-left:auto">主文字</span></div>
+          <div class="sw"><b style="background:#6B6482"></b><span class="t3" style="font-weight:800">#6B6482</span><span class="t3 faint" style="margin-left:auto">次要文字</span></div>
+          <div class="sw"><b style="background:#6C5CE7"></b><span class="t3" style="font-weight:800">#6C5CE7</span><span class="t3 faint" style="margin-left:auto">高级 · 主按钮</span></div>
+          <div class="sw"><b style="background:#FF7A59"></b><span class="t3" style="font-weight:800">#FF7A59</span><span class="t3 faint" style="margin-left:auto">存疑 · 错题</span></div>
+          <div class="sw"><b style="background:#35C8A0"></b><span class="t3" style="font-weight:800">#35C8A0</span><span class="t3 faint" style="margin-left:auto">已答 · 通过</span></div>
+          <div class="sw"><b style="background:#FFC94D"></b><span class="t3" style="font-weight:800">#FFC94D</span><span class="t3 faint" style="margin-left:auto">中级 · 进度</span></div>
+          <div class="sw"><b style="background:#4A90E2"></b><span class="t3" style="font-weight:800">#4A90E2</span><span class="t3 faint" style="margin-left:auto">初级 · 当前</span></div>
+          <div class="sw"><b style="background:#EFEAFE"></b><span class="t3" style="font-weight:800">#EFEAFE</span><span class="t3 faint" style="margin-left:auto">选中底</span></div>
+        </div>
+      </div>
+      <div class="blk">
+        <div class="blk-t">答题与结果状态</div>
+        <div class="row gap6" style="flex-wrap:wrap;gap:8px">
+          <div class="row gap6"><span class="qc d sm">1</span><span class="t3 faint">已答</span></div>
+          <div class="row gap6"><span class="qc f sm">2</span><span class="t3 faint">存疑</span></div>
+          <div class="row gap6"><span class="qc n sm cur">3</span><span class="t3 faint">当前</span></div>
+          <div class="row gap6"><span class="qc n sm">4</span><span class="t3 faint">未答</span></div>
+        </div>
+        <div class="row gap6" style="margin-top:9px;flex-wrap:wrap"><span class="badge g">通过</span><span class="badge o">未通过</span><span class="badge n">未考</span></div>
+        <div class="t3 faint" style="margin-top:8px;line-height:1.45">选中态：整块描边主紫 + 浅紫底，见 F05 选项卡。</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="blk">
+        <div class="blk-t">学科 / 等级 / 状态 用色规则</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#6C5CE7;flex:none;display:block"></span><span class="t3" style="font-weight:700">鸿蒙应用开发 · 主紫</span></div>
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#4A90E2;flex:none;display:block"></span><span class="t3" style="font-weight:700">ArkTS 语言基础 · 淡蓝</span></div>
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#FF7A59;flex:none;display:block"></span><span class="t3" style="font-weight:700">UI 与交互设计 · 珊瑚</span></div>
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#35C8A0;flex:none;display:block"></span><span class="t3" style="font-weight:700">网络与数据 · 薄荷</span></div>
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#FFC94D;flex:none;display:block"></span><span class="t3" style="font-weight:700">云开发 AGC · 阳光黄</span></div>
+          <div class="row gap6"><span style="width:13px;height:13px;border-radius:5px;background:#2B2440;flex:none;display:block"></span><span class="t3" style="font-weight:700">综合模拟 · 深墨</span></div>
+        </div>
+        <div class="row gap6" style="margin-top:9px;flex-wrap:wrap"><span class="tag b">初级 淡蓝</span><span class="tag s">中级 阳光黄</span><span class="tag v">高级 主紫</span></div>
+        <div class="t3 faint" style="margin-top:7px;line-height:1.45">答题态：薄荷已答 · 珊瑚存疑 · 淡蓝当前 · 灰紫未答；结果态：薄荷通过 · 珊瑚未通过。</div>
+      </div>
+      <div class="blk">
+        <div class="blk-t">字阶样例</div>
+        <div class="row gap8"><span class="t3 faint" style="width:30px;flex:none">30/8</span><span style="font-size:30px;font-weight:800;color:var(--violet);line-height:1.1">78 分</span></div>
+        <div class="row gap8" style="margin-top:5px"><span class="t3 faint" style="width:30px;flex:none">20/8</span><span style="font-size:20px;font-weight:800;line-height:1.2">智题通</span></div>
+        <div class="row gap8" style="margin-top:5px"><span class="t3 faint" style="width:30px;flex:none">16/8</span><span style="font-size:16px;font-weight:800;line-height:1.2">阶段测验 03</span></div>
+        <div class="row gap8" style="margin-top:5px"><span class="t3 faint" style="width:30px;flex:none">14/6</span><span style="font-size:14px;font-weight:600;line-height:1.3">下列说法正确的是？</span></div>
+        <div class="row gap8" style="margin-top:5px"><span class="t3 faint" style="width:30px;flex:none">12/5</span><span class="t2 muted" style="line-height:1.3">共 25 题 · 45 分钟</span></div>
+        <div class="row gap8" style="margin-top:5px"><span class="t3 faint" style="width:30px;flex:none">10/4</span><span class="t3 muted" style="line-height:1.3">最好 78 分 · 中级</span></div>
+      </div>
+      <div class="blk">
+        <div class="blk-t">圆角与阴影</div>
+        <div class="grid4"><div class="demo-r" style="background:var(--violet);height:22px"></div><div class="demo-r" style="height:22px;background:var(--coral)"></div><div class="demo-s" style="background:var(--mint);height:22px"></div><div style="border-radius:6px;height:22px;background:var(--sun)"></div></div>
+        <div class="grid4"><span class="t3 faint">28</span><span class="t3 faint">20</span><span class="t3 faint">14</span><span class="t3 faint">999</span></div>
+        <div style="margin-top:9px;display:flex;flex-direction:column;gap:8px;background:#ECE9F4;border-radius:14px;padding:9px">
+          <div class="row gap8"><div style="width:30px;height:22px;border-radius:9px;background:#fff;box-shadow:var(--sh-v);flex:none"></div><span class="t3 faint" style="line-height:1.3">0 12px 30px rgba(108,92,231,.14)</span></div>
+          <div class="row gap8"><div style="width:30px;height:22px;border-radius:9px;background:#fff;box-shadow:var(--sh-c);flex:none"></div><span class="t3 faint" style="line-height:1.3">0 10px 26px rgba(255,122,89,.16)</span></div>
+          <div class="row gap8"><div style="width:30px;height:22px;border-radius:9px;background:#fff;box-shadow:var(--sh-w);flex:none"></div><span class="t3 faint" style="line-height:1.3">0 8px 22px rgba(43,36,64,.07)</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="blk">
+        <div class="blk-t">组件样例</div>
+        <div class="btn pri" style="height:44px;font-size:14px">登录</div>
+        <div class="row gap8" style="margin-top:8px"><div class="btn ghost" style="height:40px;flex:1;font-size:13px">答题卡</div><div class="btn line" style="height:40px;flex:1;font-size:13px">上一题</div></div>
+        <div class="row gap6" style="margin-top:9px;flex-wrap:wrap"><span class="tag v">多选</span><span class="tag c">答错</span><span class="tag m">答对</span><span class="tag s">存疑</span><span class="tag b">当前</span></div>
+        <div class="row between" style="margin-top:10px;flex-wrap:wrap;gap:6px"><span class="t3 muted">只看错题开关</span><div class="row gap6"><div class="sw-on" style="transform:scale(.76)"><i></i></div><div class="sw-off" style="transform:scale(.76)"><i></i></div></div></div>
+        <div class="field on" style="margin-top:9px;box-shadow:0 0 0 2px rgba(108,92,231,.45)"><span class="ph">请输入用户名</span></div>
+        <div class="field" style="margin-top:7px"><span class="vl">hdf2026</span></div>
+        <div style="margin-top:10px;border-radius:16px;background:#fff;box-shadow:var(--sh-w);padding:8px 6px;display:flex">
+          <div class="tab on" style="flex:1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.4l8 6.8v7.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.6z" stroke="#6C5CE7" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="t3">首页</span></div>
+          <div class="tab" style="flex:1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 5.5h5.5A2.5 2.5 0 0 1 13 8v11a3 3 0 0 0-3-2.5H5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/><path d="M19 5.5h-5.5A2.5 2.5 0 0 0 11 8v11a3 3 0 0 1 3-2.5h5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/></svg><span class="t3">刷题</span></div>
+          <div class="tab" style="flex:1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="#A9A3BC" stroke-width="2"/><path d="M4.6 20c.7-3.6 3.7-5.4 7.4-5.4S18.7 16.4 19.4 20" stroke="#A9A3BC" stroke-width="2" stroke-linecap="round"/></svg><span class="t3">我的</span></div>
+        </div>
+      </div>
+      <div class="blk" style="background:linear-gradient(135deg,#2B2440,#4A3F73);border-radius:20px">
+        <div class="blk-t" style="color:#FFC94D">本套设计要点</div>
+        <div class="t3" style="color:#fff;line-height:1.5">1. 五色一色一义：紫主操作、珊瑚存疑错题、薄荷已答通过、阳光黄进度中级、淡蓝当前初级。</div>
+        <div class="t3" style="color:#fff;line-height:1.5;margin-top:5px">2. 结构差异化：首页横向大卡、答题关卡气泡、答题卡六列方块、证书金框双描边。</div>
+        <div class="t3" style="color:#fff;line-height:1.5;margin-top:5px">3. 亲和不幼稚：44px 热区、14px 题干、带色相柔影，信息效率优先。</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F01 登录 / 注册（登录态）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 24px">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px">
+      <div class="row" style="justify-content:center">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8E7BFF"/><stop offset="1" stop-color="#5A48D6"/></linearGradient></defs><rect x="2" y="2" width="76" height="76" rx="24" fill="url(#lg1)"/><path d="M22 40h12l6-14 8 26 6-12h14" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="22" cy="40" r="4" fill="#FFC94D"/><circle cx="58" cy="40" r="4" fill="#35C8A0"/></svg>
+      </div>
+      <div style="text-align:center"><div class="h1">欢迎使用智题通</div><div class="t2 muted" style="margin-top:6px">备考 HarmonyOS · 冲高级认证</div></div>
+      <div style="background:#fff;border-radius:28px;padding:18px;box-shadow:var(--sh-v)">
+        <div class="field on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="#6C5CE7" stroke-width="2"/><path d="M4.6 20c.7-3.6 3.7-5.4 7.4-5.4S18.7 16.4 19.4 20" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round"/></svg><span class="vl">hdf2026</span><span class="t3 faint" style="margin-left:auto">用户名</span></div>
+        <div style="height:10px"></div>
+        <div class="field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="10.5" width="16" height="10" rx="3" stroke="#A9A3BC" stroke-width="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="#A9A3BC" stroke-width="2" stroke-linecap="round"/></svg><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="t3 faint" style="margin-left:auto">密码</span></div>
+        <div class="t2" style="height:18px;margin-top:8px"></div>
+        <div class="btn pri" style="height:48px;font-size:16px">登录</div>
+        <div class="row" style="justify-content:center;gap:6px;margin-top:14px"><span class="t2 muted">没有账号？</span><span class="t2" style="color:var(--violet);font-weight:800">立即注册</span></div>
+      </div>
+    </div>
+    <div style="height:112px;border-radius:28px 28px 0 0;background:radial-gradient(120px 90px at 18% 100%,rgba(255,201,77,.55),rgba(255,201,77,0) 70%),radial-gradient(150px 100px at 52% 100%,rgba(53,200,160,.42),rgba(53,200,160,0) 72%),radial-gradient(140px 110px at 88% 100%,rgba(108,92,231,.42),rgba(108,92,231,0) 70%),#EFEAFE;display:flex;align-items:flex-end;justify-content:center;gap:10px;padding-bottom:14px">
+      <span class="t3" style="color:#6B6482;font-weight:700">47 套模拟卷</span><span class="t3" style="color:#6B6482;font-weight:700">6 大科目</span><span class="t3" style="color:#6B6482;font-weight:700">电子证书</span>
+    </div>
+    <div class="homebar"><i></i></div>
+  </div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F02 首页</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:14px">
+    <div class="row between"><div><div class="h1">智题通</div><div class="t3 faint">hdf2026 · 备考 HarmonyOS · 冲高级认证</div></div><div class="avatar" style="background:linear-gradient(135deg,#FFC94D,#FF7A59);box-shadow:var(--sh-c)">H</div></div>
+    <div style="background:linear-gradient(135deg,#fff,#F4F1FF);border-radius:28px;padding:13px 15px;box-shadow:var(--sh-v)">
+      <div class="row between">
+        <div class="row gap10"><div class="avatar" style="width:42px;height:42px;font-size:13px;background:linear-gradient(135deg,#7D6BFF,#6C5CE7)">12</div><div><div class="h3">今日备考</div><div class="t3 muted">连续打卡 12 天 · 保持住</div></div></div>
+        <div style="text-align:right"><div style="font-size:19px;font-weight:800;color:var(--violet)">3<span class="t3 faint">/5 组</span></div><div class="t3 faint">今日进度</div></div>
+      </div>
+      <div class="bar" style="margin-top:10px"><i style="width:60%"></i></div>
+    </div>
+    <div class="row" style="gap:7px;overflow:hidden">
+      <div class="chip on" style="font-size:12px;padding:7px 12px">鸿蒙应用开发</div><div class="chip" style="font-size:12px;padding:7px 12px">ArkTS 语言基础</div><div class="chip" style="font-size:12px;padding:7px 12px;background:var(--coral-s);color:var(--coral);box-shadow:none">UI 与交互设计</div><div class="peek" style="height:30px;background:linear-gradient(90deg,#35C8A0,#E6F8F3)"></div>
+    </div>
+    <div class="sec-title" style="margin-top:2px"><span class="h2">推荐试卷</span><div class="tick"><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+    <div style="border-radius:24px;background:#fff;box-shadow:var(--sh-w);overflow:hidden">
+      <div style="background:linear-gradient(115deg,#6C5CE7,#8E7BFF 70%,#4A90E2);padding:9px 13px;display:flex;gap:10px;align-items:center">
+        <span class="t2" style="flex:1;color:#fff;font-weight:700;line-height:1.35">47 套模拟卷已更新 · 覆盖 Stage 模型与分布式数据</span>
+        <div class="tick"><i style="background:rgba(255,255,255,.5)"></i><i style="width:18px;border-radius:999px;background:#FFC94D"></i><i style="background:rgba(255,255,255,.5)"></i><i style="background:rgba(255,255,255,.5)"></i><i style="background:rgba(255,255,255,.5)"></i><i style="background:rgba(255,255,255,.5)"></i></div>
+      </div>
+      <div style="padding:14px 14px 16px">
+        <div class="row between" style="align-items:flex-start"><div style="font-size:16px;font-weight:800;line-height:1.4;flex:1">HarmonyOS 应用开发 · 阶段测验 03</div><span class="tag m" style="margin-left:8px;flex:none">最好 78 分</span></div>
+        <div class="row between" style="margin-top:12px"><span class="t2 muted">共 25 题 · 45 分钟 · 及格 60 分</span><div class="row gap8"><span class="tag s">中级</span><div class="btn pri" style="height:34px;padding:0 16px;font-size:13px">开始</div></div></div>
+      </div>
+    </div>
+    <div class="row" style="gap:10px;align-items:flex-start">
+      <div style="flex:1;background:#fff;border-radius:20px;padding:13px;box-shadow:var(--sh-w);border-top:4px solid #4A90E2;min-height:168px;display:flex;flex-direction:column">
+        <div class="h3" style="line-height:1.35;font-size:14px">ArkTS 语法与并发 · 快速自测</div>
+        <div class="t3 muted" style="margin-top:7px;line-height:1.45">共 15 题 · 20 分钟 · 及格 70 分</div>
+        <div class="row between" style="margin-top:auto;padding-top:10px"><span class="tag b">初级</span><span class="t3 faint">未考</span></div>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:20px;padding:13px;box-shadow:var(--sh-w);border-top:4px solid #6C5CE7;min-height:168px;display:flex;flex-direction:column">
+        <div class="h3" style="line-height:1.35;font-size:14px">Stage 模型与 Ability · 冲刺卷</div>
+        <div class="t3 muted" style="margin-top:7px;line-height:1.45">共 30 题 · 60 分钟 · 及格 65 分</div>
+        <div class="row between" style="margin-top:auto;padding-top:10px"><span class="tag v">高级</span><span class="tag c">最好 55 分</span></div>
+      </div>
+      <div class="peek" style="height:168px;background:linear-gradient(180deg,#35C8A0,#E6F8F3)"></div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="tabbar">
+    <div class="tab on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.4l8 6.8v7.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.6z" fill="#EFEAFE" stroke="#6C5CE7" stroke-width="2" stroke-linejoin="round"/></svg><span class="t2" style="font-weight:800">首页</span></div>
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5.5h5.5A2.5 2.5 0 0 1 13 8v11a3 3 0 0 0-3-2.5H5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/><path d="M19 5.5h-5.5A2.5 2.5 0 0 0 11 8v11a3 3 0 0 1 3-2.5h5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/></svg><span class="t2">刷题</span></div>
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="#A9A3BC" stroke-width="2"/><path d="M4.6 20c.7-3.6 3.7-5.4 7.4-5.4S18.7 16.4 19.4 20" stroke="#A9A3BC" stroke-width="2" stroke-linecap="round"/></svg><span class="t2">我的</span></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F03 考试科目（刷题 Tab 首屏）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:12px">
+    <div class="row gap10"><div><div class="h1">考试科目</div><div class="t3 faint">共 6 个方向 · 通过考试即可获得证书</div></div></div>
+    <div class="grid2" style="gap:12px">
+      <div class="subject" style="background:linear-gradient(140deg,#7D6BFF,#5A48D6);box-shadow:var(--sh-v)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="14" rx="4" stroke="#fff" stroke-width="2"/><path d="M8 21h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M8 11h5m0 0 2 2m-2-2 2-2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><div class="nm">鸿蒙应用开发</div><div class="t3" style="color:rgba(255,255,255,.82);margin-top:3px">共 8 套</div></div>
+      </div>
+      <div class="subject" style="background:linear-gradient(140deg,#5FA3EC,#3B7FD0);box-shadow:var(--sh-m)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M9 7 4.5 12 9 17" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7l4.5 5L15 17" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><div class="nm">ArkTS 语言基础</div><div class="t3" style="color:rgba(255,255,255,.82);margin-top:3px">共 5 套</div></div>
+      </div>
+      <div class="subject" style="background:linear-gradient(140deg,#FF9B76,#FF6B45);box-shadow:var(--sh-c)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4" width="17" height="12" rx="3.4" stroke="#fff" stroke-width="2"/><path d="M8 20h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="10" r="2.6" stroke="#fff" stroke-width="2"/></svg>
+        <div><div class="nm">UI 与交互设计</div><div class="t3" style="color:rgba(255,255,255,.82);margin-top:3px">共 6 套</div></div>
+      </div>
+      <div class="subject" style="background:linear-gradient(140deg,#4CD8B2,#1F9E7E);box-shadow:var(--sh-m)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.2" stroke="#fff" stroke-width="2"/><path d="M3.8 12h16.4M12 3.8c2.4 2.4 2.4 13.9 0 16.4-2.4-2.5-2.4-14 0-16.4z" stroke="#fff" stroke-width="2"/></svg>
+        <div><div class="nm">网络与数据</div><div class="t3" style="color:rgba(255,255,255,.82);margin-top:3px">共 4 套</div></div>
+      </div>
+      <div class="subject" style="background:linear-gradient(140deg,#FFD979,#F5A623);box-shadow:var(--sh-c)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M7.6 18a4 4 0 0 1-.5-8 5.2 5.2 0 0 1 9.9-1.2A3.8 3.8 0 0 1 17 18z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+        <div><div class="nm">云开发 AGC</div><div class="t3" style="color:rgba(255,255,255,.85);margin-top:3px">共 3 套</div></div>
+      </div>
+      <div class="subject" style="background:linear-gradient(140deg,#4A4066,#2B2440)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="2.4" stroke="#fff" stroke-width="2"/><rect x="13" y="4" width="7" height="7" rx="2.4" stroke="#fff" stroke-width="2"/><rect x="4" y="13" width="7" height="7" rx="2.4" stroke="#fff" stroke-width="2"/><rect x="13" y="13" width="7" height="7" rx="2.4" stroke="#fff" stroke-width="2"/></svg>
+        <div><div class="nm">综合模拟</div><div class="t3" style="color:rgba(255,255,255,.8);margin-top:3px">共 7 套</div></div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="tabbar">
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.4l8 6.8v7.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.6z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="t2">首页</span></div>
+    <div class="tab on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5.5h5.5A2.5 2.5 0 0 1 13 8v11a3 3 0 0 0-3-2.5H5z" fill="#EFEAFE" stroke="#6C5CE7" stroke-width="2" stroke-linejoin="round"/><path d="M19 5.5h-5.5A2.5 2.5 0 0 0 11 8v11a3 3 0 0 1 3-2.5h5z" fill="#EFEAFE" stroke="#6C5CE7" stroke-width="2" stroke-linejoin="round"/></svg><span class="t2" style="font-weight:800">刷题</span></div>
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="#A9A3BC" stroke-width="2"/><path d="M4.6 20c.7-3.6 3.7-5.4 7.4-5.4S18.7 16.4 19.4 20" stroke="#A9A3BC" stroke-width="2" stroke-linecap="round"/></svg><span class="t2">我的</span></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+<div class="cell">
+<div class="frame-label">F04 考卷列表（科目：鸿蒙应用开发）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:10px">
+    <div class="row gap10"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#2B2440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="h1" style="font-size:20px">鸿蒙应用开发</div><div class="t3 faint">共 8 套 · 通过考试即可获得证书</div></div><div style="margin-left:auto" class="row gap6"><span class="tag v">中级</span><span class="tag s">高级</span></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="rowcard"><div class="spine" style="background:#FFC94D"></div><div style="flex:1;padding:10px 12px">
+        <div class="h3" style="line-height:1.35">HarmonyOS 应用开发 · 阶段测验 03</div>
+        <div class="t3 muted" style="margin-top:5px">共 25 题 · 45 分钟 · 及格 60 分</div>
+        <div class="row between" style="margin-top:7px"><div class="row gap6"><span class="t3 faint">已考</span><div class="pips"><i class="f"></i><i class="f"></i><i></i></div><span class="t2" style="font-weight:800">2/3 次</span></div><div class="row gap6"><span class="tag s">中级</span><span class="badge g">最好 78 分</span></div></div>
+      </div></div>
+      <div class="rowcard"><div class="spine" style="background:#6C5CE7"></div><div style="flex:1;padding:10px 12px">
+        <div class="h3" style="line-height:1.35">Stage 模型与 Ability · 冲刺卷</div>
+        <div class="t3 muted" style="margin-top:5px">共 30 题 · 60 分钟 · 及格 65 分</div>
+        <div class="row between" style="margin-top:7px"><div class="row gap6"><span class="t3 faint">已考</span><div class="pips"><i class="f"></i><i></i><i></i></div><span class="t2" style="font-weight:800">1/3 次</span></div><div class="row gap6"><span class="tag v">高级</span><span class="badge o">最好 55 分</span></div></div>
+      </div></div>
+      <div class="rowcard"><div class="spine" style="background:#FF7A59"></div><div style="flex:1;padding:10px 12px">
+        <div class="h3" style="line-height:1.35">UI 布局与动效 · 专项突破</div>
+        <div class="t3 muted" style="margin-top:5px">共 20 题 · 35 分钟 · 及格 60 分</div>
+        <div class="row between" style="margin-top:7px"><div class="row gap6"><span class="t3 faint">已考</span><div class="pips"><i class="f"></i><i class="f"></i><i class="f"></i></div><span class="t2" style="font-weight:800">3/3 次</span></div><div class="row gap6"><span class="tag s">中级</span><span class="badge g">最好 88 分</span></div></div>
+      </div></div>
+      <div class="rowcard"><div class="spine" style="background:#6C5CE7"></div><div style="flex:1;padding:10px 12px">
+        <div class="h3" style="line-height:1.35">分布式数据 · 难点精练</div>
+        <div class="t3 muted" style="margin-top:5px">共 18 题 · 30 分钟 · 及格 60 分</div>
+        <div class="row between" style="margin-top:7px"><div class="row gap6"><span class="t3 faint">已考</span><div class="pips"><i></i><i></i><i></i></div><span class="t2" style="font-weight:800">0/3 次</span></div><div class="row gap6"><span class="tag v">高级</span><span class="badge n">未考</span></div></div>
+      </div></div>
+      <div class="rowcard"><div class="spine" style="background:#4A90E2"></div><div style="flex:1;padding:10px 12px">
+        <div class="h3" style="line-height:1.35">ArkTS 语法与并发 · 快速自测</div>
+        <div class="t3 muted" style="margin-top:5px">共 15 题 · 20 分钟 · 及格 70 分</div>
+        <div class="row between" style="margin-top:7px"><div class="row gap6"><span class="t3 faint">已考</span><div class="pips"><i></i><i></i></div><span class="t2" style="font-weight:800">0/2 次</span></div><div class="row gap6"><span class="tag b">初级</span><span class="badge n">未考</span></div></div>
+      </div></div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F05 答题页（多选 · 已存疑 · 切屏提醒）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:10px">
+    <div class="row gap8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#2B2440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="t2" style="font-weight:800;flex:1;line-height:1.3">HarmonyOS 应用开发 · 阶段测验 03</span></div>
+    <div class="row between"><div class="row gap6"><span class="t2 muted">第</span><span style="font-size:20px;font-weight:800;color:var(--violet);line-height:1">7</span><span class="t2 muted">题 / 共 25 题</span></div><div class="row gap6" style="background:var(--violet-s);border-radius:999px;padding:5px 11px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="#6C5CE7" stroke-width="2"/><path d="M12 7.6V12l3.2 2" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round"/></svg><span style="font-size:15px;font-weight:800;color:var(--violet)">00:37:12</span></div></div>
+    <div style="background:#fff;border-radius:18px;padding:10px;box-shadow:var(--sh-w)">
+      <div class="trail" style="justify-content:space-between">
+        <span class="bub d">1</span><span class="bub d">2</span><span class="bub d">3</span><span class="bub d">4</span><span class="bub d">5</span><span class="bub d">6</span><span class="bub c" style="background:linear-gradient(135deg,#FF9B76,#FF7A59);box-shadow:0 0 0 3px #4A90E2,0 8px 18px rgba(255,122,89,.28)">7</span><span class="bub d">8</span><span class="bub d">9</span><span class="bub d">10</span><span class="bub d">11</span><span class="bub d">12</span><span class="bub d">13</span>
+      </div>
+      <div class="trail" style="justify-content:space-between;margin-top:8px">
+        <span class="bub d">14</span><span class="bub d">15</span><span class="bub d">16</span><span class="bub d">17</span><span class="bub f">18</span><span class="bub d">19</span><span class="bub n">20</span><span class="bub d">21</span><span class="bub f">22</span><span class="bub d">23</span><span class="bub n">24</span><span class="bub n">25</span>
+      </div>
+    </div>
+    <div style="background:linear-gradient(160deg,#fff,#F6F4FF);border-radius:28px;padding:13px 15px;box-shadow:var(--sh-v)">
+      <div class="row between"><span class="tag v">多选题</span><span class="t3 faint">本卷第 7 题 · 4 分</span></div>
+      <div class="t1" style="margin-top:9px;line-height:1.5;font-weight:600">关于 HarmonyOS 的 Stage 模型，下列说法正确的是？</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div class="opt on"><span class="lt">A</span><span class="t1" style="line-height:1.45">UIAbility 是应用的基本组成单元，具备完整生命周期</span></div>
+      <div class="opt"><span class="lt">B</span><span class="t1" style="line-height:1.45">每个 UIAbility 都运行在独立线程与独立窗口中</span></div>
+      <div class="opt on"><span class="lt">C</span><span class="t1" style="line-height:1.45">ExtensionAbility 用于提供应用对用户的扩展能力</span></div>
+      <div class="opt"><span class="lt">D</span><span class="t1" style="line-height:1.45">Stage 模型与 FA 模型可以在同一应用内直接混用</span></div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:0">
+      <div style="width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:9px solid var(--coral);flex:none;margin-right:-1px"></div>
+      <div style="flex:1;background:var(--coral);border-radius:4px 18px 18px 4px;padding:9px 12px;display:flex;align-items:center;gap:8px;box-shadow:var(--sh-c)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4.5 21 20H3z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="#fff"/></svg>
+        <span class="t2" style="color:#fff;font-weight:700;line-height:1.35">检测到切出应用，已记录 2 次，请专心作答</span>
+      </div>
+    </div>
+    <div class="row gap8">
+      <div class="pill line" style="flex:.86;background:#fff;color:var(--ink2);border:1.6px solid #E4E0F2">上一题</div>
+      <div class="pill line" style="flex:.86;background:#fff;color:var(--ink2);border:1.6px solid #E4E0F2">下一题</div>
+      <div class="pill" style="flex:1;background:var(--coral-s);color:var(--coral)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 4h12v16l-6-4.5L6 20z" fill="#FF7A59"/></svg>已存疑</div>
+      <div class="pill" style="flex:.9;background:var(--violet-s);color:var(--violet)">答题卡</div>
+    </div>
+    <div class="btn pri" style="height:54px;font-size:17px;background:linear-gradient(120deg,#FF9B76,#FF7A59 45%,#6C5CE7)">提交试卷</div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F06 答题卡（半模态浮层）</div>
+<div class="phone rel">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:10px">
+    <div class="row between"><span class="h2" style="font-size:15px">HarmonyOS 应用开发 · 阶段测验 03</span></div>
+    <div style="background:#fff;border-radius:28px;padding:13px 15px;box-shadow:var(--sh-w)"><div class="t1" style="font-weight:600;line-height:1.5">关于 HarmonyOS 的 Stage 模型，下列说法正确的是？</div></div>
+    <div class="opt on"><span class="lt">A</span><span class="t1">UIAbility 是应用的基本组成单元</span></div>
+    <div class="opt"><span class="lt">B</span><span class="t1">每个 UIAbility 都运行在独立线程</span></div>
+  </div>
+  <div class="mask"></div>
+  <div class="sheet">
+    <div style="width:44px;height:5px;border-radius:999px;background:#D8D2E6;margin:0 auto 12px"></div>
+    <div class="row between"><span class="h2">答题卡</span><span class="t2" style="color:var(--violet);font-weight:800">完成</span></div>
+    <div class="row" style="gap:12px;margin-top:9px;flex-wrap:wrap">
+      <div class="row gap6"><span class="qc d sm">1</span><span class="t3 muted">绿色已答</span></div>
+      <div class="row gap6"><span class="qc f sm">2</span><span class="t3 muted">橙色存疑</span></div>
+      <div class="row gap6"><span class="qc n sm cur">3</span><span class="t3 muted">蓝框当前题</span></div>
+      <div class="row gap6"><span class="qc n sm">4</span><span class="t3 muted">点击跳转</span></div>
+    </div>
+    <div class="cell-g" style="margin-top:14px">
+      <div class="qc d">1</div><div class="qc d">2</div><div class="qc d">3</div><div class="qc d">4</div><div class="qc d">5</div><div class="qc d">6</div>
+      <div class="qc f cur">7<svg class="bkm" width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1.4 1.2h10.2v12.4L6.5 9.7 1.4 13.6z" fill="#FFC94D" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div><div class="qc d">8</div><div class="qc d">9</div><div class="qc d">10</div><div class="qc d">11</div><div class="qc d">12</div>
+      <div class="qc d">13</div><div class="qc d">14</div><div class="qc d">15</div><div class="qc d">16</div><div class="qc d">17</div><div class="qc f">18<svg class="bkm" width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1.4 1.2h10.2v12.4L6.5 9.7 1.4 13.6z" fill="#FFC94D" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+      <div class="qc d">19</div><div class="qc n">20</div><div class="qc d">21</div><div class="qc f">22<svg class="bkm" width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1.4 1.2h10.2v12.4L6.5 9.7 1.4 13.6z" fill="#FFC94D" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div><div class="qc d">23</div><div class="qc n">24</div>
+      <div class="qc n">25</div>
+    </div>
+    <div class="row between" style="margin-top:14px;background:#fff;border-radius:16px;padding:11px 13px;box-shadow:var(--sh-w)">
+      <div class="row gap8"><span class="t2 muted">已答</span><span style="font-size:17px;font-weight:800;color:var(--mint)">19</span><span class="t2 muted">/ 25</span></div>
+      <div class="row gap6"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="#6C5CE7" stroke-width="2"/><path d="M12 7.6V12l3.2 2" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round"/></svg><span style="font-size:15px;font-weight:800;color:var(--violet)">剩余 00:37:12</span></div>
+    </div>
+    <div class="homebar"><i></i></div>
+  </div>
+</div>
+</div>
+<div class="cell">
+<div class="frame-label">F07 答题结果（通过态）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:10px">
+    <div class="row gap8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#2B2440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="t2" style="font-weight:800">HarmonyOS 应用开发 · 阶段测验 03</span></div>
+    <div style="border-radius:28px;padding:14px 16px;background:linear-gradient(135deg,#E6F8F3,#FFFFFF 60%);box-shadow:var(--sh-m)">
+      <div class="row between" style="align-items:flex-start">
+        <div class="row" style="gap:4px;align-items:baseline"><span style="font-size:44px;font-weight:800;color:#1E9E7C;line-height:1">78</span><span class="t1" style="font-weight:700;color:var(--ink2)">分</span></div>
+        <div class="row gap6" style="background:var(--mint);color:#fff;border-radius:999px;padding:5px 13px;font-size:13px;font-weight:800"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17.5 19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>通过</div>
+      </div>
+      <div class="bar" style="margin-top:12px;background:#DCEFE8"><i style="width:78%;background:linear-gradient(90deg,#35C8A0,#1E9E7C)"></i></div>
+      <div class="row between" style="margin-top:7px"><span class="t3 faint">及格线 60</span><span class="t3" style="color:#1E9E7C;font-weight:800">超出 18 分</span></div>
+    </div>
+    <div class="row gap10">
+      <div class="stat"><div style="font-size:15px;font-weight:800">32 分 14 秒</div><div class="t3 faint" style="margin-top:3px">用时</div></div>
+      <div class="stat"><div style="font-size:15px;font-weight:800">手动交卷</div><div class="t3 faint" style="margin-top:3px">交卷方式</div></div>
+      <div class="stat"><div style="font-size:15px;font-weight:800">答对 18 / 25</div><div class="t3 faint" style="margin-top:3px">正确率</div></div>
+    </div>
+    <div class="strip" style="background:var(--coral-s)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4.5 21 20H3z" stroke="#FF7A59" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="#FF7A59"/></svg>
+      <span class="t2" style="color:#C4402A;font-weight:700;line-height:1.35">切出应用 2 次，已由服务端记录</span>
+    </div>
+    <div class="strip" style="background:var(--sun-s)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9.5" r="5.4" stroke="#B8860B" stroke-width="2"/><path d="M8 15.5 6.6 21l5.4-2.6L17.4 21 16 15.5" stroke="#B8860B" stroke-width="2" stroke-linejoin="round"/></svg>
+      <span class="t2" style="color:#7A5A00;font-weight:700;line-height:1.35">已生成电子证书，可在个人中心查看</span>
+    </div>
+    <div class="strip" style="background:#fff;box-shadow:var(--sh-w)">
+      <div class="tile" style="background:linear-gradient(135deg,#7D6BFF,#6C5CE7)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="12" rx="4" stroke="#fff" stroke-width="2"/><circle cx="9.4" cy="12" r="1.4" fill="#fff"/><circle cx="14.6" cy="12" r="1.4" fill="#fff"/></svg></div>
+      <span class="t1" style="font-weight:700">问问 AI 助教</span><span class="t3 faint" style="margin-left:auto">本题解析与举一反三</span>
+    </div>
+    <div class="blk" style="border-radius:20px;padding:12px">
+      <div class="row between"><span class="h3">答题卡</span><div class="row gap8"><span class="row gap6"><span class="qc n mini" style="width:20px;height:20px;border-radius:6px;font-size:0"> </span><span class="t3 muted">未答</span></span><span class="row gap6"><span class="qc d mini" style="width:20px;height:20px;border-radius:6px;font-size:0"> </span><span class="t3 muted">答对</span></span><span class="row gap6"><span class="qc f mini" style="width:20px;height:20px;border-radius:6px;font-size:0"> </span><span class="t3 muted">答错</span></span></div></div>
+      <div class="cell-g" style="margin-top:10px;gap:8px">
+        <div class="qc d mini">1</div><div class="qc d mini">2</div><div class="qc f mini">3</div><div class="qc d mini">4</div><div class="qc d mini">5</div><div class="qc d mini">6</div>
+        <div class="qc d mini">7</div><div class="qc d mini">8</div><div class="qc d mini">9</div><div class="qc d mini">10</div><div class="qc f mini">11</div><div class="qc d mini">12</div>
+        <div class="qc d mini">13</div><div class="qc d mini">14</div><div class="qc f mini">15</div><div class="qc d mini">16</div><div class="qc d mini">17</div><div class="qc d mini">18</div>
+        <div class="qc d mini">19</div><div class="qc n mini">20</div><div class="qc d mini">21</div><div class="qc f mini">22</div><div class="qc d mini">23</div><div class="qc n mini">24</div>
+        <div class="qc f mini">25</div>
+      </div>
+    </div>
+    <div class="row gap10" style="margin-top:2px"><div class="btn line" style="flex:1;height:48px;font-size:15px;color:var(--ink)">重新刷题</div><div class="btn pri" style="flex:1.1;height:48px;font-size:15px">查看回顾</div></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F08 逐题回顾精讲</div>
+<div class="phone f08">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 14px;gap:5px">
+    <div style="background:#fff;border-radius:20px;padding:10px 12px;box-shadow:var(--sh-w);display:flex;flex-direction:column;gap:8px"><div class="row gap8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#2B2440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="t2" style="font-weight:800;flex:1">HarmonyOS 应用开发 · 阶段测验 03</span><span class="badge g">通过</span></div>
+      <div class="row between"><div class="row gap12"><span class="t2 muted">得分 <b style="color:var(--violet);font-size:15px">78 / 100</b></span><span class="t2 muted">答对 18 / 25</span></div><div class="row gap6"><span class="t2" style="font-weight:700">只看错题</span><div class="sw-on" style="transform:scale(.76)"><i></i></div></div></div>
+    </div>
+    <div style="display:flex;background:#fff;border-radius:20px;box-shadow:var(--sh-w);overflow:hidden">
+      <div class="rib" style="background:linear-gradient(180deg,#FF7A59,#FFC94D)"></div>
+      <div class="qcard" style="flex:1;padding:10px 12px">
+        <div class="row between"><div class="row gap8"><span class="tag c">第 3 题</span><span class="tag b">单选题</span></div><span class="t3" style="color:var(--coral);font-weight:800">0 / 4 分</span></div>
+        <div class="t1" style="font-weight:700;margin-top:7px;line-height:1.4">下列哪个组件适合作为长列表的首选容器？</div>
+        <div class="opt2" style="margin-top:6px">
+          <div class="opt slim" style="border-color:var(--coral);background:var(--coral-s)"><span class="lt" style="background:var(--coral);color:#fff">A</span><span class="t2" style="font-weight:700">List</span><span class="t3" style="color:var(--coral);font-weight:800;margin-left:auto">我选的</span></div>
+          <div class="opt slim" style="border-color:var(--mint);background:var(--mint-s)"><span class="lt" style="background:#1E9E7C;color:#fff">B</span><span class="t2" style="font-weight:700">Scroll + ForEach</span><span class="t3" style="color:#1E9E7C;font-weight:800;margin-left:auto">正确</span></div>
+          <div class="opt slim"><span class="lt">C</span><span class="t2">Grid</span></div>
+          <div class="opt slim"><span class="lt">D</span><span class="t2">Column</span></div>
+        </div>
+        <div class="row" style="gap:14px;margin-top:8px"><span class="t3" style="color:var(--coral);font-weight:800">我的答案 A</span><span class="t3" style="color:#1E9E7C;font-weight:800">正确答案 B</span></div>
+        <div class="row" style="gap:0;align-items:flex-start;margin-top:9px">
+          <div class="avatar" style="width:30px;height:30px;font-size:11px;background:linear-gradient(135deg,#7D6BFF,#6C5CE7)">AI</div>
+          <div style="flex:1;margin-left:6px">
+            <div style="width:12px;height:12px;background:var(--violet-s);transform:rotate(45deg);margin:16px -9px 0 0;flex:none"></div>
+            <div class="talk"><div class="t2" style="line-height:1.45"><b style="font-weight:800;color:var(--violet)">AI 助教讲解：</b>List 支持按需渲染与复用，长列表性能明显优于把 ForEach 塞进 Column；Grid 适合网格而非线性列表。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;background:#fff;border-radius:20px;box-shadow:var(--sh-w);overflow:hidden">
+      <div class="rib" style="background:linear-gradient(180deg,#35C8A0,#4A90E2)"></div>
+      <div class="qcard" style="flex:1;padding:10px 12px">
+        <div class="row between"><div class="row gap8"><span class="tag m">第 7 题</span><span class="tag v">多选题</span></div><span class="t3" style="color:#1E9E7C;font-weight:800">4 / 4 分</span></div>
+        <div class="t1" style="font-weight:700;margin-top:7px;line-height:1.4">关于 HarmonyOS 的 Stage 模型，下列说法正确的是？</div>
+        <div class="opt2" style="margin-top:6px">
+          <div class="opt slim" style="border-color:var(--mint);background:var(--mint-s)"><span class="lt" style="background:#1E9E7C;color:#fff">A</span><span class="t3">UIAbility 是应用的基本组成单元，具备完整生命周期</span></div>
+          <div class="opt slim"><span class="lt">B</span><span class="t3">每个 UIAbility 都运行在独立线程与独立窗口中</span></div>
+          <div class="opt slim" style="border-color:var(--mint);background:var(--mint-s)"><span class="lt" style="background:#1E9E7C;color:#fff">C</span><span class="t3">ExtensionAbility 用于提供应用对用户的扩展能力</span></div>
+          <div class="opt slim"><span class="lt">D</span><span class="t3">Stage 模型与 FA 模型可以在同一应用内直接混用</span></div>
+        </div>
+        <div class="row" style="gap:14px;margin-top:8px"><span class="t3" style="color:#1E9E7C;font-weight:800">我的答案 AC</span><span class="t3" style="color:#1E9E7C;font-weight:800">正确答案 AC</span></div>
+        <div class="row" style="gap:0;align-items:flex-start;margin-top:9px">
+          <div class="avatar" style="width:30px;height:30px;font-size:11px;background:linear-gradient(135deg,#4CD8B2,#1E9E7C)">AI</div>
+          <div style="flex:1;margin-left:6px">
+            <div style="width:12px;height:12px;background:var(--violet-s);transform:rotate(45deg);margin:16px -9px 0 0;flex:none"></div>
+            <div class="talk"><div class="t2" style="line-height:1.45"><b style="font-weight:800;color:var(--violet)">AI 助教讲解：</b>Stage 模型下 UIAbility 具备完整生命周期，但同一应用不能与 FA 模型混用。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="12" rx="4" stroke="#fff" stroke-width="2"/><path d="M9.4 11.4v1.6M14.6 11.4v1.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M20 10.5v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>问问 AI 助教</div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F09 我的</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:12px">
+    <div style="border-radius:28px;padding:16px;background:linear-gradient(130deg,#6C5CE7,#8E7BFF 55%,#4A90E2);box-shadow:var(--sh-v);color:#fff">
+      <div class="row gap14">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="31" fill="#fff" opacity=".18"/><circle cx="32" cy="32" r="26" fill="#FFC94D"/><circle cx="32" cy="25" r="9" fill="#fff"/><path d="M14 52c2.6-9.6 9.6-14 18-14s15.4 4.4 18 14z" fill="#fff"/><path d="M24 30.5l8 6 8-6" stroke="#6C5CE7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        <div style="flex:1"><div style="font-size:19px;font-weight:800">hdf2026</div><div class="t2" style="color:rgba(255,255,255,.9);margin-top:4px">备考 HarmonyOS · 冲高级认证</div></div>
+      </div>
+      <div class="row" style="gap:8px;margin-top:14px"><span style="background:rgba(255,255,255,.22);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700">高级 · 冲刺中</span><span style="background:rgba(255,255,255,.22);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700">已通过 2 场</span></div>
+    </div>
+    <div style="background:#fff;border-radius:24px;overflow:hidden;box-shadow:var(--sh-w)">
+      <div class="menu" style="border-radius:24px 24px 0 0"><div class="tile" style="background:var(--violet-s)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="17" rx="3.4" stroke="#6C5CE7" stroke-width="2"/><path d="M8.4 9.4h7.2M8.4 13.4h7.2M8.4 17.4h4.4" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round"/></svg></div><span class="t1" style="font-weight:700;flex:1">考试记录</span><span class="t3 faint">4 条</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5.5 15.5 12 9 18.5" stroke="#A9A3BC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="menu"><div class="tile" style="background:var(--sun-s)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9.5" r="5.4" stroke="#B8860B" stroke-width="2"/><path d="M8 15.5 6.6 21l5.4-2.6L17.4 21 16 15.5" stroke="#B8860B" stroke-width="2" stroke-linejoin="round"/></svg></div><span class="t1" style="font-weight:700;flex:1">我的证书</span><span class="t3 faint">2 份</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5.5 15.5 12 9 18.5" stroke="#A9A3BC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="menu"><div class="tile" style="background:var(--mint-s)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4.5 18 10 5.5 15.5 18" stroke="#1E9E7C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.6 13.6h6.8" stroke="#1E9E7C" stroke-width="2" stroke-linecap="round"/><path d="M18 18V9" stroke="#1E9E7C" stroke-width="2" stroke-linecap="round"/></svg></div><span class="t1" style="font-weight:700;flex:1">字号大小</span><div style="background:#F3F1F8;border-radius:999px;padding:5px 12px;display:flex;align-items:center;gap:6px"><span class="t2" style="font-weight:800">标准</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 9l7 7 7-7" stroke="#6B6482" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="menu" style="border-radius:0 0 24px 24px"><div class="tile" style="background:var(--blue-s)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="#4A90E2" stroke-width="2"/><path d="M12 11v5.4" stroke="#4A90E2" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1.2" fill="#4A90E2"/></svg></div><span class="t1" style="font-weight:700;flex:1">关于智题通</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5.5 15.5 12 9 18.5" stroke="#A9A3BC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="strip" style="background:linear-gradient(120deg,#F4F1FF,#EDF4FD);border:1.6px solid rgba(108,92,231,.22);border-radius:20px">
+      <div class="tile" style="background:linear-gradient(135deg,#7D6BFF,#6C5CE7);box-shadow:var(--sh-v)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="12" rx="4" stroke="#fff" stroke-width="2"/><path d="M9.4 11.4v1.6M14.6 11.4v1.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M20 10.5v3" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div style="flex:1"><div class="t1" style="font-weight:800">AI 备考助教</div><div class="t3 faint" style="margin-top:2px">错题讲解 · 举一反三</div></div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5.5 15.5 12 9 18.5" stroke="#6C5CE7" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div style="flex:1"></div>
+    <div class="btn line" style="height:46px;font-size:14px;color:var(--coral);border-color:#FFD9CC">退出登录</div>
+  </div>
+  <div class="tabbar">
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 11.2 12 4.4l8 6.8v7.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.6z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg><span class="t2">首页</span></div>
+    <div class="tab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5.5h5.5A2.5 2.5 0 0 1 13 8v11a3 3 0 0 0-3-2.5H5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/><path d="M19 5.5h-5.5A2.5 2.5 0 0 0 11 8v11a3 3 0 0 1 3-2.5h5z" stroke="#A9A3BC" stroke-width="2" stroke-linejoin="round"/></svg><span class="t2">刷题</span></div>
+    <div class="tab on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" fill="#EFEAFE" stroke="#6C5CE7" stroke-width="2"/><path d="M4.6 20c.7-3.6 3.7-5.4 7.4-5.4S18.7 16.4 19.4 20" fill="#EFEAFE" stroke="#6C5CE7" stroke-width="2" stroke-linecap="round"/></svg><span class="t2" style="font-weight:800">我的</span></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+<div class="cell">
+<div class="frame-label">F10 考试记录</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:14px">
+    <div class="row gap8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7" stroke="#2B2440" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="h1">考试记录</div><div class="t3 faint">hdf2026 · 按开始时间倒序</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="rec">
+        <div class="score-ring" style="background:linear-gradient(135deg,#4CD8B2,#1E9E7C);box-shadow:var(--sh-m)"><span style="font-size:21px;font-weight:800;color:#fff">88</span></div>
+        <div style="flex:1"><div class="t1" style="font-weight:800;line-height:1.35">UI 布局与动效 · 专项突破</div><div class="t3 faint" style="margin-top:4px">2026-11-04 21:10</div><div class="t3 muted" style="margin-top:3px">手动交卷 · 用时 28 分 05 秒</div></div>
+        <div style="align-self:flex-start"><span class="tag m">通过</span></div>
+      </div>
+      <div class="rec">
+        <div class="score-ring" style="background:linear-gradient(135deg,#7D6BFF,#6C5CE7);box-shadow:var(--sh-v)"><span style="font-size:21px;font-weight:800;color:#fff">78</span></div>
+        <div style="flex:1"><div class="t1" style="font-weight:800;line-height:1.35">HarmonyOS 应用开发 · 阶段测验 03</div><div class="t3 faint" style="margin-top:4px">2026-11-03 19:42</div><div class="t3 muted" style="margin-top:3px">手动交卷 · 用时 32 分 14 秒</div></div>
+        <div style="align-self:flex-start"><span class="tag m">通过</span></div>
+      </div>
+      <div class="rec">
+        <div class="score-ring" style="background:#fff;box-shadow:inset 0 0 0 3px var(--coral)"><span style="font-size:21px;font-weight:800;color:var(--coral)">55</span></div>
+        <div style="flex:1"><div class="t1" style="font-weight:800;line-height:1.35">Stage 模型与 Ability · 冲刺卷</div><div class="t3 faint" style="margin-top:4px">2026-11-02 20:15</div><div class="t3 muted" style="margin-top:3px">超时自动交卷 · 用时 60 分 00 秒</div></div>
+        <div style="align-self:flex-start"><span class="tag c">未通过</span></div>
+      </div>
+      <div class="rec">
+        <div class="score-ring" style="background:#fff;box-shadow:inset 0 0 0 3px var(--coral)"><span style="font-size:21px;font-weight:800;color:var(--coral)">46</span></div>
+        <div style="flex:1"><div class="t1" style="font-weight:800;line-height:1.35">HarmonyOS 应用开发 · 阶段测验 02</div><div class="t3 faint" style="margin-top:4px">2026-10-30 09:20</div><div class="t3 muted" style="margin-top:3px">手动交卷 · 用时 41 分 33 秒</div></div>
+        <div style="align-self:flex-start"><span class="tag c">未通过</span></div>
+      </div>
+    </div>
+    <div style="text-align:center" class="t3 faint">加载更多…</div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F11 我的证书</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:14px">
+    <div><div class="h1">我的证书</div><div class="t3 faint">通过考试即可获得证书</div></div>
+    <div class="cert" style="background:linear-gradient(135deg,#F0CE76,#FFF1C6 42%,#D6AC46);box-shadow:0 14px 32px rgba(214,172,70,.28)">
+      <div class="cert-in" style="border:1.8px solid rgba(169,130,43,.5);background:radial-gradient(140% 100% at 50% 0%,#FFFEFA,#FDF5E2)">
+        <div class="row between"><span class="t3" style="font-weight:800;letter-spacing:1.5px;color:#A9822B">智题通 · 认证证书</span>
+          <svg width="34" height="40" viewBox="0 0 34 40" fill="none"><circle cx="17" cy="15" r="13" fill="#E6BB55"/><circle cx="17" cy="15" r="9.6" fill="#FFF3D0"/><path d="M12.6 15.2l3.2 3.2 6-6.4" stroke="#A9822B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M9 26.5 6 38l11-5 11 5-3-11.5" fill="#D6AC46"/></svg>
+        </div>
+        <div class="cert-line" style="margin:9px 0 11px"></div>
+        <div style="text-align:center"><div style="font-size:17px;font-weight:800;line-height:1.35">HarmonyOS 应用开发 · 中级认证</div><div class="row" style="justify-content:center;margin-top:8px"><span class="tag m">有效</span></div></div>
+        <div class="cert-line" style="margin:11px 0 9px"></div>
+        <div class="fieldrow"><span class="t3 faint">证书编号</span><span class="t2" style="font-weight:800;letter-spacing:.5px">HT-2026-1103-000782</span></div>
+        <div class="fieldrow"><span class="t3 faint">颁发日期</span><span class="t2" style="font-weight:700">2026-11-03</span></div>
+        <div class="fieldrow" style="padding-bottom:0"><span class="t3 faint">到期日期</span><span class="t2" style="font-weight:700">2028-11-02</span></div>
+        <div class="row between" style="margin-top:auto;padding-top:10px"><div class="row gap6"><div class="avatar" style="width:24px;height:24px;font-size:11px;background:linear-gradient(135deg,#7D6BFF,#6C5CE7)">H</div><span class="t3" style="font-weight:800">hdf2026</span></div><span class="t3" style="color:#A9822B;font-weight:800">备考 HarmonyOS · 冲高级认证</span></div>
+      </div>
+    </div>
+    <div class="cert" style="background:linear-gradient(135deg,#D8D3C4,#F2EEE4 45%,#C9C3B2);box-shadow:var(--sh-w)">
+      <div class="cert-in" style="border:1.8px solid rgba(140,134,120,.45);background:radial-gradient(140% 100% at 50% 0%,#FCFBF7,#F2EFE7)">
+        <div class="row between"><span class="t3" style="font-weight:800;letter-spacing:1.5px;color:#8C8678">智题通 · 认证证书</span>
+          <svg width="34" height="40" viewBox="0 0 34 40" fill="none"><circle cx="17" cy="15" r="13" fill="#C9C3B2"/><circle cx="17" cy="15" r="9.6" fill="#F6F3EA"/><path d="M12.6 15.2l3.2 3.2 6-6.4" stroke="#8C8678" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M9 26.5 6 38l11-5 11 5-3-11.5" fill="#BFB8A6"/></svg>
+        </div>
+        <div class="cert-line" style="margin:9px 0 11px;background:linear-gradient(90deg,rgba(140,134,120,.05),rgba(140,134,120,.32),rgba(140,134,120,.05))"></div>
+        <div style="text-align:center"><div style="font-size:17px;font-weight:800;line-height:1.35">ArkTS 语言基础 · 初级认证</div><div class="row" style="justify-content:center;margin-top:8px"><span class="tag" style="background:#EFEDF6;color:var(--ink3)">已过期</span></div></div>
+        <div class="cert-line" style="margin:11px 0 9px;background:linear-gradient(90deg,rgba(140,134,120,.05),rgba(140,134,120,.32),rgba(140,134,120,.05))"></div>
+        <div class="fieldrow"><span class="t3 faint">证书编号</span><span class="t2" style="font-weight:800;letter-spacing:.5px;color:var(--ink2)">HT-2026-0721-000311</span></div>
+        <div class="fieldrow"><span class="t3 faint">颁发日期</span><span class="t2" style="font-weight:700;color:var(--ink2)">2026-07-21</span></div>
+        <div class="fieldrow" style="padding-bottom:0"><span class="t3 faint">到期日期</span><span class="t2" style="font-weight:700;color:var(--ink2)">2027-07-20</span></div>
+        <div class="row between" style="margin-top:auto;padding-top:10px"><div class="row gap6"><div class="avatar" style="width:24px;height:24px;font-size:11px;background:#B7B0C6">H</div><span class="t3" style="font-weight:800;color:var(--ink2)">hdf2026</span></div><span class="t3" style="color:#8C8678;font-weight:800">备考 HarmonyOS · 冲高级认证</span></div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+<div class="cell">
+<div class="frame-label">F12 状态补充（未通过 / 空态 / 会话失效）</div>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><div class="row gap8"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect y="8" width="3" height="4" rx="1.2" fill="#2B2440"/><rect x="4.6" y="5.6" width="3" height="6.4" rx="1.2" fill="#2B2440"/><rect x="9.2" y="3" width="3" height="9" rx="1.2" fill="#2B2440"/><rect x="13.8" width="3" height="12" rx="1.2" fill="#2B2440"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10.5 10.5 0 0 1 14 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><path d="M3.6 7a6.6 6.6 0 0 1 8.8 0" stroke="#2B2440" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="10" r="1.7" fill="#2B2440"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".8" y=".8" width="19" height="10.4" rx="3" stroke="#2B2440" stroke-width="1.6"/><rect x="2.8" y="2.8" width="12.5" height="6.4" rx="1.8" fill="#2B2440"/><path d="M22.4 4.4v3.2" stroke="#2B2440" stroke-width="1.8" stroke-linecap="round"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:0 16px;gap:14px">
+    <div><div class="h1">状态补充</div><div class="t3 faint">未通过结果 · 空态 · 会话失效</div></div>
+    <div class="blk" style="border-radius:24px;padding:0;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#FF7A59,#E85A38);padding:12px 14px;color:#fff" class="row between"><div class="row gap10"><span style="font-size:32px;font-weight:800;line-height:1">46</span><span class="t2" style="font-weight:700;opacity:.9">分 · 及格线 60</span></div><span class="tag" style="background:rgba(255,255,255,.24);color:#fff">未通过</span></div>
+      <div style="padding:11px 14px" class="row between">
+        <div class="row gap8"><span class="t3 faint">用时</span><span class="t2" style="font-weight:800">41 分 33 秒</span></div>
+        <div class="row gap8"><span class="t3 faint">交卷方式</span><span class="t2" style="font-weight:800">手动交卷</span></div>
+        <div class="row gap8"><span class="t3 faint">差</span><span class="t2" style="font-weight:800;color:var(--coral)">14 分</span></div>
+      </div>
+    </div>
+    <div class="empty">
+      <svg width="66" height="52" viewBox="0 0 66 52" fill="none"><rect x="8" y="8" width="50" height="36" rx="9" fill="#F2EFF8" stroke="#DCD6EC" stroke-width="2"/><path d="M8 17h50" stroke="#DCD6EC" stroke-width="2"/><circle cx="15" cy="12.6" r="1.8" fill="#CFC7E4"/><rect x="16" y="24" width="22" height="4" rx="2" fill="#E4DFEF"/><rect x="16" y="32" width="30" height="4" rx="2" fill="#EDE9F5"/><circle cx="52" cy="34" r="9" fill="#FFF6E0" stroke="#FFC94D" stroke-width="2"/><path d="M52 30v4.4l3 1.8" stroke="#B8860B" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="t1" style="font-weight:800">该科目暂无考卷</div>
+      <div class="t3 faint">通过考试即可获得证书</div>
+      <div class="row gap8" style="margin-top:4px"><span class="tag v">共 6 个方向</span><span class="tag b">稍后再来</span></div>
+    </div>
+    <div style="border-radius:24px;background:linear-gradient(135deg,#fff,#FDF1EC);box-shadow:var(--sh-c);padding:14px;display:flex;flex-direction:column;gap:11px;align-items:flex-start">
+      <div class="row gap10"><div class="tile" style="background:var(--coral-s)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="4" y="10.5" width="16" height="10" rx="3" stroke="#FF7A59" stroke-width="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/><path d="M12 14v2.6" stroke="#FF7A59" stroke-width="2" stroke-linecap="round"/></svg></div><div><div class="t1" style="font-weight:800">登录已过期，请重新登录</div><div class="t3 faint" style="margin-top:3px">hdf2026 · 会话已失效</div></div></div>
+      <div class="btn pri" style="height:42px;width:100%;font-size:14px">重新登录</div>
+    </div>
+    <div style="flex:1"></div>
+  </div>
+  <div class="homebar"><i></i></div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

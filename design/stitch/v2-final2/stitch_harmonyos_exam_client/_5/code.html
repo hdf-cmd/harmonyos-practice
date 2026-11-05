@@ -1,0 +1,245 @@
+<!DOCTYPE html><html class="h-full" lang="zh-CN" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><title>智题通</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#0050e3", "on-secondary-container": "#576475", "primary-fixed": "#dce1ff", "surface-variant": "#e0e3e5", "secondary": "#525f70", "primary": "#0044c4", "surface-container-high": "#e6e8ea", "tertiary-fixed": "#ffdbcd", "error-container": "#ffdad6", "outline": "#737687", "on-secondary-fixed": "#0f1c2b", "background": "#f8f9fb", "secondary-fixed": "#d6e4f8", "on-error-container": "#93000a", "on-error": "#ffffff", "on-surface": "#191c1e", "inverse-on-surface": "#eff1f3", "on-primary": "#ffffff", "tertiary-container": "#b34600", "surface-bright": "#f8f9fb", "on-tertiary-container": "#ffe3d8", "primary-fixed-dim": "#b5c4ff", "on-surface-variant": "#434656", "secondary-fixed-dim": "#bac8db", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00164e", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#003baf", "on-primary-container": "#e4e7ff", "secondary-container": "#d3e1f5", "surface-container-low": "#f2f4f6", "tertiary-fixed-dim": "#ffb596", "on-tertiary-fixed": "#360f00", "inverse-primary": "#b5c4ff", "surface-container-highest": "#e0e3e5", "surface-dim": "#d8dadc", "on-secondary-fixed-variant": "#3b4858", "on-tertiary-fixed-variant": "#7c2e00", "inverse-surface": "#2d3133", "on-background": "#191c1e", "surface": "#f8f9fb", "surface-container": "#eceef0", "primary-container": "#0a59f7", "tertiary": "#8c3500", "error": "#ba1a1a", "on-secondary": "#ffffff", "outline-variant": "#c3c5d8" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "1.5rem", "gutter": "1rem", "space-lg": "1rem", "margin": "1rem", "gutter-tablet": "1.25rem", "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2.5rem", "space-md": "0.75rem", "space-xs": "0.25rem", "space-2xl": "2rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "display-score-mobile": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-sm": ["Inter"], "label-sm": ["Inter"], "display-score": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "caption-unit": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"] }, "fontSize": { "display-score-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "display-score": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "caption-unit": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-14 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="返回" class="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="智题通 Logo" class="h-7 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1USIO1S7PktK3OtKmi69jQPtEdbckNsCVdt74_vST7ktL85yl9QELropqY9Itx_q1GkfxkSgMbwSzM31OjV1lfZFyjpl58zIM6MnIrmxsW6aRo9_y52Lg1Aj5OOFQ3xrHzDux8LzrSthJmwnzZj-AEPzEcpooBbB7nAa42Edsg9-B7yivNFYIQLe18ecJBUZ_lnzyOHpMPbkgEjQs4NHBbyMGrlGluvb0hUugIfGdSJ3Q"><h1 class="text-headline-sm font-headline-sm text-on-surface truncate">逐题回顾精讲</h1></div></div></header><main class="flex-1 w-full pt-14 pb-safe bg-surface"><div class="flex flex-col w-full pb-20">
+<!-- Top Summary & Metric Banner -->
+<section class="px-gutter pt-space-md">
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="material-symbols-outlined text-primary text-[20px] flex-shrink-0" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="text-label-md font-label-md text-on-surface truncate">HarmonyOS 应用开发 · 阶段测验 03</span>
+</div>
+<span class="px-space-sm py-0.5 rounded-full text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed flex-shrink-0">通过</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs bg-surface-container-low rounded-lg p-space-md">
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-secondary">最终得分</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="text-headline-lg-mobile font-headline-lg-mobile text-on-surface">78</span>
+<span class="text-caption-unit font-caption-unit text-secondary">/ 100</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-secondary">答题表现</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="text-headline-lg-mobile font-headline-lg-mobile text-primary">18</span>
+<span class="text-caption-unit font-caption-unit text-secondary">/ 25 题对</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Filter & Toggle Bar -->
+<section class="px-gutter pt-space-md pb-space-xs flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="text-label-md font-label-md text-on-surface">只看错题</span>
+<span class="text-caption-unit font-caption-unit px-1.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm">共 7 题</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer select-none" for="toggle-mistakes">
+<input checked="" class="sr-only peer" id="toggle-mistakes" onchange="toggleMistakeFilter(this.checked)" type="checkbox">
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</section>
+<!-- Question List Stream -->
+<div class="flex flex-col gap-space-lg px-gutter pt-space-xs" id="question-list">
+<!-- Card 1: Wrong Question -->
+<article class="question-card is-wrong bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col" data-is-correct="false">
+<div class="flex">
+<div class="w-1.5 bg-error flex-shrink-0"></div>
+<div class="flex-1 p-space-lg flex flex-col gap-space-md">
+<!-- Card Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-sm font-headline-sm text-on-surface">第 3 题</span>
+<span class="text-label-sm font-label-sm px-2 py-0.5 rounded bg-surface-container-high text-secondary">单选题</span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-error bg-error-container/60 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[16px]">close</span>
+<span class="">0 / 4 分</span>
+</div>
+</div>
+<!-- Question Stem -->
+<p class="text-body-lg font-body-lg text-on-surface font-headline-sm">
+            下列哪个组件适合作为长列表的首选容器？
+          </p>
+<!-- Options List -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<!-- Option A: User Choice (Wrong) -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-error-container/40">
+<span class="w-6 h-6 rounded-full bg-error text-on-error flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-body-md text-on-surface font-label-md">A. List</span>
+<span class="text-label-sm font-label-sm text-error">我的选择</span>
+</div>
+</div>
+</div>
+<!-- Option B: Correct Answer -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-low">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-body-md text-on-surface font-label-md">B. Scroll + ForEach</span>
+<span class="text-label-sm font-label-sm text-primary">正确选项</span>
+</div>
+</div>
+</div>
+<!-- Option C -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-lowest">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">C</span>
+<span class="text-body-md font-body-md text-secondary">Grid</span>
+</div>
+<!-- Option D -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-lowest">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">D</span>
+<span class="text-body-md font-body-md text-secondary">Column</span>
+</div>
+</div>
+<!-- Answer Comparison Line -->
+<div class="flex items-center gap-space-xl p-space-md rounded-lg bg-surface-container-low text-body-md font-body-md">
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary">我的答案</span>
+<span class="text-error font-headline-sm">A</span>
+</div>
+<div class="w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary">正确答案</span>
+<span class="text-primary font-headline-sm">B</span>
+</div>
+</div>
+<!-- Explanation Box -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span class="">解析</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant leading-relaxed">
+              List 支持按需渲染与复用，长列表性能明显优于把 ForEach 塞进 Column；Grid 适合网格而非线性列表。
+            </p>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Correct Question -->
+<article class="question-card is-correct bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col hidden" data-is-correct="true">
+<div class="flex">
+<div class="w-1.5 bg-primary-container flex-shrink-0"></div>
+<div class="flex-1 p-space-lg flex flex-col gap-space-md">
+<!-- Card Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-sm font-headline-sm text-on-surface">第 7 题</span>
+<span class="text-label-sm font-label-sm px-2 py-0.5 rounded bg-surface-container-high text-secondary">多选题</span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-primary bg-primary-fixed px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[16px]">check</span>
+<span class="">4 / 4 分</span>
+</div>
+</div>
+<!-- Question Stem -->
+<p class="text-body-lg font-body-lg text-on-surface font-headline-sm">
+            关于 HarmonyOS 的 Stage 模型，下列说法正确的是？
+          </p>
+<!-- Options List -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<!-- Option A (Correct pick) -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-primary-fixed/40">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-body-md text-on-surface font-label-md">A. UIAbility 具备完整的应用生命周期管理</span>
+<span class="text-label-sm font-label-sm text-primary">已正确选</span>
+</div>
+</div>
+</div>
+<!-- Option B -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-lowest">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">B</span>
+<span class="text-body-md font-body-md text-secondary">B. 支持与 FA 模型在同一工程混合自由调用</span>
+</div>
+<!-- Option C (Correct pick) -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-primary-fixed/40">
+<span class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="text-body-md font-body-md text-on-surface font-label-md">C. 应用组件间通过 Context 体系进行环境与资源共享</span>
+<span class="text-label-sm font-label-sm text-primary">已正确选</span>
+</div>
+</div>
+</div>
+<!-- Option D -->
+<div class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-lowest">
+<span class="w-6 h-6 rounded-full bg-surface-container-high text-secondary flex items-center justify-center text-label-sm font-label-sm flex-shrink-0 mt-0.5">D</span>
+<span class="text-body-md font-body-md text-secondary">D. 页面组件不可直接获取主窗口生命周期状态</span>
+</div>
+</div>
+<!-- Answer Comparison Line -->
+<div class="flex items-center gap-space-xl p-space-md rounded-lg bg-surface-container-low text-body-md font-body-md">
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary">我的答案</span>
+<span class="text-primary font-headline-sm">AC</span>
+</div>
+<div class="w-[1px] h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-space-xs">
+<span class="text-secondary">正确答案</span>
+<span class="text-primary font-headline-sm">AC</span>
+</div>
+</div>
+<!-- Explanation Box -->
+<div class="p-space-md rounded-lg bg-surface-container flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span class="">解析</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant leading-relaxed">
+              Stage 模型下 UIAbility 具备完整生命周期，但同一应用不能与 FA 模型混用。
+            </p>
+</div>
+</div>
+</div>
+</article>
+</div>
+<!-- Floating Action Assistant Entry -->
+<div class="fixed right-gutter bottom-6 z-40">
+<button class="flex items-center gap-space-sm pl-space-md pr-space-lg py-2.5 rounded-full bg-primary-container text-on-primary shadow-lg hover:opacity-95 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+<span class="text-label-md font-label-md tracking-wide">问问 AI 助教</span>
+</button>
+</div>
+</div>
+<script>
+  function toggleMistakeFilter(showOnlyMistakes) {
+    const correctCards = document.querySelectorAll('.question-card[data-is-correct="true"]');
+    correctCards.forEach(card => {
+      if (showOnlyMistakes) {
+        card.classList.add('hidden');
+      } else {
+        card.classList.remove('hidden');
+      }
+    });
+  }
+
+  // Initialize toggle on load according to checkbox checked state
+  document.addEventListener('DOMContentLoaded', () => {
+    const checkbox = document.getElementById('toggle-mistakes');
+    if (checkbox) {
+      toggleMistakeFilter(checkbox.checked);
+    }
+  });
+</script></main>
+
+
+
+</body></html>

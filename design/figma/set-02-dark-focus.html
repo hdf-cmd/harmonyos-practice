@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>智题通 · 方向二 暗色沉浸 · 专注考试</title>
+<style>
+:root{
+  --bg:#0E1116; --card:#161B22; --raise:#1C232E; --line:#253040;
+  --text:#E6EDF3; --sub:#8B98A9; --dim:#5C6879;
+  --accent:#4DA3FF; --amber:#FFAB40; --green:#3DD68C; --red:#F2555A; --gold:#C9A227;
+  --f-zh:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;
+  --f-mono:'JetBrains Mono','Cascadia Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#05070A;font-family:var(--f-zh);color:var(--text);padding:40px 32px 80px;}
+.doc-title{font-size:24px;font-weight:700;letter-spacing:1px;margin-bottom:6px;}
+.doc-sub{font-size:13px;color:var(--sub);margin-bottom:34px;}
+.frames{display:flex;flex-wrap:wrap;gap:64px 40px;align-items:flex-start;}
+.frame-wrap{display:flex;flex-direction:column;gap:12px;}
+.frame-label{font-size:13px;color:var(--sub);font-family:var(--f-mono);letter-spacing:.5px;}
+.frame{width:390px;height:844px;background:var(--bg);border:1px solid var(--line);border-radius:24px;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+.board{width:590px;min-height:844px;background:var(--bg);border:1px solid var(--line);border-radius:24px;padding:26px 28px;display:flex;flex-direction:column;}
+.mono{font-family:var(--f-mono);}
+.st{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid var(--line);color:var(--sub);}
+.st-a{color:var(--accent);border-color:#26496E;background:#122132;}
+.st-w{color:var(--amber);border-color:#5A421A;background:#241B0E;}
+.st-g{color:var(--green);border-color:#1E5236;background:#0F2118;}
+.st-r{color:var(--red);border-color:#5F2528;background:#241114;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;}
+.raise{background:var(--raise);border:1px solid var(--line);border-radius:14px;}
+.glow{box-shadow:0 0 0 1px rgba(77,163,255,.18),0 8px 24px rgba(0,0,0,.45);}
+.nav{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line);flex:none;}
+.nav-t{font-size:16px;font-weight:600;}
+.nav-back{font-size:14px;color:var(--sub);}
+.body{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:14px;overflow:hidden;}
+.tabbar{height:78px;flex:none;border-top:1px solid var(--line);background:#0B0E13;display:flex;padding:8px 6px 20px;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--dim);}
+.tab.on{color:var(--accent);}
+.statusbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-family:var(--f-mono);font-size:12px;color:var(--sub);}
+.btn{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;}
+.btn-p{background:var(--accent);color:#061019;}
+.btn-o{background:var(--raise);color:var(--text);border:1px solid var(--line);}
+.btn-g{background:transparent;color:var(--sub);border:1px solid var(--line);}
+.divider{height:1px;background:var(--line);}
+.field{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);}
+.pill{padding:5px 12px;border-radius:999px;font-size:12px;}
+.h1{font-size:20px;font-weight:700;}
+.h2{font-size:16px;font-weight:600;}
+.t1{font-size:14px;color:var(--text);}
+.t2{font-size:12px;color:var(--sub);}
+.t3{font-size:11px;color:var(--dim);}
+svg{display:block;}
+</style>
+</head>
+<body>
+<div class="doc-title">智题通 · 方向二 暗色沉浸 · 专注考试</div>
+<div class="doc-sub">考试控制台 / 计时仪表 / 低照度分层 · 亮度分层表达层级，强调色仅四支</div>
+<div class="frames">
+<div class="frame-wrap">
+  <div class="frame-label">F00 设计令牌板（暗色沉浸 · 专注考试）</div>
+  <div class="board">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px;">
+      <div>
+        <div style="font-size:19px;font-weight:700;">设计令牌</div>
+        <div class="t2" style="margin-top:4px;">低照度分层 · 亮度即层级 · 强调色仅四支</div>
+      </div>
+      <div class="mono t3">set-02 / v1</div>
+    </div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:14px;">
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div>
+          <div class="t2" style="margin-bottom:8px;font-weight:600;">分层底色</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="height:31px;border-radius:8px;background:#0E1116;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><span class="t3">#0E1116</span><span class="t3">底</span></div>
+            <div style="height:31px;border-radius:8px;background:#161B22;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><span class="t3">#161B22</span><span class="t3">卡片</span></div>
+            <div style="height:31px;border-radius:8px;background:#1C232E;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><span class="t3">#1C232E</span><span class="t3">凸起</span></div>
+            <div style="height:31px;border-radius:8px;background:#0B0E13;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 10px;"><span class="t3">#0B0E13</span><span class="t3">操作条</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="t2" style="margin-bottom:8px;font-weight:600;">文本与描边</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div class="raise" style="padding:6px 9px;"><div class="t1">#E6EDF3</div><div class="t3">主文本 14/22</div></div>
+            <div class="raise" style="padding:6px 9px;"><div class="t2">#8B98A9</div><div class="t3">次文本 12/18</div></div>
+            <div class="raise" style="padding:6px 9px;"><div style="font-size:11px;color:#5C6879;">#5C6879</div><div class="t3">弱文本 11</div></div>
+            <div class="raise" style="padding:8px 10px;border-color:#253040;"><div style="font-size:11px;color:#8B98A9;">#253040</div><div class="t3">描边 1px</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="t2" style="margin-bottom:8px;font-weight:600;">强调色（仅这四支 + 暗金）</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+            <div class="raise" style="padding:7px 3px;text-align:center;"><div style="height:14px;border-radius:4px;background:#4DA3FF;"></div><div class="mono" style="margin-top:5px;font-size:8.5px;color:#8B98A9;">#4DA3FF</div><div class="t3" style="font-size:9.5px;">主强调</div></div>
+            <div class="raise" style="padding:7px 3px;text-align:center;"><div style="height:14px;border-radius:4px;background:#FFAB40;"></div><div class="mono" style="margin-top:5px;font-size:8.5px;color:#8B98A9;">#FFAB40</div><div class="t3" style="font-size:9.5px;">倒计时</div></div>
+            <div class="raise" style="padding:7px 3px;text-align:center;"><div style="height:14px;border-radius:4px;background:#3DD68C;"></div><div class="mono" style="margin-top:5px;font-size:8.5px;color:#8B98A9;">#3DD68C</div><div class="t3" style="font-size:9.5px;">答对</div></div>
+            <div class="raise" style="padding:7px 3px;text-align:center;"><div style="height:14px;border-radius:4px;background:#F2555A;"></div><div class="mono" style="margin-top:5px;font-size:8.5px;color:#8B98A9;">#F2555A</div><div class="t3" style="font-size:9.5px;">答错</div></div>
+            <div class="raise" style="padding:7px 3px;text-align:center;"><div style="height:14px;border-radius:4px;background:#C9A227;"></div><div class="mono" style="margin-top:5px;font-size:8.5px;color:#8B98A9;">#C9A227</div><div class="t3" style="font-size:9.5px;">证书</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div>
+          <div class="t2" style="margin-bottom:7px;font-weight:600;">字阶（中文无衬线 / 数字等宽）</div>
+          <div class="card" style="padding:10px 12px;display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:24px;font-weight:700;">24 页面主标题</span><span class="mono t3">24/700</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:18px;font-weight:700;">18 区块标题</span><span class="mono t3">18/700</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="t1">14 正文题干</span><span class="mono t3">14/400</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="mono" style="font-size:28px;font-weight:700;color:#FFAB40;line-height:1.1;">00:37:12</span><span class="mono t3">28/mono</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="mono" style="font-size:20px;font-weight:700;line-height:1.1;">78 <span style="font-size:12px;color:#8B98A9;">/ 100</span></span><span class="mono t3">20/mono</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="t2" style="margin-bottom:7px;font-weight:600;">圆角 / 间距</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <div style="width:52px;height:28px;border-radius:8px;background:#1C232E;border:1px solid var(--line);"></div>
+            <div style="width:52px;height:28px;border-radius:14px;background:#1C232E;border:1px solid var(--line);"></div>
+            <div style="width:52px;height:28px;border-radius:999px;background:#1C232E;border:1px solid var(--line);"></div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+              <div class="t3" style="font-size:10px;">r8 / r14 / r999</div>
+              <div style="display:flex;gap:4px;align-items:center;"><div style="height:9px;width:8px;background:#253040;"></div><div style="height:9px;width:12px;background:#253040;"></div><div style="height:9px;width:16px;background:#253040;"></div><div style="height:9px;width:18px;background:#253040;"></div></div>
+              <div class="t3 mono" style="font-size:10px;">8 · 12 · 16 · 18</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="t2" style="margin-bottom:7px;font-weight:600;">组件样例</div>
+          <div class="card" style="padding:11px;display:flex;flex-direction:column;gap:9px;">
+            <div style="display:flex;gap:10px;">
+              <div class="btn btn-p" style="flex:1;height:36px;font-size:14px;">主按钮</div>
+              <div class="btn btn-o" style="flex:1;height:36px;font-size:14px;">次按钮</div>
+              <div class="btn btn-g" style="flex:1;height:36px;font-size:14px;">弱化</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <span class="pill st-a">中级</span>
+              <span class="pill st-w">已存疑</span>
+              <span class="pill st-g">通过</span>
+              <span class="pill st-r">未通过</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div style="width:44px;height:24px;border-radius:999px;background:#1D3A5C;border:1px solid #26496E;position:relative;"><div style="position:absolute;right:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#4DA3FF;"></div></div>
+                <span class="t2">只看错题（开）</span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div style="width:44px;height:24px;border-radius:999px;background:#1C232E;border:1px solid var(--line);position:relative;"><div style="position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#5C6879;"></div></div>
+                <span class="t3">关</span>
+              </div>
+            </div>
+            <div style="height:36px;border-radius:10px;background:#0B0E13;border:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:8px;"><span class="mono" style="font-size:12px;color:#5C6879;">输入框占位</span><span class="t3" style="font-size:10px;">1px 描边 / 内凹底</span></div>
+            <div style="height:48px;border-radius:12px;background:#0B0E13;border:1px solid var(--line);display:flex;padding:5px;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.6"><path d="M3 11l9-7 9 7"/><path d="M6 10v10h12V10"/></svg><span style="font-size:10px;color:#4DA3FF;">首页</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h6"/></svg><span style="font-size:10px;color:#5C6879;">刷题</span></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg><span style="font-size:10px;color:#5C6879;">我的</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:12px;display:flex;gap:10px;">
+      <div class="raise" style="flex:1;padding:10px 12px;"><div class="mono" style="font-size:11px;color:#4DA3FF;">01</div><div class="t2" style="margin-top:3px;">层级靠亮度分层，不靠彩色；彩色只留给状态语义。</div></div>
+      <div class="raise" style="flex:1;padding:10px 12px;"><div class="mono" style="font-size:11px;color:#FFAB40;">02</div><div class="t2" style="margin-top:3px;">所有数字与时间走等宽栈，形成计时仪表的一致读感。</div></div>
+      <div class="raise" style="flex:1;padding:10px 12px;"><div class="mono" style="font-size:11px;color:#3DD68C;">03</div><div class="t2" style="margin-top:3px;">答题页是考试控制台：题号轨道 + 环形倒计时 + 固定操作条。</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F01 登录 / 注册（登录态）</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="body" style="justify-content:space-between;padding:24px 26px 20px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:34px;">
+        <div style="width:96px;height:96px;border-radius:26px;background:linear-gradient(150deg,#1C232E,#12171E);border:1px solid #26496E;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(77,163,255,.16);">
+          <svg width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="#4DA3FF" stroke-width="2.2" stroke-linecap="round"><rect x="8" y="6" width="32" height="36" rx="7"/><path d="M15 17h13M15 25h18"/><path d="M15 33h8"/><path d="M31 31l3.6 3.6L41 27"/></svg>
+        </div>
+        <div style="font-size:22px;font-weight:700;letter-spacing:1px;">欢迎使用智题通</div>
+        <div class="t2">鸿蒙备考 · 刷题与认证考试</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="raise" style="height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#0B0E13;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg>
+          <span style="display:flex;flex-direction:column;gap:2px;"><span class="t3">请输入用户名</span><span class="mono" style="font-size:15px;">hdf2026</span></span>
+        </div>
+        <div class="raise" style="height:56px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#0B0E13;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.6"><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"/></svg>
+          <span style="display:flex;flex-direction:column;gap:2px;"><span class="t3">请输入密码</span><span style="display:flex;gap:7px;padding-left:4px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span><span style="width:8px;height:8px;border-radius:50%;background:#E6EDF3;"></span></span></span>
+        </div>
+        <div class="t3" style="min-height:14px;"></div>
+        <div class="btn btn-p" style="height:48px;font-size:16px;box-shadow:0 0 22px rgba(77,163,255,.24);">登录</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:6px;padding-bottom:10px;"><span class="t2">没有账号？</span><span style="font-size:12px;color:#4DA3FF;font-weight:600;">立即注册</span></div>
+    </div>
+    <div style="flex:none;height:26px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F02 首页</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="body" style="gap:16px;padding-top:12px;">
+      <div class="card glow" style="border-color:#26496E;padding:16px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(155deg,#182031,#12161D);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="mono" style="font-size:10px;color:#4DA3FF;letter-spacing:1.5px;">BANNER 02 / 06</span>
+          <span class="pill st-a" style="font-size:10px;">今日更新</span>
+        </div>
+        <div style="font-size:17px;font-weight:700;line-height:1.5;">47 套模拟卷已更新 · 覆盖 Stage 模型与分布式数据</div>
+        <div style="display:flex;gap:7px;align-items:center;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#253040;"></span>
+          <span style="width:20px;height:7px;border-radius:4px;background:#4DA3FF;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#253040;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#253040;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#253040;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#253040;"></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;"><div style="width:3px;height:15px;border-radius:2px;background:#4DA3FF;"></div><span class="h2">推荐试卷</span></div>
+        <span class="t2">共 47 套</span>
+      </div>
+      <div class="card" style="padding:0 16px;">
+        <div class="field" style="border-bottom:1px solid var(--line);">
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <span class="t1" style="font-weight:600;">HarmonyOS 应用开发 · 阶段测验 03</span>
+            <span class="mono t3">共 25 题 · 45 分钟 · 及格 60 分</span>
+            <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-a" style="font-size:10px;">中级</span><span class="pill st-g" style="font-size:10px;">最好 78 分</span></div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div class="field" style="border-bottom:1px solid var(--line);">
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <span class="t1" style="font-weight:600;">ArkTS 语法与并发 · 快速自测</span>
+            <span class="mono t3">共 15 题 · 20 分钟 · 及格 70 分</span>
+            <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-a" style="font-size:10px;border-color:#2A3A4C;color:#8B98A9;background:#161B22;">初级</span><span class="pill" style="font-size:10px;color:#5C6879;border:1px solid #253040;">未考</span></div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+        <div class="field" style="border-bottom:none;">
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <span class="t1" style="font-weight:600;">Stage 模型与 Ability · 冲刺卷</span>
+            <span class="mono t3">共 30 题 · 60 分钟 · 及格 65 分</span>
+            <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-w" style="font-size:10px;">高级</span><span class="pill st-r" style="font-size:10px;">最好 55 分</span></div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.7"><path d="M3 11l9-7 9 7"/><path d="M6 10v10h12V10"/></svg><span>首页</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h6"/></svg><span>刷题</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg><span>我的</span></div>
+    </div>
+    <div style="flex:none;height:24px;display:flex;align-items:center;justify-content:center;background:#0B0E13;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F03 考试科目（刷题 Tab 首屏）</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="nav" style="border-bottom:none;"><span class="h1">考试科目</span><span class="mono t3">6 科 · 33 套</span></div>
+    <div class="body" style="padding-top:4px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;border-color:#26496E;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 10h8M8 14h5"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">01</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">鸿蒙应用开发</div><div class="mono t3" style="margin-top:3px;">共 8 套</div></div>
+        </div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">02</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">ArkTS 语言基础</div><div class="mono t3" style="margin-top:3px;">共 5 套</div></div>
+        </div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">03</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">UI 与交互设计</div><div class="mono t3" style="margin-top:3px;">共 6 套</div></div>
+        </div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">04</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">网络与数据</div><div class="mono t3" style="margin-top:3px;">共 4 套</div></div>
+        </div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><path d="M7 17a4 4 0 1 1 .6-8 5 5 0 0 1 9.4 1.2A3.4 3.4 0 0 1 17 17z"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">05</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">云开发 AGC</div><div class="mono t3" style="margin-top:3px;">共 3 套</div></div>
+        </div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;height:118px;justify-content:space-between;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFAB40" stroke-width="1.6"><path d="M12 4l2.4 5 5.6.7-4 3.9 1 5.4-5-2.7-5 2.7 1-5.4-4-3.9 5.6-.7z"/></svg>
+            <span class="mono" style="font-size:11px;color:#5C6879;">06</span>
+          </div>
+          <div><div class="t1" style="font-weight:600;">综合模拟</div><div class="mono t3" style="margin-top:3px;">共 7 套</div></div>
+        </div>
+      </div>
+      <div class="t3" style="text-align:center;margin-top:2px;">点击进入科目考卷列表</div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><path d="M3 11l9-7 9 7"/><path d="M6 10v10h12V10"/></svg><span>首页</span></div>
+      <div class="tab on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h6"/></svg><span>刷题</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg><span>我的</span></div>
+    </div>
+  </div>
+</div>
+<div class="frame-wrap">
+  <div class="frame-label">F04 考卷列表（科目：鸿蒙应用开发）</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="nav" style="border-bottom:1px solid var(--line);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E6EDF3" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg>
+        <span class="nav-t">鸿蒙应用开发</span>
+      </div>
+      <span class="mono t3">5 套</span>
+    </div>
+    <div class="body" style="padding-top:12px;gap:12px;">
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;border-color:#26496E;box-shadow:0 0 18px rgba(77,163,255,.10);">
+        <div style="display:flex;justify-content:space-between;gap:10px;"><span class="t1" style="font-weight:600;">HarmonyOS 应用开发 · 阶段测验 03</span><span class="pill st-g" style="font-size:10px;white-space:nowrap;">最好 78 分</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3">共 25 题 · 45 分钟 · 及格 60 分</span><span class="mono t3">已考 2/3 次</span></div>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-a" style="font-size:10px;">中级</span><div style="flex:1;height:4px;border-radius:2px;background:#0B0E13;overflow:hidden;"><div style="width:66.6%;height:4px;border-radius:2px;background:#4DA3FF;"></div></div><span class="mono t3">2 / 3</span></div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;justify-content:space-between;gap:10px;"><span class="t1" style="font-weight:600;">Stage 模型与 Ability · 冲刺卷</span><span class="pill st-r" style="font-size:10px;white-space:nowrap;">最好 55 分</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3">共 30 题 · 60 分钟 · 及格 65 分</span><span class="mono t3">已考 1/3 次</span></div>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-w" style="font-size:10px;">高级</span><div style="flex:1;height:4px;border-radius:2px;background:#0B0E13;overflow:hidden;"><div style="width:33.3%;height:4px;border-radius:2px;background:#4DA3FF;"></div></div><span class="mono t3">1 / 3</span></div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;justify-content:space-between;gap:10px;"><span class="t1" style="font-weight:600;">UI 布局与动效 · 专项突破</span><span class="pill st-g" style="font-size:10px;white-space:nowrap;">最好 88 分</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3">共 20 题 · 35 分钟 · 及格 60 分</span><span class="mono t3">已考 3/3 次</span></div>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-a" style="font-size:10px;">中级</span><div style="flex:1;height:4px;border-radius:2px;background:#0B0E13;overflow:hidden;"><div style="width:100%;height:4px;border-radius:2px;background:#3DD68C;"></div></div><span class="mono t3">3 / 3</span></div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;justify-content:space-between;gap:10px;"><span class="t1" style="font-weight:600;">分布式数据 · 难点精练</span><span class="pill" style="font-size:10px;color:#5C6879;border:1px solid #253040;white-space:nowrap;">未考</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3">共 18 题 · 30 分钟 · 及格 60 分</span><span class="mono t3">已考 0/3 次</span></div>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="pill st-w" style="font-size:10px;">高级</span><div style="flex:1;height:4px;border-radius:2px;background:#0B0E13;overflow:hidden;"><div style="width:0%;height:4px;border-radius:2px;background:#253040;"></div></div><span class="mono t3">0 / 3</span></div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;justify-content:space-between;gap:10px;"><span class="t1" style="font-weight:600;">ArkTS 语法与并发 · 快速自测</span><span class="pill" style="font-size:10px;color:#5C6879;border:1px solid #253040;white-space:nowrap;">未考</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3">共 15 题 · 20 分钟 · 及格 70 分</span><span class="mono t3">已考 0/2 次</span></div>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="pill" style="font-size:10px;color:#8B98A9;border:1px solid #2A3A4C;background:#161B22;">初级</span><div style="flex:1;height:4px;border-radius:2px;background:#0B0E13;overflow:hidden;"><div style="width:0%;height:4px;border-radius:2px;background:#253040;"></div></div><span class="mono t3">0 / 2</span></div>
+      </div>
+    </div>
+    <div style="flex:none;height:18px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F05 答题页（多选 · 已存疑 · 切屏提醒）</div>
+  <div class="frame">
+    <div class="statusbar" style="height:30px;"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div style="flex:none;display:flex;align-items:center;gap:9px;background:#241B0E;border-top:1px solid #5A421A;border-bottom:1px solid #5A421A;padding:8px 14px 8px 0;">
+      <div style="width:4px;align-self:stretch;background:#FFAB40;"></div>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFAB40" stroke-width="1.8"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/><circle cx="12" cy="17" r=".6" fill="#FFAB40"/></svg>
+      <span style="font-size:11.5px;color:#FFAB40;line-height:1.4;">检测到切出应用，已记录 2 次，请专心作答</span>
+    </div>
+    <div style="flex:none;padding:10px 16px 12px;border-bottom:1px solid var(--line);background:#10151C;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <span class="t2 mono" style="font-size:10px;letter-spacing:1px;color:#5C6879;">EXAM CONSOLE</span>
+        <span class="t3 mono" style="font-size:10px;">剩余 83%</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-top:4px;color:#E6EDF3;">HarmonyOS 应用开发 · 阶段测验 03</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span class="t2" style="font-size:11px;">第</span>
+          <span class="mono" style="font-size:26px;font-weight:700;color:#4DA3FF;line-height:1;">7</span>
+          <span class="mono" style="font-size:13px;color:#8B98A9;">/ 25 题</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div style="text-align:right;">
+            <div class="mono" style="font-size:20px;font-weight:700;color:#FFAB40;line-height:1.1;">00:37:12</div>
+            <div class="mono t3" style="font-size:9px;letter-spacing:1px;">COUNTDOWN</div>
+          </div>
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="24" cy="24" r="20" stroke="#253040" stroke-width="4"/>
+            <circle cx="24" cy="24" r="20" stroke="#FFAB40" stroke-width="4" stroke-linecap="round" stroke-dasharray="103.4 125.7" transform="rotate(-90 24 24)"/>
+            <text x="24" y="28" text-anchor="middle" font-size="11" font-family="monospace" fill="#8B98A9">37</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;min-height:0;">
+      <div style="flex:none;width:44px;border-right:1px solid var(--line);padding:9px 5px;display:flex;flex-direction:column;gap:2.5px;overflow:hidden;">
+        <div class="mono" style="font-size:8px;color:#5C6879;text-align:center;letter-spacing:.5px;">题号轨</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">1</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">2</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">3</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">4</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">5</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">6</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#FFAB40;background:#241B0E;border:1px solid #4DA3FF;border-radius:4px;">7</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">8</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">9</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">10</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">11</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">12</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">13</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">14</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">15</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">16</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">17</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#FFAB40;background:#241B0E;border:1px solid #5A421A;border-radius:4px;">18</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">19</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#5C6879;background:#12161D;border:1px solid #253040;border-radius:4px;">20</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">21</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#FFAB40;background:#241B0E;border:1px solid #5A421A;border-radius:4px;">22</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#0E1116;background:#1D3A5C;border-radius:4px;">23</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#5C6879;background:#12161D;border:1px solid #253040;border-radius:4px;">24</div>
+        <div class="mono" style="flex:1;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#5C6879;background:#12161D;border:1px solid #253040;border-radius:4px;">25</div>
+      </div>
+      <div style="flex:1;min-width:0;padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="pill st-a">多选题</span>
+          <span class="mono t3" style="font-size:10px;">分值 4 分 · 少选不得分</span>
+        </div>
+        <div style="font-size:15px;line-height:1.55;font-weight:600;">关于 HarmonyOS 的 Stage 模型，下列说法正确的是？</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:#122132;border:1px solid #26496E;box-shadow:0 0 14px rgba(77,163,255,.10);">
+            <span class="mono" style="flex:none;width:22px;height:22px;border-radius:6px;background:#4DA3FF;color:#061019;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">A</span>
+            <span style="font-size:12.5px;line-height:1.5;color:#E6EDF3;">UIAbility 是应用的基本组成单元，具备完整生命周期</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:#161B22;border:1px solid var(--line);">
+            <span class="mono" style="flex:none;width:22px;height:22px;border-radius:6px;background:#0B0E13;color:#8B98A9;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid #253040;">B</span>
+            <span style="font-size:12.5px;line-height:1.5;color:#8B98A9;">每个 UIAbility 都运行在独立线程与独立窗口中</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:#122132;border:1px solid #26496E;box-shadow:0 0 14px rgba(77,163,255,.10);">
+            <span class="mono" style="flex:none;width:22px;height:22px;border-radius:6px;background:#4DA3FF;color:#061019;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">C</span>
+            <span style="font-size:12.5px;line-height:1.5;color:#E6EDF3;">ExtensionAbility 用于提供应用对用户的扩展能力</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border-radius:12px;background:#161B22;border:1px solid var(--line);">
+            <span class="mono" style="flex:none;width:22px;height:22px;border-radius:6px;background:#0B0E13;color:#8B98A9;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid #253040;">D</span>
+            <span style="font-size:12.5px;line-height:1.5;color:#8B98A9;">Stage 模型与 FA 模型可以在同一应用内直接混用</span>
+          </div>
+        </div>
+        <div class="mono t3" style="font-size:10px;margin-top:auto;">已选 2 项 · A、C</div>
+      </div>
+    </div>
+    <div style="flex:none;background:#0B0E13;border-top:1px solid var(--line);padding:10px 16px 8px;">
+      <div style="display:flex;gap:9px;">
+        <div class="btn btn-g" style="flex:1;height:40px;font-size:13px;">上一题</div>
+        <div class="btn btn-g" style="flex:1;height:40px;font-size:13px;">下一题</div>
+        <div class="btn" style="flex:1;height:40px;font-size:13px;font-weight:600;color:#FFAB40;background:#241B0E;border:1px solid #5A421A;border-radius:12px;">已存疑</div>
+        <div class="btn btn-o" style="flex:1;height:40px;font-size:13px;border-color:#26496E;color:#4DA3FF;">答题卡</div>
+      </div>
+      <div class="btn btn-p" style="height:44px;margin-top:9px;font-size:15px;box-shadow:0 0 20px rgba(77,163,255,.22);">提交试卷</div>
+      <div style="height:14px;display:flex;align-items:center;justify-content:center;"><div style="width:110px;height:4px;border-radius:2px;background:#253040;"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F06 答题卡（半模态浮层 · 覆盖于 F05）</div>
+  <div class="frame">
+    <div class="statusbar" style="height:30px;opacity:.35;"><span>9:41</span><span class="mono t3">考试进行中</span></div>
+    <div style="flex:none;padding:10px 16px;opacity:.22;">
+      <div class="t3 mono" style="font-size:10px;">HarmonyOS 应用开发 · 阶段测验 03</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;"><span class="mono" style="font-size:18px;color:#4DA3FF;">7 / 25</span><span class="mono" style="font-size:16px;color:#FFAB40;">00:37:12</span></div>
+    </div>
+    <div style="flex:1;display:flex;gap:12px;padding:8px 16px;opacity:.16;">
+      <div style="width:40px;display:flex;flex-direction:column;gap:3px;"><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#241B0E;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div><div style="flex:1;background:#1D3A5C;border-radius:4px;"></div></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:9px;"><div style="height:16px;border-radius:8px;background:#253040;width:70%;"></div><div style="height:52px;border-radius:12px;background:#161B22;"></div><div style="height:52px;border-radius:12px;background:#161B22;"></div><div style="height:52px;border-radius:12px;background:#161B22;"></div></div>
+    </div>
+    <div style="position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(5,7,10,.72);"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:620px;background:#161B22;border-top:1px solid #26496E;border-radius:22px 22px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;padding:0 18px 14px;">
+      <div style="width:44px;height:4px;border-radius:2px;background:#253040;margin:9px auto 12px;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:17px;font-weight:700;">答题卡</span>
+        <span class="mono t3" style="font-size:10px;">5 × 5</span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:8px;padding-bottom:12px;border-bottom:1px solid var(--line);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;border-radius:3px;background:#1D3A5C;"></span><span class="t2" style="font-size:10.5px;">已答</span></span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;border-radius:3px;background:#3A2A12;border:1px solid #FFAB40;"></span><span class="t2" style="font-size:10.5px;">存疑</span></span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;border-radius:3px;background:#4DA3FF;box-shadow:0 0 8px rgba(77,163,255,.6);"></span><span class="t2" style="font-size:10.5px;">当前题</span></span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;border-radius:3px;background:#12161D;border:1px solid #253040;"></span><span class="t2" style="font-size:10.5px;">未答</span></span>
+        <span class="t3" style="font-size:10px;margin-left:auto;">点击跳转</span>
+      </div>
+      <div style="flex:1;display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:9px;padding:14px 0;">
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">1</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">2</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">3</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">4</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">5</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">6</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#241B0E;border:2px solid #4DA3FF;border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(77,163,255,.30);"><span class="mono" style="font-size:15px;font-weight:700;color:#FFAB40;">7</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#FFAB40;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">8</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">9</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">10</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">11</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">12</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">13</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">14</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">15</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">16</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">17</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#241B0E;border:1px solid #5A421A;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#FFAB40;">18</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#FFAB40;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">19</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#12161D;border:1px solid #253040;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;color:#5C6879;">20</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#5C6879;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">21</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#241B0E;border:1px solid #5A421A;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#FFAB40;">22</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#FFAB40;"></span></div>
+        <div style="position:relative;background:#1D3A5C;border:1px solid #26496E;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;font-weight:600;color:#CFE4FF;">23</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#3DD68C;"></span></div>
+        <div style="position:relative;background:#12161D;border:1px solid #253040;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;color:#5C6879;">24</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#5C6879;"></span></div>
+        <div style="position:relative;background:#12161D;border:1px solid #253040;border-radius:10px;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:15px;color:#5C6879;">25</span><span style="position:absolute;right:5px;bottom:5px;width:3px;height:3px;border-radius:50%;background:#5C6879;"></span></div>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;">
+        <div><div class="mono" style="font-size:18px;font-weight:700;color:#4DA3FF;">已答 19 / 25</div><div class="t3" style="margin-top:2px;">存疑 3 · 未答 2</div></div>
+        <div style="text-align:right;"><div class="mono" style="font-size:18px;font-weight:700;color:#FFAB40;">剩余 00:37:12</div><div class="t3" style="margin-top:2px;">当前题 7</div></div>
+      </div>
+      <div style="height:16px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#5C6879;"></div></div>
+    </div>
+  </div>
+</div>
+<div class="frame-wrap">
+  <div class="frame-label">F07 答题结果（通过态）</div>
+  <div class="frame">
+    <div class="statusbar" style="height:30px;"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="nav" style="border-bottom:none;"><span class="nav-t">HarmonyOS 应用开发 · 阶段测验 03</span></div>
+    <div class="body" style="padding-top:4px;gap:12px;">
+      <div class="card" style="padding:16px;display:flex;gap:16px;align-items:center;background:linear-gradient(140deg,#182031,#12161D);border-color:#26496E;box-shadow:0 0 24px rgba(77,163,255,.12);">
+        <div style="flex:none;text-align:center;">
+          <div class="mono" style="font-size:52px;font-weight:700;line-height:1;color:#E6EDF3;">78</div>
+          <div class="t2" style="margin-top:2px;">分</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t2" style="font-size:11px;">及格线</span><span class="mono t1" style="font-size:12px;">60</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t2" style="font-size:11px;">用时</span><span class="mono t1" style="font-size:12px;">32 分 14 秒</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t2" style="font-size:11px;">交卷方式</span><span class="t1" style="font-size:12px;">手动交卷</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t2" style="font-size:11px;">状态</span><span class="pill st-g" style="font-size:11px;">通过</span></div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span class="t2" style="font-size:11px;">答题分布</span>
+          <span class="mono t3" style="font-size:10px;">18 / 5 / 2</span>
+        </div>
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:#0B0E13;">
+          <div style="width:72%;height:14px;background:#3DD68C;"></div>
+          <div style="width:20%;height:14px;background:#F2555A;"></div>
+          <div style="width:8%;height:14px;background:#5C6879;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span class="mono t3" style="font-size:10px;color:#3DD68C;">答对 18</span>
+          <span class="mono t3" style="font-size:10px;color:#F2555A;">答错 5</span>
+          <span class="mono t3" style="font-size:10px;">未答 2</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#161B22;border:1px solid #5A421A;border-radius:12px;padding:10px 12px;">
+        <div style="width:4px;height:26px;border-radius:2px;background:#FFAB40;flex:none;"></div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFAB40" stroke-width="1.8"><path d="M12 4l9 16H3z"/><path d="M12 10v4"/></svg>
+        <span style="font-size:11.5px;color:#C7B08A;">切出应用 2 次，已由服务端记录</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;background:#191613;border:1px solid #C9A227;border-radius:12px;padding:10px 12px;box-shadow:0 0 18px rgba(201,162,39,.14);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.7"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 20l4.5-2.4L16.5 20 15 13.5"/></svg>
+        <span style="font-size:12px;color:#E6D9A8;">已生成电子证书，可在个人中心查看</span>
+      </div>
+      <div class="card" style="padding:12px 14px;display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t2" style="font-size:11px;">未答 / 答对 / 答错</span><span class="mono t3" style="font-size:10px;">25 格</span></div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;">
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">1</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">2</span></div>
+          <div style="height:30px;border-radius:6px;background:#241114;border:1px solid #5F2528;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#F2555A;">3</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">4</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">5</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">6</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #4DA3FF;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">7</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">8</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">9</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">10</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">11</span></div>
+          <div style="height:30px;border-radius:6px;background:#241114;border:1px solid #5F2528;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#F2555A;">12</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">13</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">14</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">15</span></div>
+          <div style="height:30px;border-radius:6px;background:#241114;border:1px solid #5F2528;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#F2555A;">16</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">17</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">18</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">19</span></div>
+          <div style="height:30px;border-radius:6px;background:#241114;border:1px solid #5F2528;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#F2555A;">20</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">21</span></div>
+          <div style="height:30px;border-radius:6px;background:#241114;border:1px solid #5F2528;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#F2555A;">22</span></div>
+          <div style="height:30px;border-radius:6px;background:#0F2118;border:1px solid #1E5236;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#7FD9AC;">23</span></div>
+          <div style="height:30px;border-radius:6px;background:#12161D;border:1px solid #253040;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#5C6879;">24</span></div>
+          <div style="height:30px;border-radius:6px;background:#12161D;border:1px solid #253040;display:flex;align-items:center;justify-content:center;"><span class="mono" style="font-size:10px;color:#5C6879;">25</span></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;background:#122132;border:1px solid #26496E;border-radius:12px;padding:11px 12px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.6"><rect x="4" y="7" width="16" height="12" rx="4"/><circle cx="9.5" cy="13" r="1.2" fill="#4DA3FF"/><circle cx="14.5" cy="13" r="1.2" fill="#4DA3FF"/><path d="M12 7V4"/></svg>
+        <span style="font-size:13px;color:#BBD8FF;font-weight:600;">问问 AI 助教</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.8" style="margin-left:auto;"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:auto;">
+        <div class="btn btn-o" style="flex:1;">查看回顾</div>
+        <div class="btn btn-p" style="flex:1;">重新刷题</div>
+      </div>
+    </div>
+    <div style="flex:none;height:16px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F08 逐题回顾精讲（只看错题）</div>
+  <div class="frame">
+    <div class="statusbar" style="height:30px;"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="nav" style="height:42px;">
+      <div style="display:flex;align-items:center;gap:9px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E6EDF3" stroke-width="1.8"><path d="M15 5l-7 7 7 7"/></svg><span class="nav-t">逐题回顾精讲</span></div>
+      <span class="mono t3" style="font-size:10px;">78 / 100</span>
+    </div>
+    <div class="body" style="padding-top:8px;padding-bottom:12px;gap:8px;">
+      <div class="card" style="padding:9px 13px;display:flex;align-items:center;gap:10px;">
+        <span class="t1" style="font-size:12px;font-weight:600;flex:1;min-width:0;">HarmonyOS 应用开发 · 阶段测验 03</span>
+        <span class="mono" style="font-size:14px;font-weight:700;">78 / 100</span>
+        <span class="mono t2" style="font-size:10.5px;">答对 18 / 25</span>
+        <span class="pill st-g" style="font-size:10px;">通过</span>
+      </div>
+      <div class="card" style="padding:8px 13px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:9px;"><span class="t1" style="font-size:13px;">只看错题</span><span class="mono t3" style="font-size:10px;">已筛 5 题</span></div>
+        <div style="width:42px;height:23px;border-radius:999px;background:#1D3A5C;border:1px solid #26496E;position:relative;"><div style="position:absolute;right:2px;top:2px;width:17px;height:17px;border-radius:50%;background:#4DA3FF;"></div></div>
+      </div>
+      <div style="display:flex;background:#161B22;border:1px solid var(--line);border-radius:14px;overflow:hidden;">
+        <div style="width:4px;flex:none;background:#F2555A;"></div>
+        <div style="flex:1;padding:10px 13px;display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span class="mono" style="font-size:16px;font-weight:700;color:#F2555A;">3</span>
+            <span class="pill st-a" style="font-size:10px;">单选题</span>
+            <span class="mono t3" style="font-size:10px;margin-left:auto;">0 / 4 分</span>
+          </div>
+          <div style="font-size:12.5px;line-height:1.45;font-weight:600;">下列哪个组件适合作为长列表的首选容器？</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;gap:9px;align-items:center;padding:6px 10px;border-radius:9px;background:#241114;border:1px solid #5F2528;"><span class="mono" style="font-size:11px;font-weight:700;color:#F2555A;width:16px;">A.</span><span style="font-size:12px;color:#E6EDF3;">List</span><span class="pill st-r" style="font-size:9px;margin-left:auto;">我选的</span></div>
+            <div style="display:flex;gap:9px;align-items:center;padding:6px 10px;border-radius:9px;background:#0F2118;border:1px solid #1E5236;"><span class="mono" style="font-size:11px;font-weight:700;color:#3DD68C;width:16px;">B.</span><span style="font-size:12px;color:#E6EDF3;">Scroll + ForEach</span><span class="pill st-g" style="font-size:9px;margin-left:auto;">正确</span></div>
+            <div style="display:flex;gap:9px;align-items:center;padding:6px 10px;border-radius:9px;background:#161B22;border:1px solid var(--line);"><span class="mono" style="font-size:11px;color:#8B98A9;width:16px;">C.</span><span style="font-size:12px;color:#8B98A9;">Grid</span></div>
+            <div style="display:flex;gap:9px;align-items:center;padding:6px 10px;border-radius:9px;background:#161B22;border:1px solid var(--line);"><span class="mono" style="font-size:11px;color:#8B98A9;width:16px;">D.</span><span style="font-size:12px;color:#8B98A9;">Column</span></div>
+          </div>
+          <div style="display:flex;gap:14px;"><span class="mono t2" style="font-size:11px;">我的答案 <span style="color:#FFAB40;">A</span></span><span class="mono t2" style="font-size:11px;">正确答案 <span style="color:#3DD68C;">B</span></span></div>
+          <div style="background:#0B0E13;border:1px solid var(--line);border-left:2px solid #4DA3FF;border-radius:8px;padding:8px 10px;">
+            <div class="mono t3" style="font-size:9px;letter-spacing:1px;margin-bottom:4px;">解析</div>
+            <div style="font-size:11px;line-height:1.55;color:#8B98A9;">List 支持按需渲染与复用，长列表性能明显优于把 ForEach 塞进 Column；Grid 适合网格而非线性列表。</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;background:#161B22;border:1px solid var(--line);border-radius:14px;overflow:hidden;">
+        <div style="width:4px;flex:none;background:#3DD68C;"></div>
+        <div style="flex:1;padding:10px 13px;display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span class="mono" style="font-size:16px;font-weight:700;color:#3DD68C;">7</span>
+            <span class="pill st-a" style="font-size:10px;">多选题</span>
+            <span class="mono t3" style="font-size:10px;margin-left:auto;">4 / 4 分</span>
+          </div>
+          <div style="font-size:12.5px;line-height:1.45;font-weight:600;">关于 HarmonyOS 的 Stage 模型，下列说法正确的是？</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="display:flex;gap:7px;align-items:flex-start;padding:6px 8px;border-radius:9px;background:#0F2118;border:1px solid #1E5236;"><span class="mono" style="font-size:10.5px;font-weight:700;color:#3DD68C;">A.</span><span style="font-size:11px;line-height:1.45;color:#E6EDF3;">UIAbility 是应用的基本组成单元，具备完整生命周期</span></div>
+            <div style="display:flex;gap:7px;align-items:flex-start;padding:6px 8px;border-radius:9px;background:#161B22;border:1px solid var(--line);"><span class="mono" style="font-size:10.5px;color:#8B98A9;">B.</span><span style="font-size:11px;line-height:1.45;color:#8B98A9;">每个 UIAbility 都运行在独立线程与独立窗口中</span></div>
+            <div style="display:flex;gap:7px;align-items:flex-start;padding:6px 8px;border-radius:9px;background:#0F2118;border:1px solid #1E5236;"><span class="mono" style="font-size:10.5px;font-weight:700;color:#3DD68C;">C.</span><span style="font-size:11px;line-height:1.45;color:#E6EDF3;">ExtensionAbility 用于提供应用对用户的扩展能力</span></div>
+            <div style="display:flex;gap:7px;align-items:flex-start;padding:6px 8px;border-radius:9px;background:#161B22;border:1px solid var(--line);"><span class="mono" style="font-size:10.5px;color:#8B98A9;">D.</span><span style="font-size:11px;line-height:1.45;color:#8B98A9;">Stage 模型与 FA 模型可以在同一应用内直接混用</span></div>
+          </div>
+          <div style="display:flex;gap:14px;"><span class="mono t2" style="font-size:11px;">我的答案 <span style="color:#3DD68C;">AC</span></span><span class="mono t2" style="font-size:11px;">正确答案 <span style="color:#3DD68C;">AC</span></span></div>
+          <div style="background:#0B0E13;border:1px solid var(--line);border-left:2px solid #3DD68C;border-radius:8px;padding:7px 10px;">
+            <div class="mono t3" style="font-size:9px;letter-spacing:1px;margin-bottom:3px;">解析</div>
+            <div style="font-size:11px;line-height:1.5;color:#8B98A9;">Stage 模型下 UIAbility 具备完整生命周期，但同一应用不能与 FA 模型混用。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;right:16px;bottom:26px;height:44px;padding:0 16px;border-radius:999px;background:#4DA3FF;color:#061019;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 22px rgba(77,163,255,.3);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#061019" stroke-width="1.8"><rect x="4" y="7" width="16" height="12" rx="4"/><path d="M12 7V4"/></svg>
+      问问 AI 助教
+    </div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F09 我的</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="body" style="padding-top:14px;gap:14px;">
+      <div class="card glow" style="padding:18px;display:flex;gap:14px;align-items:center;background:linear-gradient(150deg,#182031,#12161D);border-color:#26496E;">
+        <div style="flex:none;width:64px;height:64px;border-radius:20px;background:#0B0E13;border:1px solid #26496E;display:flex;align-items:center;justify-content:center;">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="15" r="7" stroke="#4DA3FF" stroke-width="2"/><path d="M7 33c3-7 23-7 26 0" stroke="#4DA3FF" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="15" r="3" fill="#4DA3FF"/></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;"><span class="mono" style="font-size:18px;font-weight:700;">hdf2026</span><span class="pill st-a" style="font-size:9px;">已登录</span></div>
+          <span class="t2" style="font-size:11.5px;">备考 HarmonyOS · 冲高级认证</span>
+        </div>
+      </div>
+      <div class="card" style="padding:0 16px;">
+        <div class="field">
+          <div style="display:flex;align-items:center;gap:11px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg><span class="t1">考试记录</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span class="mono t3" style="font-size:11px;">4 条</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="field">
+          <div style="display:flex;align-items:center;gap:11px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.6"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 20l4.5-2.4L16.5 20 15 13.5"/></svg><span class="t1">我的证书</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span class="mono t3" style="font-size:11px;">2 张</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+        <div class="field">
+          <div style="display:flex;align-items:center;gap:11px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><path d="M4 18l6-12 6 12"/><path d="M6.5 14h7"/><path d="M17 12h4M19 8v8"/></svg><span class="t1">字号大小</span></div>
+          <div style="display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;background:#0B0E13;border:1px solid var(--line);"><span class="t1" style="font-size:12px;">标准</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+        <div class="field" style="border-bottom:none;">
+          <div style="display:flex;align-items:center;gap:11px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B98A9" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".8" fill="#8B98A9"/></svg><span class="t1">关于智题通</span></div>
+          <div style="display:flex;align-items:center;gap:8px;"><span class="mono t3" style="font-size:11px;">1.0.0</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.8"><path d="M9 6l6 6-6 6"/></svg></div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:11px;border-color:#26496E;background:#122132;box-shadow:0 0 18px rgba(77,163,255,.10);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.6"><rect x="4" y="7" width="16" height="12" rx="4"/><circle cx="9.5" cy="13" r="1.2" fill="#4DA3FF"/><circle cx="14.5" cy="13" r="1.2" fill="#4DA3FF"/><path d="M12 7V4"/></svg>
+        <div style="display:flex;flex-direction:column;gap:2px;"><span class="t1" style="font-weight:600;">AI 备考助教</span><span class="t3" style="font-size:10.5px;">错题讲解 · 知识点追问</span></div>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.8" style="margin-left:auto;"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+      <div style="margin-top:auto;">
+        <div class="btn" style="height:46px;border:1px solid #5F2528;border-radius:14px;color:#F2555A;background:#161B22;font-size:15px;font-weight:600;">退出登录</div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><path d="M3 11l9-7 9 7"/><path d="M6 10v10h12V10"/></svg><span>首页</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h6"/></svg><span>刷题</span></div>
+      <div class="tab on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg><span>我的</span></div>
+    </div>
+  </div>
+</div>
+<div class="frame-wrap">
+  <div class="frame-label">F10 考试记录</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div style="flex:none;padding:12px 18px 14px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);">
+      <div style="font-size:26px;font-weight:700;letter-spacing:.5px;">考试记录</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;"><span class="mono" style="font-size:12px;color:#4DA3FF;">通过率 50%</span><span class="mono t3" style="font-size:10px;">2 / 4</span></div>
+    </div>
+    <div class="body" style="padding:0;gap:0;">
+      <div style="display:flex;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);align-items:center;">
+        <div style="flex:none;width:52px;text-align:center;"><div class="mono" style="font-size:20px;font-weight:700;color:#3DD68C;line-height:1;">88</div><div class="t3 mono" style="font-size:9px;margin-top:3px;">分</div></div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">
+          <span class="t1" style="font-size:13px;font-weight:600;">UI 布局与动效 · 专项突破</span>
+          <span class="mono t3" style="font-size:10.5px;">2026-11-04 21:10</span>
+          <span class="t3" style="font-size:10.5px;">手动交卷 · 用时 <span class="mono">28 分 05 秒</span></span>
+        </div>
+        <span class="pill st-g" style="font-size:10px;flex:none;">通过</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);align-items:center;background:#121820;">
+        <div style="flex:none;width:52px;text-align:center;"><div class="mono" style="font-size:20px;font-weight:700;color:#3DD68C;line-height:1;">78</div><div class="t3 mono" style="font-size:9px;margin-top:3px;">分</div></div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">
+          <span class="t1" style="font-size:13px;font-weight:600;">HarmonyOS 应用开发 · 阶段测验 03</span>
+          <span class="mono t3" style="font-size:10.5px;">2026-11-03 19:42</span>
+          <span class="t3" style="font-size:10.5px;">手动交卷 · 用时 <span class="mono">32 分 14 秒</span></span>
+        </div>
+        <span class="pill st-g" style="font-size:10px;flex:none;">通过</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);align-items:center;">
+        <div style="flex:none;width:52px;text-align:center;"><div class="mono" style="font-size:20px;font-weight:700;color:#F2555A;line-height:1;">55</div><div class="t3 mono" style="font-size:9px;margin-top:3px;">分</div></div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">
+          <span class="t1" style="font-size:13px;font-weight:600;">Stage 模型与 Ability · 冲刺卷</span>
+          <span class="mono t3" style="font-size:10.5px;">2026-11-02 20:15</span>
+          <span class="t3" style="font-size:10.5px;">超时自动交卷 · 用时 <span class="mono">60 分 00 秒</span></span>
+        </div>
+        <span class="pill st-r" style="font-size:10px;flex:none;">未通过</span>
+      </div>
+      <div style="display:flex;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line);align-items:center;">
+        <div style="flex:none;width:52px;text-align:center;"><div class="mono" style="font-size:20px;font-weight:700;color:#F2555A;line-height:1;">46</div><div class="t3 mono" style="font-size:9px;margin-top:3px;">分</div></div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">
+          <span class="t1" style="font-size:13px;font-weight:600;">HarmonyOS 应用开发 · 阶段测验 02</span>
+          <span class="mono t3" style="font-size:10.5px;">2026-10-30 09:20</span>
+          <span class="t3" style="font-size:10.5px;">手动交卷 · 用时 <span class="mono">41 分 33 秒</span></span>
+        </div>
+        <span class="pill st-r" style="font-size:10px;flex:none;">未通过</span>
+      </div>
+      <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:18px;"><span class="t3" style="font-size:11px;">加载更多…</span></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><path d="M3 11l9-7 9 7"/><path d="M6 10v10h12V10"/></svg><span>首页</span></div>
+      <div class="tab"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h6"/></svg><span>刷题</span></div>
+      <div class="tab on"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 12-4 14 0"/></svg><span>我的</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F11 我的证书</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div style="flex:none;padding:12px 18px 14px;display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);">
+      <div style="font-size:26px;font-weight:700;letter-spacing:.5px;">我的证书</div>
+      <span class="mono t3" style="font-size:11px;">2 张 · 有效 1</span>
+    </div>
+    <div class="body" style="padding-top:18px;gap:16px;">
+      <div class="card" style="padding:18px;border:1px solid #C9A227;border-radius:16px;background:linear-gradient(150deg,#1B1D18,#14181C);box-shadow:0 0 26px rgba(201,162,39,.14);display:flex;flex-direction:column;gap:13px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div style="display:flex;gap:11px;align-items:center;">
+            <div style="flex:none;width:42px;height:42px;border-radius:12px;background:#0B0E13;border:1px solid #C9A227;display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.7"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 20l4.5-2.4L16.5 20 15 13.5"/></svg>
+            </div>
+            <div style="font-size:15px;font-weight:700;line-height:1.4;">HarmonyOS 应用开发<br>· 中级认证</div>
+          </div>
+          <span class="pill st-g" style="font-size:10px;flex:none;">有效</span>
+        </div>
+        <div style="height:1px;background:linear-gradient(90deg,#C9A227,transparent);"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">编号</span><span class="mono t1" style="font-size:12.5px;letter-spacing:.5px;">HT-2026-1103-000782</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">颁发</span><span class="mono t1" style="font-size:12px;">2026-11-03</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">到期</span><span class="mono t1" style="font-size:12px;">2028-11-02</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="flex:1;height:5px;border-radius:3px;background:#0B0E13;overflow:hidden;"><div style="width:78%;height:5px;border-radius:3px;background:#C9A227;"></div></div>
+          <span class="mono t3" style="font-size:10px;">剩余 2 年</span>
+        </div>
+      </div>
+      <div class="card" style="padding:18px;border:1px solid #253040;border-radius:16px;background:#14181C;display:flex;flex-direction:column;gap:13px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div style="display:flex;gap:11px;align-items:center;">
+            <div style="flex:none;width:42px;height:42px;border-radius:12px;background:#0B0E13;border:1px solid #253040;display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5C6879" stroke-width="1.7"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 20l4.5-2.4L16.5 20 15 13.5"/></svg>
+            </div>
+            <div style="font-size:15px;font-weight:700;line-height:1.4;color:#8B98A9;">ArkTS 语言基础<br>· 初级认证</div>
+          </div>
+          <span class="pill st-r" style="font-size:10px;flex:none;">已过期</span>
+        </div>
+        <div style="height:1px;background:#253040;"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">编号</span><span class="mono" style="font-size:12.5px;letter-spacing:.5px;color:#8B98A9;">HT-2026-0721-000311</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">颁发</span><span class="mono" style="font-size:12px;color:#8B98A9;">2026-07-21</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="t3" style="font-size:11px;">到期</span><span class="mono" style="font-size:12px;color:#F2555A;">2027-07-20</span></div>
+        </div>
+        <div class="t3" style="font-size:10.5px;">已过期证书不可用于认证展示，可重新考取。</div>
+      </div>
+      <div style="margin-top:auto;display:flex;align-items:center;gap:10px;background:#122132;border:1px solid #26496E;border-radius:12px;padding:12px 14px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4DA3FF" stroke-width="1.7"><path d="M12 5v14M5 12h14"/></svg>
+        <span style="font-size:12px;color:#BBD8FF;">通过考试即可获得新的证书</span>
+      </div>
+    </div>
+    <div style="flex:none;height:18px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+
+<div class="frame-wrap">
+  <div class="frame-label">F12 状态补充（未通过 · 空态 · 会话失效）</div>
+  <div class="frame">
+    <div class="statusbar"><span>9:41</span><span style="display:flex;gap:6px;align-items:center;"><svg width="16" height="11" viewBox="0 0 16 11" fill="#8B98A9"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg><svg width="15" height="11" viewBox="0 0 15 12" fill="none" stroke="#8B98A9" stroke-width="1.3"><path d="M1 4.2A9 9 0 0 1 14 4.2"/><path d="M3.5 6.6A6 6 0 0 1 11.5 6.6"/><circle cx="7.5" cy="10" r="1" fill="#8B98A9" stroke="none"/></svg><svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x=".6" y=".6" width="18" height="9.8" rx="2.6" stroke="#8B98A9"/><rect x="2.4" y="2.4" width="12" height="6.2" rx="1.4" fill="#4DA3FF"/><path d="M20 4v3" stroke="#8B98A9" stroke-width="1.4"/></svg></span></div>
+    <div class="body" style="padding-top:12px;gap:16px;">
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#241114;border-bottom:1px solid #5F2528;padding:9px 14px;">
+          <span class="mono t3" style="font-size:10px;letter-spacing:1px;color:#F2555A;">块 A · 未通过结果</span>
+          <span class="pill st-r" style="font-size:10px;">未通过</span>
+        </div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="flex:none;"><span class="mono" style="font-size:40px;font-weight:700;line-height:1;color:#F2555A;">46</span><span class="t2" style="font-size:12px;margin-left:4px;">分</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:7px;">
+              <div style="display:flex;justify-content:space-between;"><span class="t3" style="font-size:11px;">及格线</span><span class="mono t1" style="font-size:12px;">60</span></div>
+              <div style="display:flex;justify-content:space-between;"><span class="t3" style="font-size:11px;">用时</span><span class="mono t1" style="font-size:12px;">41 分 33 秒</span></div>
+              <div style="display:flex;justify-content:space-between;"><span class="t3" style="font-size:11px;">交卷方式</span><span class="t1" style="font-size:12px;">手动交卷</span></div>
+            </div>
+          </div>
+          <div style="height:8px;border-radius:4px;background:#0B0E13;overflow:hidden;position:relative;">
+            <div style="width:46%;height:8px;border-radius:4px;background:#F2555A;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;"><span class="mono t3" style="font-size:10px;">距及格线还差 14 分</span><span class="pill" style="font-size:10px;color:#FFAB40;border:1px solid #5A421A;background:#241B0E;">本卷 2/3 次已用</span></div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#121820;border-bottom:1px solid var(--line);padding:9px 14px;">
+          <span class="mono t3" style="font-size:10px;letter-spacing:1px;color:#8B98A9;">块 B · 空态</span>
+          <span class="mono t3" style="font-size:10px;">科目：云开发 AGC</span>
+        </div>
+        <div style="padding:20px 16px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+          <svg width="76" height="58" viewBox="0 0 76 58" fill="none" stroke="#253040" stroke-width="1.8">
+            <rect x="10" y="10" width="42" height="34" rx="5"/>
+            <path d="M18 21h26M18 28h18"/>
+            <rect x="38" y="20" width="30" height="26" rx="5" stroke="#4DA3FF" opacity=".55"/>
+            <path d="M46 33h14"/>
+          </svg>
+          <div style="font-size:15px;font-weight:600;">该科目暂无考卷</div>
+          <div class="t2" style="font-size:11px;">通过考试即可获得证书</div>
+          <div class="btn btn-o" style="height:38px;padding:0 26px;font-size:13px;margin-top:2px;">换个科目看看</div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#241B0E;border-bottom:1px solid #5A421A;padding:9px 14px;">
+          <span class="mono t3" style="font-size:10px;letter-spacing:1px;color:#FFAB40;">块 C · 会话失效</span>
+          <span class="mono t3" style="font-size:10px;">HTTP 401</span>
+        </div>
+        <div style="padding:16px;display:flex;gap:13px;align-items:center;">
+          <div style="flex:none;width:44px;height:44px;border-radius:13px;background:#0B0E13;border:1px solid #5A421A;display:flex;align-items:center;justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFAB40" stroke-width="1.7"><rect x="5" y="10" width="14" height="10" rx="2.5"/><path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"/><path d="M12 14v3"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+            <div style="font-size:14px;font-weight:600;">登录已过期，请重新登录</div>
+            <div class="t3" style="font-size:10.5px;">答题进度已保存至本地，登录后继续</div>
+          </div>
+          <div class="btn btn-p" style="flex:none;height:36px;padding:0 16px;font-size:12.5px;">重新登录</div>
+        </div>
+      </div>
+      <div class="t3" style="text-align:center;font-size:10.5px;margin-top:auto;padding-bottom:4px;">三种异常态沿用同一亮度分层，仅状态色不同</div>
+    </div>
+    <div style="flex:none;height:18px;display:flex;align-items:center;justify-content:center;"><div style="width:124px;height:5px;border-radius:3px;background:#253040;"></div></div>
+  </div>
+</div>
+</div>
+</body>
+</html>

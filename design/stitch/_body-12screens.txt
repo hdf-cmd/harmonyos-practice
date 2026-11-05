@@ -1,0 +1,41 @@
+App: 智题通 — a Chinese-language HarmonyOS exam & practice app for HarmonyOS developer certification. Core loop: pick a subject → take a timed exam with anti-cheat (app-switch detection) → auto-graded result → per-question review with explanations → digital certificate. Platform: MOBILE, portrait phone.
+
+BOTTOM TAB BAR on 首页 / 刷题 / 我的 screens: three text tabs 首页 / 刷题 / 我的, active tab bold in the accent colour.
+
+Generate these 12 screens. All Chinese copy below must appear verbatim, unchanged.
+
+1. 登录 — logo mark; title 欢迎使用智题通; fields 请输入用户名 (filled hdf2026) and 请输入密码 (6 dots); primary button 登录; footer 没有账号？ 立即注册.
+2. 首页 — auto carousel, dot 2 active, slide copy 47 套模拟卷已更新 · 覆盖 Stage 模型与分布式数据; section title 推荐试卷; 3 paper cards, each ordered 卷名 / 共 X 题 · Y 分钟 · 及格 Z 分 / level tag / score badge:
+   HarmonyOS 应用开发 · 阶段测验 03 | 共 25 题 · 45 分钟 · 及格 60 分 | 中级 | 最好 78 分
+   ArkTS 语法与并发 · 快速自测 | 共 15 题 · 20 分钟 · 及格 70 分 | 初级 | 未考
+   Stage 模型与 Ability · 冲刺卷 | 共 30 题 · 60 分钟 · 及格 65 分 | 高级 | 最好 55 分
+3. 考试科目 (刷题 tab active) — page title 考试科目; 2-column grid of 6 subject tiles: 鸿蒙应用开发 共 8 套 / ArkTS 语言基础 共 5 套 / UI 与交互设计 共 6 套 / 网络与数据 共 4 套 / 云开发 AGC 共 3 套 / 综合模拟 共 7 套.
+4. 考卷列表 — nav title 鸿蒙应用开发 with back arrow; 5 rows (卷名 / 题量·时长·及格线 / 已考 x/y 次 / 等级 / 角标):
+   HarmonyOS 应用开发 · 阶段测验 03 | 25 题·45 分钟·及格 60 | 已考 2/3 次 | 中级 | 最好 78 分
+   Stage 模型与 Ability · 冲刺卷 | 30 题·60 分钟·及格 65 | 已考 1/3 次 | 高级 | 最好 55 分
+   UI 布局与动效 · 专项突破 | 20 题·35 分钟·及格 60 | 已考 3/3 次 | 中级 | 最好 88 分
+   分布式数据 · 难点精练 | 18 题·30 分钟·及格 60 | 已考 0/3 次 | 高级 | 未考
+   ArkTS 语法与并发 · 快速自测 | 15 题·20 分钟·及格 70 | 已考 0/2 次 | 初级 | 未考
+5. 答题页 — the hardest screen, must show the anti-cheat state. Paper title HarmonyOS 应用开发 · 阶段测验 03; progress line 第 7 题 / 共 25 题 (the 7 in the emphasised colour); countdown 00:37:12; question-type tag 多选题; stem 关于 HarmonyOS 的 Stage 模型，下列说法正确的是？; options A and C checked, checkboxes because it is multi-select:
+   A. UIAbility 是应用的基本组成单元，具备完整生命周期
+   B. 每个 UIAbility 都运行在独立线程与独立窗口中
+   C. ExtensionAbility 用于提供应用对用户的扩展能力
+   D. Stage 模型与 FA 模型可以在同一应用内直接混用
+   action row 上一题 / 下一题 / 已存疑 (show the flagged/active state) / 答题卡; full-width primary button 提交试卷; plus a persistent anti-cheat banner 检测到切出应用，已记录 2 次，请专心作答.
+6. 答题卡 — bottom sheet overlapping screen 5; title 答题卡; legend 绿色已答 · 橙色存疑 · 蓝框当前题 · 点击跳转; 25 numbered cells in 6 columns — answered 1 2 3 4 5 6 8 9 10 11 12 13 14 15 16 17 19 21 23; flagged 7 18 22 (cell 7 is flagged AND current); unanswered 20 24 25; footer 已答 19 / 25 and 剩余 00:37:12.
+7. 答题结果（通过态）— score 78 分; status pill 通过; meta 及格线 60 分 · 用时 32 分 14 秒 · 手动交卷; anti-cheat line 切出应用 2 次，已由服务端记录; certificate notice 已生成电子证书，可在个人中心查看; entry 问问 AI 助教; answer-sheet grid with legend 未答 / 答对 / 答错 (18 correct, 5 wrong, 2 blank); two buttons 查看回顾 / 重新刷题.
+8. 逐题回顾精讲 — summary card 卷名 HarmonyOS 应用开发 · 阶段测验 03, 78 / 100, 答对 18 / 25, 通过; toggle row 只看错题 (switch on); explanation cards each with a left status rail (green correct / red wrong):
+   Card 1 wrong — 第 3 题 · 单选题 · 0 / 4 分; stem 下列哪个组件适合作为长列表的首选容器？; options A. List (my pick, highlighted) B. Scroll + ForEach (correct, highlighted) C. Grid D. Column; lines 我的答案 A / 正确答案 B; explanation List 支持按需渲染与复用，长列表性能明显优于把 ForEach 塞进 Column；Grid 适合网格而非线性列表。
+   Card 2 correct — 第 7 题 · 多选题 · 4 / 4 分; same stem and options as screen 5; 我的答案 AC / 正确答案 AC; explanation Stage 模型下 UIAbility 具备完整生命周期，但同一应用不能与 FA 模型混用。
+   floating bottom-right 问问 AI 助教.
+9. 我的 (我的 tab active) — user card: avatar, hdf2026, signature 备考 HarmonyOS · 冲高级认证; menu rows 考试记录 / 我的证书 / 字号大小 标准 (picker on the right) / 关于智题通; row AI 备考助教; bottom button 退出登录.
+10. 考试记录 — page title 考试记录; 4 rows:
+   UI 布局与动效 · 专项突破 | 2026-11-04 21:10 | 手动交卷 · 用时 28 分 05 秒 | 88 | 通过
+   HarmonyOS 应用开发 · 阶段测验 03 | 2026-11-03 19:42 | 手动交卷 · 用时 32 分 14 秒 | 78 | 通过
+   Stage 模型与 Ability · 冲刺卷 | 2026-11-02 20:15 | 超时自动交卷 · 用时 60 分 00 秒 | 55 | 未通过
+   HarmonyOS 应用开发 · 阶段测验 02 | 2026-10-30 09:20 | 手动交卷 · 用时 41 分 33 秒 | 46 | 未通过
+   footer sentinel 加载更多….
+11. 我的证书 — page title 我的证书; two certificate cards:
+   HarmonyOS 应用开发 · 中级认证 | 有效 | 证书编号 HT-2026-1103-000782 | 颁发日期 2026-11-03 | 到期日期 2028-11-02
+   ArkTS 语言基础 · 初级认证 | 已过期 | 证书编号 HT-2026-0721-000311 | 颁发日期 2026-07-21 | 到期日期 2027-07-20
+12. 状态补充 — one frame holding three small blocks: A 未通过结果 (46 分, 及格线 60, 用时 41 分 33 秒, 手动交卷, 未通过); B 空态 (该科目暂无考卷, plus small text 通过考试即可获得证书); C 会话失效 (登录已过期，请重新登录 with button 重新登录).

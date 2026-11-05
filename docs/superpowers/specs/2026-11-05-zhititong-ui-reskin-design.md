@@ -1,0 +1,169 @@
+# 智题通 UI 换装：方案A「鸿蒙原生克制风」移植设计
+
+日期：2026-11-05
+状态：待评审
+关联：`design/stitch/v2-final2/`（12 屏 HTML + PNG + DESIGN.md）、`design/figma/内容规格.md`
+
+## 1. 目标与范围边界
+
+把 Stitch 方案A 的设计语言落到真实 ArkTS 工程，让 12 个页面在**配色、字阶、圆角、间距、阴影、卡片内部结构**上与稿子一致。
+
+明确**不做**（上一轮已拍板"只移植设计语言，不加新区块"）：
+
+- 不加稿子里出现但后端没有的区块：统计指标卡、搜索框、筛选器、排序、下载 PDF、认证徽章、哈希防伪话术、版本号
+- 不做暗色模式适配（现状本来也没有，`entry/src/main/resources/dark/` 只有一个启动窗背景色）
+- 不换应用图标与启动页
+- 不把令牌迁到 `resources/base/element/color.json`
+
+理由：`$r()` 返回 `Resource` 不是 `string`，迁移会连带改掉 12 个 view 的所有 `.fontColor()` 调用签名和颜色断言类单测。那是独立的重构，不该塞进换装。
+
+## 2. 权威设计源
+
+`design/stitch/v2-final2/stitch_harmonyos_exam_client/restrained_native_precision/DESIGN.md`。
+
+⚠️ `design/stitch/方案A-设计规范.md`（从 Stitch 聊天里扒的那份）**色值不可用**，两者不一致：
+
+| | 聊天版（作废） | DESIGN.md（权威） |
+|---|---|---|
+| 主文本 | `#111827` | `#182431` |
+| 成功色 | `#059669` | `#00B578` |
+| 按钮圆角 | 12 | 8 |
+
+DESIGN.md 的 `#00B578 / #FA6400 / #E84026` 正好是 HarmonyOS 官方语义色，可信度更高，以它为准。
+
+## 3. 令牌层方案
+
+沿用现有模式：扩 `common/src/main/ets/constants/CommonConstants.ets`，不引入新层。view 层已有 14 个文件引用它，只有 10 处硬编码色值需要一并收编。
+
+### 3.1 色彩（改值）
+
+| 现有常量 | 现值 | 新值 | 备注 |
+|---|---|---|---|
+| `COLOR_PRIMARY` | `#007AFF` | `#0A59F7` | 按下态另加 `COLOR_PRIMARY_PRESSED = #084ECC` |
+| `COLOR_TEXT_MAIN` | `#333333` | `#182431` | |
+| `COLOR_TEXT_SUB` | `#666666` | `#525F70` | |
+| `COLOR_TEXT_HINT` | `#999999` | `#8A95A5` | |
+| `COLOR_BG_PAGE` | `#F5F6FA` | `#F1F3F5` | |
+| `COLOR_SUCCESS` | `#4CAF50` | `#00B578` | |
+| `COLOR_ERROR` | `#F44336` | `#E84026` | |
+| `COLOR_WARN` | `#FF6600` | `#FA6400` | |
+| `GRADIENT_START/END` | `#70b8f8/#416ff5` | **删除** | 见 §6.1 |
+
+### 3.2 色彩（新增）
+
+DESIGN.md 的浅色底用 CSS `rgba()` 写。ArkUI 侧统一转成 `#AARRGGBB`（alpha 在最前），因为部分属性不吃 `rgba()` 字符串。换算 `alpha = round(a × 255)` 取十六进制：
+
+| 新常量 | DESIGN.md 原值 | ArkTS 用值 | 用途 |
+|---|---|---|---|
+| `COLOR_CARD_BG` | `#FFFFFF` | `#FFFFFF` | 卡面 |
+| `COLOR_TEXT_DISABLED` | `#BAC2CE` | `#BAC2CE` | 占位符、禁用 |
+| `COLOR_PRIMARY_BG` | `rgba(10,89,247,.08)` | `#140A59F7` | 选中态底、次级按钮底 |
+| `COLOR_SUCCESS_BG` | `rgba(0,181,120,.08)` | `#1400B578` | 答对选项、已答网格 |
+| `COLOR_ERROR_BG` | `rgba(232,64,38,.08)` | `#14E84026` | 错选选项、未通过徽章 |
+| `COLOR_WARN_BG` | `rgba(250,100,0,.08)` | `#14FA6400` | 存疑态底 |
+| `COLOR_ANALYSIS_BG` | `surface-container-low` | `#F2F4F6` | 解析盒、未答网格 |
+| `COLOR_BORDER_HAIRLINE` | `rgba(0,0,0,.04)` | `#0A000000` | 卡片描边、分割线 |
+| `COLOR_BORDER_FOCUS` | `rgba(10,89,247,.40)` | `#660A59F7` | 输入框聚焦 |
+| `COLOR_OVERLAY` | `rgba(24,36,49,.40)` | `#66182431` | 答题卡抽屉遮罩 |
+
+### 3.3 字阶
+
+DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）。
+
+| 常量 | 新值 | 字重 | 行高 |
+|---|---|---|---|
+| `FONT_DISPLAY_SCORE` | 48 | 700 | 56 |
+| `FONT_DISPLAY_SCORE_MOBILE` | 36 | 700 | 44 |
+| `FONT_HEADLINE_LG` | 28 | 600 | 36 |
+| `FONT_HEADLINE_LG_MOBILE` | 22 | 600 | 30 |
+| `FONT_HEADLINE_MD` | 20 | 600 | 28 |
+| `FONT_HEADLINE_SM` | 16 | 600 | 24 |
+| `FONT_BODY_LG` | 16 | 400 | 26 |
+| `FONT_BODY_MD` | 14 | 400 | 22 |
+| `FONT_BODY_SM` | 12 | 400 | 18 |
+| `FONT_LABEL_MD` | 14 | 500 | 20 |
+| `FONT_LABEL_SM` | 12 | 500 | 16 |
+| `FONT_CAPTION_UNIT` | 11 | 500 | 14 |
+
+**字号设置不受影响**：`FontSetting` 存的是偏移量（`common/src/main/ets/model/FontSetting.ets:24`，五档 ±4/±2/0），实际字号 = 基准 + 偏移。换基准值不动这套机制，五档照常工作。
+
+真正要处理的是可读性下限：`FONT_CAPTION_UNIT` 基准 11，极小档算出 7fp。ArkUI 上 7fp 的中文辅助文字基本看不清。处置见 §6.2。
+
+`letterSpacing` 在 DESIGN.md 是 em（`-0.02em`），ArkUI 的 `.letterSpacing()` 收的是维度值，要按字号换算（36fp 下 ≈ -0.7fp）。只在大数字档做，正文档不动。
+
+### 3.4 圆角 / 间距 / 阴影
+
+| 项 | 新值 | 现值 |
+|---|---|---|
+| 卡片圆角 | 16 | 12 |
+| 按钮圆角 | 8 | — |
+| 输入框圆角 | 10 | — |
+| 复选框圆角 | 6 | — |
+| 标签圆角 | 全圆（pill） | 4 |
+| 按钮高度 | 48 | 50 |
+| 页面左右边距 | 16 | 16（不变） |
+| 卡片内边距 | 16（紧凑 12） | 16 |
+| 卡片纵向间距 | 12 | — |
+| 分割线 | 0.5 | — |
+
+阴影 Level 1（标准卡）：`shadow({ radius: 2, type: Color, color: '#08000000', offsetX: 0, offsetY: 1 })`。
+Level 3（吸底操作栏）：`shadow({ radius: 8, color: '#08000000', offsetY: -2 })`。
+Level 4（对话框/抽屉）：`shadow({ radius: 16, color: '#14182431', offsetY: -8 })`。
+
+DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0.75rem = 12px`、`DEFAULT = 0.5rem = 8px`。两处自相矛盾。**取 8px**，理由是正文同时写了"structured stability"且与 48px 按钮高度比例更协调；这条记为设计决定，不是照抄。
+
+## 4. 逐屏改动清单
+
+| 屏 | 文件 | 改动 |
+|---|---|---|
+| F01 登录 | `login/view/LoginPage.ets` | 表单收进单张白卡（圆角 16 + Level 1 阴影）；输入框底 `#F2F4F6` → 聚焦转白 + 1.5 主色描边；按钮纯色 |
+| F02 首页 | `home/view/HomeView.ets`、`components/PaperCard.ets` | 轮播改浅底药丸卡；`PaperCard` 等级标签从"描边方角"改"浅蓝底全圆胶囊"，成绩角标同改；收编 `#FFFFFF` 硬编码 |
+| F03 考试科目 | `exam/view/ExamSubjectView.ets`、`components/ExamSubjectCard.ets` | 双列网格卡按新令牌重排（科目名 + `共 N 套`）；**不加稿子里的图标容器、属性标签与"进入练习"链接**——`categoryName` 之外没有可填的字段；错误态按新令牌 |
+| F04 考卷列表 | `exam/view/ExamListPage.ets` | 行结构与 F02 统一；**不加筛选器与排序** |
+| F05 答题页 | `exam/view/ExamDetailPage.ets` | 告警条改浅红底红字 + 盾牌位；进度条改主色纤细；选项卡选中态 = 主色描边 + `#140A59F7` 底；底部控制栏三行结构；**提交按钮去渐变** |
+| F06 答题卡 | 同上（`bindSheet`） | 抽屉圆角 16 + 手柄条；格子圆角 8，已答/存疑/未答换 §3.2 的 tint 底；存疑格加右上实心点；当前题 = 存疑底 + 主色描边复合态；底部左次右主（继续作答 40% / 提交试卷 60%） |
+| F07 答题结果 | `exam/view/AnswerResultPage.ets` | 大分值 48/36 主色，"分"用 `FONT_CAPTION_UNIT` 弱化；通过/未通过改全圆胶囊 + tint 底；迷你分布图换 tint 色 |
+| F08 逐题回顾 | `exam/view/ReviewPage.ets`、`ReviewQuestionCard.ets` | 左侧 4vp 状态轨保留，色换 `#00B578/#E84026`；选项 tint 底换 §3.2 值；解析盒 `#F2F4F6`；收编该文件 5 处硬编码 |
+| F09 我的 | `mine/view/MineView.ets`、`components/SettingItem.ets` | 分组菜单卡用内嵌发丝分割线（`#0A000000`）替代间距；字号选择器改分段控制器形态；**不加指标栏与认证徽章** |
+| F10 考试记录 | `exam/view/AttemptHistoryPage.ets` | 行结构对齐 F02；通过/未通过胶囊化；**不加汇总卡** |
+| F11 我的证书 | `exam/view/CertificatePage.ets` | 证书卡网格排布编号/颁发/到期；有效绿胶囊、过期灰胶囊；**不加下载按钮与防伪话术** |
+| F12 状态补充 | 分散在各页错误/空态 | 空态、错误态、401 态统一按新令牌；401 文案与按钮沿用 `a3da388` 已入库的分流逻辑 |
+
+## 5. 验证方案
+
+1. **构建门禁**：`devecocli build` 0 ERROR。`hvigorw test` 不编译视图，只跑单测等于没验视图。
+2. **单测门禁**：跑前删 `entry/.test/default/intermediates/test/coverage_data/test_result.txt`，只认尾行 `Tests run: N, Failure: 0, Error: 0`，且 N 与本轮 `it()` 数对得上。换装前基线 121 例，换装后必须仍是 121（用例数变了就是回归）。
+3. **令牌一致性静态检查**：换装后 `grep -rn "'#[0-9A-Fa-f]\{6\}'" entry/src/main/ets/features/**/view` 必须只剩 0 处硬编码（现 10 处）。
+4. **模拟器目检**：这是硬要求，不能只靠单测。数值框、描边、圆角、阴影这类东西单测测不出来。逐屏截图对 `v2-final2/*/screen.png`，重点看五档字号下 `FONT_CAPTION_UNIT` 的可读性。
+5. **合并态复跑**：ff 合并后站在 master 再跑一次全量测试。
+
+## 6. 三个设计决定（需拍板）
+
+### 6.1 提交试卷按钮去渐变
+
+现状是全宽渐变 `#70b8f8→#416ff5`。方案A 明令"杜绝任何渐变"，改纯色 `#0A59F7`。这是肉眼最明显的一处变化，不是改色号。
+
+### 6.2 极小档的可读性下限
+
+`FONT_CAPTION_UNIT` 基准 11，极小档（-4）得 7fp。三个选项：
+- (a) 极小档下限抬到 -2，即最小 9fp —— 改 `FONT_LEVELS`，影响所有层级
+- (b) 辅助文字基准提到 12 —— 与 DESIGN.md 不符
+- (c) 不动，接受 7fp —— 不推荐
+
+建议 (a)，并同步核 `sizeOf()` 的兜底逻辑。
+
+### 6.3 主色从 #007AFF 变 #0A59F7
+
+应用图标、启动页背景、商店截图里的蓝会与新界面不一致。本次不动图标，但上架素材要另行重出，否则商店图与 App 内观感割裂。
+
+## 7. 风险
+
+- **并行会话**：本仓库常有其它会话在改同一批文件。换装要动 12 个 view，冲突面大。开工前必须确认工作区干净、且没有别的会话正在写这些文件。
+- **推送**：master 已 ahead 10 未推送。本次换装不推送，push 另需明确指令并先扫历史。
+- **回退**：换装走独立 feature 分支，一次提交对应一屏或一组同构屏，改坏可单点回退，不做大爆炸提交。
+
+## 8. 我纠正的三条先前说法
+
+1. ~~"五档字号设置必须重新标定，否则极大可能比现在还小"~~ —— 错。`FontSetting` 存偏移量不存绝对值，换基准不影响档位机制。真正的问题是极小档下限（§6.2）。
+2. ~~"答题卡 A/B 出成了独立整屏，不是半模态"~~ —— 错。DESIGN.md F06 明确写 Bottom Sheet，缩略图上是把抽屉单独展示而已。
+3. ~~"有了字段白名单，它就没地方编出正确率 88.5%"~~ —— 只对一半。白名单管得住数据型发明，管不住惯例型发明（登录页的记住我/忘记密码、顶栏的搜索和头像）。v2 实测：加了字段白名单后统计卡确实消失，但英文顶栏残留 9 处、溢出菜单残留 9 屏，都是惯例型。

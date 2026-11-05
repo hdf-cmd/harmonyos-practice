@@ -1,0 +1,20 @@
+HARD DATA CONSTRAINT — read before designing, this overrides your instinct to make screens look complete:
+
+The app's entire data model is these fields and nothing else:
+paperName, questionCount, duration, passScore, levelName, bestScore, categoryName, paperCountPerCategory, attemptCount (已考 x/y 次), submitType (手动交卷 / 超时自动交卷), usedTime, score, isPassed, tabSwitchCount, certificateName, certificateStatus, certificateNo, issueDate, expireDate, username, signature, fontSizeSetting, question, questionType, options, myAnswer, correctAnswer, analysis.
+
+Every single number, label, badge and sentence on every screen MUST be derivable from that list. If a piece of information cannot be derived from it, it must not appear on the screen — not as a placeholder, not as "—", not as a zero.
+
+EXPLICITLY BANNED, do not design these anywhere:
+- Study-statistic cards: 已刷题数, 考卷完成套数, 模拟均分, 累计刷题, 正确率, 打卡连胜, streaks, 学习时长. There is no statistics API.
+- Search boxes and search icons in any top bar.
+- Filter chips and sort controls (全部/未考/已及格, 综合排序, 全部科目).
+- Subject attribute tags (推荐/必考/高频/强化/专精/全真).
+- Download buttons, PDF export, 查看电子证书, 重新认证考试.
+- Certificate authenticity wording: 唯一哈希校验码, 链上核验, 防伪说明, 同步说明.
+- Certification badges and profile editing: 华为开发者认证学员, 编辑笔图标, avatar menu.
+- Trademark or marketing subtitles: 华为认证开发者一站式备考平台, SPECIAL CURRICULUM, 官方题库信任标, 引擎版权说明, version numbers like v4.2.0.
+- Any AI panel beyond the single entry button 问问 AI 助教.
+- Agreement / terms rows, welcome toasts, promotional banners other than the one carousel slide listed below.
+
+SPARSITY IS CORRECT HERE. This is a certification exam client, not a consumer app. A home screen with one carousel and three paper cards and nothing else is the intended design. A certificate page with two cards and no action buttons is the intended design. Do not fill empty space with invented modules — use whitespace instead. An empty-looking screen will be graded as correct; an invented module will be graded as a defect.

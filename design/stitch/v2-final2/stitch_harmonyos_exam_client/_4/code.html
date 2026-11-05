@@ -1,0 +1,188 @@
+<!DOCTYPE html><html class="h-full" lang="zh-CN" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><title>智题通</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#0050e3", "on-secondary-container": "#576475", "primary-fixed": "#dce1ff", "surface-variant": "#e0e3e5", "secondary": "#525f70", "primary": "#0044c4", "surface-container-high": "#e6e8ea", "tertiary-fixed": "#ffdbcd", "error-container": "#ffdad6", "outline": "#737687", "on-secondary-fixed": "#0f1c2b", "background": "#f8f9fb", "secondary-fixed": "#d6e4f8", "on-error-container": "#93000a", "on-error": "#ffffff", "on-surface": "#191c1e", "inverse-on-surface": "#eff1f3", "on-primary": "#ffffff", "tertiary-container": "#b34600", "surface-bright": "#f8f9fb", "on-tertiary-container": "#ffe3d8", "primary-fixed-dim": "#b5c4ff", "on-surface-variant": "#434656", "secondary-fixed-dim": "#bac8db", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#00164e", "on-tertiary": "#ffffff", "on-primary-fixed-variant": "#003baf", "on-primary-container": "#e4e7ff", "secondary-container": "#d3e1f5", "surface-container-low": "#f2f4f6", "tertiary-fixed-dim": "#ffb596", "on-tertiary-fixed": "#360f00", "inverse-primary": "#b5c4ff", "surface-container-highest": "#e0e3e5", "surface-dim": "#d8dadc", "on-secondary-fixed-variant": "#3b4858", "on-tertiary-fixed-variant": "#7c2e00", "inverse-surface": "#2d3133", "on-background": "#191c1e", "surface": "#f8f9fb", "surface-container": "#eceef0", "primary-container": "#0a59f7", "tertiary": "#8c3500", "error": "#ba1a1a", "on-secondary": "#ffffff", "outline-variant": "#c3c5d8" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "1.5rem", "gutter": "1rem", "space-lg": "1rem", "margin": "1rem", "gutter-tablet": "1.25rem", "space-sm": "0.5rem", "margin-tablet": "1.5rem", "margin-desktop": "2.5rem", "space-md": "0.75rem", "space-xs": "0.25rem", "space-2xl": "2rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "display-score-mobile": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-sm": ["Inter"], "label-sm": ["Inter"], "display-score": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "caption-unit": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"] }, "fontSize": { "display-score-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "headline-lg-mobile": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "display-score": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "caption-unit": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-14 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="返回" class="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="智题通 Logo" class="h-7 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1USIO1S7PktK3OtKmi69jQPtEdbckNsCVdt74_vST7ktL85yl9QELropqY9Itx_q1GkfxkSgMbwSzM31OjV1lfZFyjpl58zIM6MnIrmxsW6aRo9_y52Lg1Aj5OOFQ3xrHzDux8LzrSthJmwnzZj-AEPzEcpooBbB7nAa42Edsg9-B7yivNFYIQLe18ecJBUZ_lnzyOHpMPbkgEjQs4NHBbyMGrlGluvb0hUugIfGdSJ3Q"><h1 class="text-headline-sm font-headline-sm text-on-surface truncate">HarmonyOS 应用开发 · 阶段测验 03</h1></div><div class="flex items-center gap-space-xs flex-shrink-0"><div class="w-11 h-11 flex items-center justify-center"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgDRVrPcSFfnjcGdlsRT47Wds265-QvGmNL-S524DDVsw1GCWX46up0Zl2tPUvhis4pQ9stTbu4sSSjcAl4hY8KPCm0fGQE7xeIrSCzB0Txjh1UOHD_M9_3t0fZJq_1SBLj_rlgFhG3lshtXIySwU1kmr0ssZ0iKB6MOi9CTbCwqHbjPdDi6bY7C2WbYONAMVSupfcsUJunLfeWOJcYGQ9y9NQqeR0kOW2veh_-YtJ"></div></div></div></header><main class="flex-1 w-full pt-14 pb-safe bg-surface"><div class="flex flex-col w-full relative min-h-full">
+<!-- Dimmed Underlay: Simulated Exam Screen Content -->
+<div class="w-full px-gutter pt-space-md pb-24 opacity-40 pointer-events-none select-none filter blur-[0.5px]">
+<!-- Exam Header Info Strip -->
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">单选题</span>
+<span class="text-secondary font-label-sm text-label-sm">题号 07 / 25</span>
+</div>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span class="font-label-md text-label-md">00:37:12</span>
+</div>
+</div>
+<!-- Exam Question Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm mb-space-md">
+<p class="font-headline-sm text-headline-sm text-on-surface mb-space-md leading-relaxed">
+        7. 根据《系统架构设计师教程》，微服务架构在应对服务雪崩效应时，最常采用的保护模式通常是以下哪一项？
+      </p>
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface flex items-center justify-between">
+<span class="font-body-md text-body-md">A. 服务降级与熔断器模式 (Circuit Breaker)</span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface flex items-center justify-between">
+<span class="font-body-md text-body-md">B. 读写分离与主从复制机制</span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface flex items-center justify-between">
+<span class="font-body-md text-body-md">C. 全局分布式事务协调器 (2PC)</span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface flex items-center justify-between">
+<span class="font-body-md text-body-md">D. 强一致性 Raft 多数派协议</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dimmed Modal Backdrop -->
+<div class="fixed inset-0 z-40 bg-on-surface/40 backdrop-blur-[2px] transition-opacity duration-300" id="sheetBackdrop"></div>
+<!-- Bottom Sheet Overlay -->
+<div class="fixed inset-x-0 bottom-0 z-50 flex flex-col max-w-lg mx-auto bg-surface-container-lowest rounded-t-[28px] shadow-2xl transition-transform duration-300 transform translate-y-0" id="answerSheet">
+<!-- Grabber Handle -->
+<div class="w-full flex items-center justify-center pt-3 pb-1">
+<div class="w-10 h-1 rounded-full bg-surface-variant"></div>
+</div>
+<!-- Sheet Header -->
+<div class="px-gutter pt-2 pb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">答题卡</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm">共 25 题</span>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded-full text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors" id="closeSheetBtn" type="button">
+<span class="material-symbols-outlined text-[24px]">keyboard_arrow_down</span>
+</button>
+</div>
+<!-- Status Legend -->
+<div class="px-gutter pb-space-md">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-wrap items-center justify-between gap-y-1 text-caption-unit font-caption-unit text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">已答</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">存疑</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-primary/30"></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">当前题</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+<span class="text-secondary font-label-sm text-label-sm">未答</span>
+</div>
+</div>
+<p class="text-center font-caption-unit text-caption-unit text-outline mt-1.5">
+        绿色已答 · 橙色存疑 · 蓝框当前题 · 点击跳转
+      </p>
+</div>
+<!-- Grid Content: 25 Numbered Cells in 6 Columns -->
+<div class="px-gutter overflow-y-auto max-h-[406px] py-1">
+<div class="grid grid-cols-6 gap-2.5">
+<!-- 1: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">1</button>
+<!-- 2: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">2</button>
+<!-- 3: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">3</button>
+<!-- 4: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">4</button>
+<!-- 5: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">5</button>
+<!-- 6: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">6</button>
+<!-- 7: Flagged AND current (Orange background + Blue outline/glow) -->
+<button class="h-11 rounded-lg bg-amber-100 text-amber-900 font-headline-sm text-headline-sm font-bold flex items-center justify-center shadow-[0_0_0_2px_#0044c4] relative transition-transform active:scale-95" type="button">
+<span class="">7</span>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary"></span>
+</button>
+<!-- 8: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">8</button>
+<!-- 9: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">9</button>
+<!-- 10: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">10</button>
+<!-- 11: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">11</button>
+<!-- 12: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">12</button>
+<!-- 13: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">13</button>
+<!-- 14: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">14</button>
+<!-- 15: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">15</button>
+<!-- 16: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">16</button>
+<!-- 17: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">17</button>
+<!-- 18: Flagged (Orange) -->
+<button class="h-11 rounded-lg bg-amber-50 text-amber-700 font-headline-sm text-headline-sm font-semibold flex items-center justify-center transition-transform active:scale-95" type="button">18</button>
+<!-- 19: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">19</button>
+<!-- 20: Unanswered (Grey) -->
+<button class="h-11 rounded-lg bg-surface-container text-secondary font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">20</button>
+<!-- 21: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">21</button>
+<!-- 22: Flagged (Orange) -->
+<button class="h-11 rounded-lg bg-amber-50 text-amber-700 font-headline-sm text-headline-sm font-semibold flex items-center justify-center transition-transform active:scale-95" type="button">22</button>
+<!-- 23: Answered -->
+<button class="h-11 rounded-lg bg-emerald-50 text-emerald-700 font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">23</button>
+<!-- 24: Unanswered (Grey) -->
+<button class="h-11 rounded-lg bg-surface-container text-secondary font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">24</button>
+<!-- 25: Unanswered (Grey) -->
+<button class="h-11 rounded-lg bg-surface-container text-secondary font-headline-sm text-headline-sm flex items-center justify-center transition-transform active:scale-95" type="button">25</button>
+</div>
+</div>
+<!-- Sheet Sticky Footer Stats & Action -->
+<div class="px-gutter pt-space-md pb-space-lg mt-space-sm bg-surface-container-lowest">
+<!-- Status Stats Row -->
+<div class="flex items-center justify-between mb-space-md px-1">
+<div class="flex items-baseline gap-1.5">
+<span class="text-secondary font-body-sm text-body-sm">作答进度</span>
+<span class="text-on-surface font-headline-sm text-headline-sm font-bold">已答 19 / 25</span>
+</div>
+<div class="flex items-baseline gap-1.5">
+<span class="text-secondary font-body-sm text-body-sm">考试倒计时</span>
+<span class="text-primary font-headline-sm text-headline-sm font-bold tracking-tight">剩余 00:37:12</span>
+</div>
+</div>
+<!-- Full-Width Primary Action -->
+<div class="flex items-center gap-space-sm"><button class="flex-1 h-12 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md font-medium flex items-center justify-center gap-1.5 active:scale-[0.98] transition-colors" id="resumeExamBtn" type="button">
+  <span class="">继续作答第 7 题</span>
+</button>
+<button class="flex-1 h-12 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] transition-transform" type="button">
+  <span class="">提交试卷</span>
+  <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button></div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const backdrop = document.getElementById('sheetBackdrop');
+    const sheet = document.getElementById('answerSheet');
+    const closeBtn = document.getElementById('closeSheetBtn');
+    const resumeBtn = document.getElementById('resumeExamBtn');
+
+    function dismissSheet() {
+      sheet.classList.add('translate-y-full');
+      backdrop.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        sheet.classList.remove('translate-y-full');
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      }, 900);
+    }
+
+    if (backdrop) backdrop.addEventListener('click', dismissSheet);
+    if (closeBtn) closeBtn.addEventListener('click', dismissSheet);
+    if (resumeBtn) resumeBtn.addEventListener('click', dismissSheet);
+  })();
+</script></main>
+
+</body></html>
