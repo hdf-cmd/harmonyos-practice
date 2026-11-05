@@ -300,7 +300,7 @@ import commonConstantsTest from './CommonConstants.test';
 - [ ] **Step 6: 单测回归**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: entry 尾行 Tests run: 121（本任务不动 entry）；common 尾行 Tests run: 30（22 + 本步 8 例）
+Expected: entry 尾行 Tests run: 121（本任务不动 entry）；common 尾行 Tests run: 32（24 + 本步 8 例；复审时实测 common=32，此前写的 22 是 Task 2 落地前的旧基线）
 
 若计数仍是 121，说明 `common/src/test` 没被 entry 轮跑到——先查 `common/src/test/List.test.ets` 的挂号，别把"没跑"当成"通过"。
 
