@@ -25,6 +25,12 @@
 - 页面文案保持现有中文，不得引入英文标题（HarmonyOS/ArkTS/Stage/UIAbility 等专有名词除外）。
 - 未经用户明确要求，不 commit 到 master、不 push、不切分支覆盖写。本计划在 feature 分支 `feat/ui-reskin` 上逐任务提交，末任务再 ff 合并。
 - 每个任务的验证**必须同时跑** `devecocli build` 与 `hvigorw test`：`hvigorw test` 不编译 view，只跑单测等于没验视图。
+- **卡片不得贴屏边**（Task 4 审查纠正）：spec §3.4 全局约束是"页面左右边距 16"，所以内容卡必须是 `width('100%')` **且父容器带 `padding({left: SPACE_M, right: SPACE_M})`**，或者直接 `width('92%')` 居中——二者选一，不能像 Task 4 初版那样"卡 `width('100%')` + 父容器无横向 padding"，那会让 `RADIUS_CARD=16` 的圆角和 Level 1 阴影被屏边切半。卡内子元素一律转 `width('100%')`，不许再留 80% 造成"卡满宽、内容悬空"的双层留白。
+- **`LINE_*` 与 `WEIGHT_*` 的采用范围（controller 统一拍板，不要逐屏各自决定）**：Task 1 定义了 12 档行高与 4 档字重，但截至 Task 4 全仓仅 1 处引用——这是计划缺口，不是实施者的问题。裁决如下：
+  - `fontWeight` **每处必配**：`Bold(700)`/`Semi(600)`/`Medium(500)`/`Regular(400)` 按 §3.3 档位表取，不写裸 `FontWeight.Bold`。零布局风险。
+  - `lineHeight` **只在可能换行的文字上配**：题干、选项正文、解析正文、副文案行、签名。**单行短标签、胶囊、角标、数字配单位不配**——那些地方套行高只会造成裁切或撑高。既有先例见 `ExamDetailPage.ets:224`（题干配行高，注释写明"只放大字不动行高，五档下会越挤越近"）。
+  - 若某屏按此规则套完仍有元素溢出，改布局不改规则，并把现象报给 controller。
+- **死令牌终检（Task 13 必跑）**：换装全部落地后，逐个统计 `CommonConstants` 里每个令牌在视图层的引用数，**引用数为 0 的必须给出结论**——要么补上它的消费点，要么从常量表删掉。留着不消费也不删的令牌，等于把"这块活没干"伪装成"设计系统很完整"。
 - **单测门禁必须跑两个模块**（Task 2 实测纠正，影响所有任务）：`-p module=entry@default` **完全不执行** `common` HAR 的 `src/test`。实测证据：entry 结果文件里 18 个 describe 全是 entry 模块的（`homeViewModelTest`、`examDetailViewModelTest` 等），`FontSettingTest`/`PaperUtilsTest` 零命中；common 的用例只出现在 `common/.test/default/intermediates/test/coverage_data/test_result.txt`。
   所以只跑 entry 一条命令，`common` 侧的改动（Task 1 的 8 个令牌断言、Task 2 的 2 个字号断言）在门禁里是**隐形的**。两条都要跑：
 
@@ -391,28 +397,43 @@ git commit -m "fix: 极小档偏移收到 -2，避免辅助文字掉到 7fp"
 
 - [ ] **Step 1: 写失败测试**
 
-在 `entry/src/test/ExamDetailViewModel.test.ets` 的 `describe` 内追加（沿用该文件已有的 VM 构造方式；若文件里已有构造 helper 就复用它，别新建 service）：
+在 `entry/src/test/ExamDetailViewModel.test.ets` 的 `describe` 内追加。**必须复用该文件 `beforeEach` 里已有的 mock `service` 注入**（`new ExamDetailViewModel(service)`）——VM 默认构造是 `service: ExamService = new ExamService()`，`selectSingleOption`/`toggleMultiOption` 会经 `persistAnswer` 真发 HTTP PUT，裸 `new` 会把网络打进单测。
 
 ```ts
     // 答题卡底部要显示"已答 x / y"。计数是纯逻辑，能单测。
     it('answered_count_zero_before_any_selection', 0, () => {
-      const vm = new ExamDetailViewModel()
-      vm.questions = [{ id: 'q1', type: 'SINGLE', content: 'c', options: [] }]
+      const vm = new ExamDetailViewModel(service)
+      vm.questions = [{ id: 'q1', type: 'SINGLE', content: 'c', options: [], score: 10 }]
       expect(vm.answeredCount()).assertEqual(0)
     })
 
-    it('answered_count_counts_single_and_multi_and_true_false', 0, () => {
-      const vm = new ExamDetailViewModel()
+    // 四种题型各答一题，末断言取 4 而不是 2：
+    // 冒牌实现 radioSelected!==''?1:0 + checkboxSelected.size 在本夹具下会算出 1，
+    // 只期望 2 或 3 都可能被它凑过去，期望 4 才同时杀掉"按全局单选态计数"和"按 Set 大小计数"两种写法。
+    it('answered_count_accumulates_across_single_multi_and_judge', 0, () => {
+      const vm = new ExamDetailViewModel(service)
       vm.questions = [
-        { id: 'q1', type: 'SINGLE', content: 'c', options: [] },
-        { id: 'q2', type: 'MULTI', content: 'c', options: [] },
-        { id: 'q3', type: 'TRUE_FALSE', content: 'c', options: [] },
-        { id: 'q4', type: 'SINGLE', content: 'c', options: [] }
+        { id: 'q1', type: 'SINGLE', content: 'c', options: [oA, oB], score: 10 },
+        { id: 'q2', type: 'MULTI', content: 'c', options: [oA, oB, oC], score: 10 },
+        { id: 'q3', type: 'JUDGE', content: 'c', options: [oA, oB], score: 10 },
+        { id: 'q4', type: 'SINGLE', content: 'c', options: [oA, oB], score: 10 }
       ]
-      vm.radioSelected = 'A'
-      vm.checkboxSelected = new Set<string>(['A', 'C'])
-      expect(vm.answeredCount()).assertEqual(2)
+      vm.selectSingleOption('A')            // q1
+      vm.jumpTo(1)
+      vm.toggleMultiOption('A', true)
+      vm.toggleMultiOption('C', true)       // q2 → 'AC'
+      vm.jumpTo(2)
+      vm.selectSingleOption('B')            // q3
+      vm.jumpTo(3)
+      vm.selectSingleOption('A')            // q4
+      expect(vm.answeredCount()).assertEqual(4)
     })
+```
+
+三处原稿写错、已由实施者实测纠正，此处为最终形态：
+1. 题型枚举是 `SINGLE`/`MULTI`/`JUDGE`，**没有 `TRUE_FALSE`**（`QuestionModel.ets:7`）。
+2. `QuestionItem.score` 是必填字段，夹具不写会编译不过。
+3. **不能用 `vm.radioSelected = 'A'` / `vm.checkboxSelected = new Set(...)` 直接灌状态**——`isQuestionAnswered()` 读的是私有 `answers: Map`（`ExamDetailViewModel.ets:227-230`），那两个字段只是当前题的渲染态。原稿这样写实测得 0。必须走 `selectSingleOption` / `toggleMultiOption` / `jumpTo` 这些公开方法让答案真正落进 `answers`。
 ```
 
 - [ ] **Step 2: 跑测试确认失败**
@@ -469,7 +490,7 @@ git commit -m "feat: 答题页 VM 增加 answeredCount 计数（答题卡进度�
 - Consumes: Task 1 的 `COLOR_CARD_BG` / `RADIUS_CARD` / `SHADOW_CARD` / `RADIUS_INPUT` / `COLOR_BORDER_FOCUS` / `COLOR_SUBTLE_BG` / `BTN_HEIGHT` / `RADIUS_BUTTON`
 - Produces: 无（叶子任务）
 
-- [ ] **Step 1: 表单收进单张白卡**
+- [ ] **Step 1: 表单收进单张白卡（卡不能贴屏边）**
 
 把 Logo 以下的表单区外层包一个 `Column`，属性固定为：
 
@@ -481,19 +502,40 @@ git commit -m "feat: 答题页 VM 增加 answeredCount 计数（答题卡进度�
 .shadow(CommonConstants.SHADOW_CARD)
 ```
 
-- [ ] **Step 2: 输入框按令牌重排**
+**并且**该卡的父容器必须带横向内边距，否则卡贴屏边、16 圆角与阴影被切半（Task 4 初版就栽在这里）：
 
-每个 `TextInput` 的修饰链改为：
+```ts
+.padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+```
+
+卡内原本写 `width('80%')` 的子元素一律转 `width('100%')`——卡已是满宽带 16 内边距，再套 80% 会变成"卡满宽、输入框悬空"的双层留白。
+
+- [ ] **Step 2: 输入框按令牌重排（含聚焦态）**
+
+每个 `TextInput` 的静息链改为：
 
 ```ts
 .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
 .borderRadius(CommonConstants.RADIUS_INPUT)
-.border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+.border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
 .fontSize(CommonConstants.FONT_BODY_LG)
 .fontColor(CommonConstants.COLOR_TEXT_MAIN)
 .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
 .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
 ```
+
+再加聚焦链。spec §4 F01 要求"静息灰底 → 聚焦转白 + 1.5 主色描边"，这**不是加行为**：`stateStyles` 有 `focused` 键（SDK `component/common.d.ts` 的 `StateStyles` 接口），与本页按钮已在用的 `pressed` 同一机制，零新增状态、零行为改动：
+
+```ts
+.stateStyles({
+  focused: {
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .border({ width: 1.5, color: CommonConstants.COLOR_BORDER_FOCUS })
+  }
+})
+```
+
+漏掉这一条，`COLOR_BORDER_FOCUS` 就是全仓零视图引用的死令牌。
 
 - [ ] **Step 3: 主按钮去 `Color.White`**
 
@@ -1230,6 +1272,28 @@ Expected: 空输出。
 
 Run: `grep -rn "Color\.White\|'#FFFFFF'\|'#EEEEEE'\|'#FFF3E0'\|'#E8F5E9'\|'#F5F5F5'\|'#E0E0E0'\|'#70b8f8'\|'#416ff5'" entry/src/main/ets/features --include=*.ets`
 Expected: 空输出（基线是 24 处，此处必须归零）
+
+- [ ] **Step 3b: 死令牌清点**
+
+逐个统计 `CommonConstants` 每个令牌在视图层的引用数，引用为 0 的必须给出结论——补消费点，或从常量表删掉：
+
+```bash
+grep -oE "static readonly [A-Z_0-9]+" common/src/main/ets/constants/CommonConstants.ets \
+  | sed 's/static readonly //' | while read t; do
+  n=$(grep -rlo "CommonConstants\.$t\b" entry/src/main/ets common/src/main/ets --include=*.ets 2>/dev/null | wc -l)
+  [ "$n" -eq 0 ] && echo "UNUSED $t"
+done
+```
+
+Expected: 空输出。非空则逐个处置，并把处置结果写进报告。
+
+判据的理由：Task 4 审查发现 `COLOR_BORDER_FOCUS` 只在定义和 Task 1 的断言里出现、没有任何视图引用，
+顺藤摸出"spec 要求的聚焦态整条没做"。一个不被消费的令牌往往就是漏掉的那块活——
+留着它不删也不接，等于把"没干完"伪装成"设计系统很完整"。
+
+注意 `LINE_*`/`WEIGHT_*` 按 Global Constraints 的采用范围裁决：`fontWeight` 每处必配，
+`lineHeight` 只配可能换行的文字。所以这两族允许有合理数量的零引用（单行标签档），
+但每个零引用都要在报告里点名说明为什么合理，不许笼统带过。
 
 - [ ] **Step 4: 全量构建 + 单测**
 
