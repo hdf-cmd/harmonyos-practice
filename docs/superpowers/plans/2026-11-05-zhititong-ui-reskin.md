@@ -1091,15 +1091,44 @@ git commit -m "style: 逐题回顾对齐方案A（状态轨 + tint 选项底 + �
 
 ---
 
-### Task 11: 我的
+### Task 11: 我的 + 底部 Tab 条
 
 **Files:**
 - Modify: `entry/src/main/ets/features/mine/view/MineView.ets`
 - Modify: `entry/src/main/ets/features/mine/view/components/SettingItem.ets`
+- Modify: `entry/src/main/ets/pages/MainPage.ets`
 
 **Interfaces:**
 - Consumes: Task 1 令牌、Task 2 的新 `FONT_LEVELS`
 - Produces: 无
+
+- [ ] **Step 0: 底部 Tab 条（Task 5 实施时发现整份计划无人认领，补上）**
+
+`MainPage.ets:36` 是全仓最后一处仍在用 `CommonConstants.FONT_BODY` 旧别名的地方，而原计划 13 个任务没有一个碰这个文件——Task 13 的别名门禁会把它逼出来，但没人定它该改成什么。`SHADOW_BOTTOM_BAR` 也因此一直是死令牌。
+
+设计稿（导出 HTML `_6/_7/_8/_9`）的导航条是：`h-16`（64vp）+ 24px Material 图标 + `font-label-sm` 文字，选中态 `text-primary-container` + `font-semibold`，容器带 `bg-surface/90` + `backdrop-blur-xl` + `shadow-[0_-2px_12px_rgba(0,0,0,0.03)]`。
+
+**两条裁决，按此实现，不要自行扩展：**
+
+1. **不加图标。** 稿子的图标是 Material Symbols 字体连字（`menu_book` 等），ArkUI 没有这套字体，加图标等于引一条素材管道，而计划从未预算过图标资源。保持现状的纯文字标签。代价：与稿子有一处可见差异，终审或装机目检时若判定必须补，属新增范围另立任务。
+2. **不做毛玻璃。** 导出 HTML 用了 `backdrop-blur-xl`，但 DESIGN.md 正文明令"杜绝毛玻璃模糊"（Zero Decorative Bloat 段）——**设计源自己矛盾**。以设计系统规则为准：平面 `COLOR_CARD_BG` + Level 3 阴影。这同时避开 ArkUI 模糊的渲染代价。
+
+实现（`tabBarBuilder` 内）：
+
+```ts
+Text(title)
+  .fontSize(CommonConstants.FONT_LABEL_SM)
+  .fontWeight(this.currentIndex === index ? CommonConstants.WEIGHT_SEMI : CommonConstants.WEIGHT_REGULAR)
+  .fontColor(this.currentIndex === index
+    ? CommonConstants.COLOR_PRIMARY
+    : CommonConstants.COLOR_TEXT_HINT)
+```
+
+容器：`.height(64)`（原 52，对齐稿子 `h-16`），`Tabs` 的 `barHeight(64)` 同步改；`tabBar` 背景 `CommonConstants.COLOR_CARD_BG`，并在 `MainPage` 的 `build()` 根节点上给导航条挂 `CommonConstants.SHADOW_BOTTOM_BAR`。
+
+`fontWeight` 每处必配、`lineHeight` 不配（单行标签，配了会裁切）——同 Global Constraints 裁决。
+
+验收：`grep -cE "CommonConstants\.FONT_(TITLE|SUBTITLE|BODY|CAPTION)\b" entry/src/main/ets/pages/MainPage.ets` → `0`；`grep -rc "CommonConstants\.SHADOW_BOTTOM_BAR" entry/src/main/ets` → 至少 1。
 
 - [ ] **Step 1: 分组菜单卡改内嵌发丝分割线**
 
