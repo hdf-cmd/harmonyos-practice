@@ -155,27 +155,31 @@ export class CommonConstants {
 }
 ```
 
-- [ ] **Step 2: 构建验证**
+- [ ] **Step 2: 补回四个旧字号别名（必做，不是兜底）**
 
-Run: `cd <工程> && devecocli build 2>&1 | grep -c ERROR`
-Expected: `0`，且日志尾行 `Build completed successfully`
-
-若报 `Cannot find name 'ShadowOptions'`：ArkUI 全局类型，无需 import。若报 `has no exported member 'FONT_TITLE'` 之类，说明还有 view 引用旧常量名——旧名 `FONT_TITLE/FONT_SUBTITLE/FONT_BODY/FONT_CAPTION` 已被拆成十二档，**先记下报错文件清单**，那是后续任务的改动对象；本任务为让工程保持可编译，在类末尾临时补四行别名，Task 13 一并删除：
+Step 1 替换掉的文件**必须**在类末尾带上这四行。12 个 view 此刻仍全部引用旧名 `FONT_TITLE` / `FONT_SUBTITLE` / `FONT_BODY` / `FONT_CAPTION`；不带上的话 Step 3 的构建门禁会当场挂在 12 个文件上，看起来像"令牌层写错了"，实际是过渡期别名没留。
 
 ```ts
-  // 旧字号别名：换装过渡期保留，各屏改完（Task 13）删除
+  // 旧字号别名：换装过渡期保留，各屏改完（Task 13 Step 2）删除
   static readonly FONT_TITLE: number = 22
   static readonly FONT_SUBTITLE: number = 18
   static readonly FONT_BODY: number = 16
   static readonly FONT_CAPTION: number = 14
 ```
 
-- [ ] **Step 3: 单测回归**
+- [ ] **Step 3: 构建验证**
+
+Run: `devecocli build 2>&1 | grep -c ERROR`
+Expected: `0`，且日志尾行 `Build completed successfully`
+
+若报 `Cannot find name 'ShadowOptions'`（`common` 是 HAR；`session/SessionManager.ets` 已证明它能 import `@kit.ArkUI`，但全局类型仍可能不解析）：**不要卡住**，把三个 `SHADOW_*` 从 `CommonConstants` 移到各 view 调用点内联书写，`radius`/`type`/`color`/`offsetX`/`offsetY` 五个字段值照抄。在报告里写明走了这条分支——后续任务的 dispatch 会带上这个决定。
+
+- [ ] **Step 4: 单测回归**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
 Expected: 尾行 `Tests run: 121, Failure: 0, Error: 0, Pass: 121, Ignore: 0`
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add common/src/main/ets/constants/CommonConstants.ets
