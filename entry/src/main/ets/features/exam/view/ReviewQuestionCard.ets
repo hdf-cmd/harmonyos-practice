@@ -7,10 +7,6 @@ import { CommonConstants, questionTypeLabel } from '@zhititong/common'
 import { OptionItem } from '@zhititong/common'
 import { ReviewQuestionDetail } from '../service/ExamService'
 
-const COLOR_CORRECT_BG: string = '#E8F5E9'
-const COLOR_MINE_BG: string = '#FFF3E0'
-const COLOR_PLAIN_BG: string = '#FFFFFF'
-
 @ComponentV2
 export struct ReviewQuestionCard {
   @Param @Require question: ReviewQuestionDetail
@@ -31,16 +27,19 @@ export struct ReviewQuestionCard {
     return this.question.correctAnswer.indexOf(label) !== -1
   }
 
+  // 选项底色三档（§3.2 的 tint 底）：正确项=成功浅底，我的错选=警示浅底，其余=卡面白底
   private optionBg(label: string): string {
     if (this.isCorrectPick(label)) {
-      return COLOR_CORRECT_BG
+      return CommonConstants.COLOR_SUCCESS_BG
     }
     if (this.isMyPick(label)) {
-      return COLOR_MINE_BG
+      return CommonConstants.COLOR_WARN_BG
     }
-    return COLOR_PLAIN_BG
+    return CommonConstants.COLOR_CARD_BG
   }
 
+  // 选项描边三档：语义色只给"有信息"的两条（对/错），中性项退到发丝描边——
+  //   换装前中性描边与语义描边同为 1vp 实色，整列表看起来像一堆框，靠颜色分不出主次
   private optionBorder(label: string): string {
     if (this.isCorrectPick(label)) {
       return CommonConstants.COLOR_SUCCESS
@@ -48,81 +47,101 @@ export struct ReviewQuestionCard {
     if (this.isMyPick(label)) {
       return CommonConstants.COLOR_WARN
     }
-    return '#E0E0E0'
+    return CommonConstants.COLOR_BORDER_HAIRLINE
   }
 
   build() {
     Column() {
-      // 题号 + 题型
+      // 卡头：题号 + 题型 + 本题得分，三件同档（label-md 14），靠字色而非字号分主次
       Row() {
         Text(`第 ${this.index + 1} 题`)
-          .fontSize(CommonConstants.FONT_CAPTION)
-          .fontWeight(FontWeight.Bold)
+          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+        // 题型标签：浅主色底 + 同色相饱和字的全圆胶囊，**无描边**（§6.4 裁决：胶囊只做 tint 底）。
+        //   字号取卡头统一档（简报钉 FONT_LABEL_MD），其余属性链与答题页/试卷卡的题型胶囊同款。
+        // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
         Text(questionTypeLabel(this.question.type))
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_PRIMARY)
-          .border({ width: 1, color: CommonConstants.COLOR_PRIMARY, radius: 4 })
-          .padding({ left: 6, right: 6, top: 1, bottom: 1 })
+          .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
+          .borderRadius(CommonConstants.RADIUS_TAG)
+          .padding({ left: 10, right: 10, top: 4, bottom: 4 })
           .margin({ left: 8 })
         Blank()
         Text(`${this.question.earnedScore} / ${this.question.maxScore} 分`)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(this.question.isCorrect ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
       }
       .width('100%')
 
-      // 题干
+      // 题干：卡片里唯一长度完全不可控的正文，窄屏/分屏/极大档都会折行 → 按 §3.3 配 body-lg 行高
       Text(this.question.content)
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_LG)
         .fontColor(CommonConstants.COLOR_TEXT_MAIN)
         .margin({ top: CommonConstants.SPACE_M })
         .width('100%')
 
-      // 选项：正确项绿底、我的错选橙底、两者皆中绿底
-      Column({ space: 8 }) {
+      // 选项：正确项成功浅底、我的错选警示浅底、两者皆中成功浅底（对优先于错）
+      // 行内边距与圆角对齐答题页的选项行（同一道题的同一批选项在两屏出现，形态不该分叉）
+      Column({ space: CommonConstants.SPACE_CARD_GAP }) {
         ForEach(this.question.options, (option: OptionItem) => {
           Text(`${option.label}. ${option.content}`)
-            .fontSize(CommonConstants.FONT_CAPTION)
+            .fontSize(CommonConstants.FONT_BODY_MD)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            // 选项正文与题干同类：内容随题目变，会折行 → 配行高（body-md 与本卡的解析正文同档）
+            .lineHeight(CommonConstants.LINE_BODY_MD)
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .width('100%')
-            .padding({ left: 10, right: 10, top: 8, bottom: 8 })
+            .padding({ left: 12, right: 12, top: 10, bottom: 10 })
             .backgroundColor(this.optionBg(option.label))
-            .border({ width: 1, color: this.optionBorder(option.label), radius: 6 })
+            .border({ width: 1, color: this.optionBorder(option.label), radius: CommonConstants.RADIUS_INPUT })
         }, (option: OptionItem) => this.question.questionId + '_' + option.label)
       }
       .width('100%')
       .margin({ top: CommonConstants.SPACE_M })
 
-      // 我的答案 / 正确答案
+      // 我的答案 / 正确答案：答案串只有字母（多选也就 A-B-C-D）或"未作答"，长度有界、单行判定 → 不配行高
       Row() {
         Text(`我的答案 ${this.myAnswer()}`)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_BODY_MD)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
           .fontColor(CommonConstants.COLOR_WARN)
         Text(`正确答案 ${this.question.correctAnswer}`)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_BODY_MD)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
           .fontColor(CommonConstants.COLOR_SUCCESS)
           .margin({ left: CommonConstants.SPACE_M })
       }
       .width('100%')
       .margin({ top: CommonConstants.SPACE_M })
 
-      // 解析区：空串给占位，样式降一级（浅灰底 + 次文本色）
+      // 解析区：空串给占位，样式降一级（静息浅底 + 次文本色，占位再降一档到提示色）
+      // 解析正文按题不同、几百字也常见，可换行 → 配 body-md 行高
       Text(this.question.analysis === '' ? '暂无解析' : this.question.analysis)
-        .fontSize(CommonConstants.FONT_CAPTION)
+        .fontSize(CommonConstants.FONT_BODY_MD)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_MD)
         .fontColor(this.question.analysis === ''
           ? CommonConstants.COLOR_TEXT_HINT : CommonConstants.COLOR_TEXT_SUB)
         .width('100%')
         .padding(CommonConstants.SPACE_M)
         .margin({ top: CommonConstants.SPACE_M })
-        .backgroundColor('#F5F5F5')
-        .borderRadius(6)
+        .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+        .borderRadius(CommonConstants.RADIUS_INPUT)
     }
     .width('100%')
     .padding(CommonConstants.SPACE_M)
-    .backgroundColor(Color.White)
-    .borderRadius(8)
-    // 左边框色带：绿对红错（其余三边宽度 0，只留左侧一条）
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .borderRadius(CommonConstants.RADIUS_CARD)
+    .shadow(CommonConstants.SHADOW_CARD)
+    // 左边框色带：绿对红错（其余三边宽度 0，只留左侧一条）。宽度 4vp 与两条语义色都不动——
+    //   它们本来就是 COLOR_SUCCESS/COLOR_ERROR 令牌，本次只重排卡面（底色/圆角/阴影换成令牌）
+    // 不 .clip(true)：卡内边距 16 与圆角半径 16 相等，内容碰不到圆角弧线（答题页同款论证）
     .border({
       width: { left: 4 },
       color: this.question.isCorrect ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR
