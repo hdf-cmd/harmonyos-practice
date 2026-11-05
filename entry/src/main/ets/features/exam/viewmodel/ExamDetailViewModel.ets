@@ -51,7 +51,10 @@ export class ExamDetailViewModel extends BaseViewModel {
   @Trace checkboxSelected: Set<string> = new Set<string>()
 
   // 唯一事实源：questionId → 已选答案（字母拼接，如 'AC'）
-  private answers: Map<string, string> = new Map<string, string>()
+  // 必须 @Trace：答题卡抽屉的"已答 x / y"与逐格状态都靠它失效，
+  //   没有 @Trace 时答完一题抽屉数字不动，且不会报错——是最难发现的一类缺陷。
+  //   形态与本类既有的 @Trace checkboxSelected: Set<string> 一致：V2 支持观察集合的内部变更。
+  @Trace private answers: Map<string, string> = new Map<string, string>()
   // 防重复交卷闸门
   private submitting: boolean = false
   private timerId: number = -1
@@ -238,7 +241,7 @@ export class ExamDetailViewModel extends BaseViewModel {
    * 已答题数：答题卡底部"已答 x / y"用它。
    * 统一以 answers 表为判据（委托 isQuestionAnswered），不按题型分流——
    * radioSelected / checkboxSelected 只是"当前题"的渲染态，不承载"已答"语义；
-   * 跨题累计只认 answers（见本类第 53 行"唯一事实源"）。
+   * 跨题累计只认 answers（见本类 answers 字段的"唯一事实源"注释）。
    */
   answeredCount(): number {
     let count: number = 0
