@@ -40,16 +40,24 @@ export struct HomeView {
   @Builder
   LoadFailed() {
     Column() {
+      // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，按 §3.3 配对行高（父 Column 自适应高度，不裁切）
       Text(this.vm.errorMessage)
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_LG)
         .fontColor(CommonConstants.COLOR_ERROR)
         .textAlign(TextAlign.Center)
 
+      // 错误态按钮走次级形态：静息浅蓝底 + 主色字，高 36、圆角 8
+      // 圆角必须配 ButtonType.Normal——Capsule 由组件自定端头，borderRadius 会被吞掉
       Button(this.vm.authExpired ? '重新登录' : '重试')
-        .type(ButtonType.Capsule)
-        .fontSize(CommonConstants.FONT_BODY)
-        .fontColor(Color.White)
-        .backgroundColor(CommonConstants.COLOR_PRIMARY)
+        .type(ButtonType.Normal)
+        .height(CommonConstants.BTN_HEIGHT_SECONDARY)
+        .borderRadius(CommonConstants.RADIUS_BUTTON)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+        .fontColor(CommonConstants.COLOR_PRIMARY)
+        .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
         .margin({ top: CommonConstants.SPACE_M })
         .onClick(() => {
           if (this.vm.authExpired) {
@@ -70,8 +78,13 @@ export struct HomeView {
   @Builder
   Loading() {
     Column() {
+      // 提示行同样可能折行（窄窗/分屏），配对行高
+      // 字阶做同值迁移（旧别名 16 → 大正文档 16/400），渲染不变；
+      // 简报没给这条一个档位，是否降到正文中档留给 Task 12 的三态统一，这里不擅自改字号
       Text('推荐试卷加载中…')
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_LG)
         .fontColor(CommonConstants.COLOR_TEXT_HINT)
     }
     .width('100%')
@@ -126,21 +139,24 @@ export struct HomeView {
           .interval(3000)
           .indicator(true)
           .height(160)
-          .borderRadius(12)
+          .borderRadius(CommonConstants.RADIUS_CARD)
           .margin({ bottom: CommonConstants.SPACE_L })
 
-          // 推荐试卷标题
+          // 推荐试卷标题（分区标题档 20/600 + 配对行高）
+          // 归"会换行"一类：极小窗/分屏下四字标题也可能折行，且父 Column 高度自适应，行高 28 不裁切
           Text('推荐试卷')
-            .fontSize(CommonConstants.FONT_SUBTITLE)
+            .fontSize(CommonConstants.FONT_HEADLINE_MD)
+            .fontWeight(CommonConstants.WEIGHT_SEMI)
+            .lineHeight(CommonConstants.LINE_HEADLINE_MD)
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-            .fontWeight(FontWeight.Bold)
-            .margin({ bottom: CommonConstants.SPACE_M })
+            .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
 
           // ===== List 列表区（3.2.1）=====
           // List：列表容器，子项必须包在 ListItem 里。要点：
           //   1) 按需渲染 + 自带滚动，子项多时比"ForEach 塞进 Column"更流畅，是长列表首选
           //   2) 默认竖向排列（Axis.Vertical），.listDirection(Axis.Horizontal) 可改横向列表
-          //   3) 构造参数 { space: N } 可统一设子项间距；本页间距用 ListItem 的 margin 实现，两种方式等价
+          //   3) 构造参数 { space: N } 统一设子项间距——换装后卡片纵向间距取令牌 12（方案A §3.4），
+          //      原先加在 ListItem 上的 margin(SPACE_M=16) 一并撤掉，否则与 space 叠加成 28
           // 三态顺序：加载中 → 加载失败 → 正常列表。错误优先于"空列表"判：
           // 真·零张卷（池子空）和"没拉到"是两回事，后者必须说清楚
           if (this.vm.loading && this.vm.papers.length === 0) {
@@ -148,7 +164,7 @@ export struct HomeView {
           } else if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
             this.LoadFailed()
           } else {
-            List() {
+            List({ space: CommonConstants.SPACE_CARD_GAP }) {
               // ForEach：数据驱动渲染。三个参数：
               //   1) 数据源 this.papers
               //   2) itemGenerator：每条数据生成一个 ListItem（数据变 → UI 自动跟着变）
@@ -159,7 +175,6 @@ export struct HomeView {
                   // 容器这里只管排版——"卡片管自己的交互"比在列表里堆 onClick 更好维护
                   PaperCard({ paper: paper })
                 }
-                .margin({ bottom: CommonConstants.SPACE_M })   // 卡片间距加在 ListItem 上
               }, (paper: PaperInfo) => paper.id)
               // ↑ 键值生成器：用试卷唯一 id 当 key。
               // 数据增删/顺序变化时，框架按 key 判断哪些项要重建、哪些可复用；

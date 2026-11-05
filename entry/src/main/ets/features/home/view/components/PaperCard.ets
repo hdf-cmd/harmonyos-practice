@@ -1,4 +1,5 @@
-// 试卷卡片组件：白底圆角，上行试卷名+等级标签，下行题量/时长/及格分，右侧角标
+// 试卷卡片组件：卡面走方案A 令牌（圆角 16 + Level 1 阴影 + 0.5 发丝描边），
+// 上行试卷名+等级标签，下行题量/时长/及格分，右侧是浅底全圆胶囊角标
 //
 // 【分层说明】放在 features/home/view/components/ 下：
 //   它是"首页"这个业务 feature 私有的展示型子组件，只被同 feature 的 HomeView 复用，
@@ -19,18 +20,24 @@ export struct PaperCard {
       // 左侧主内容区：layoutWeight(1) 吃掉剩余宽度，把右侧挤到最右边
       Column() {
         // 试卷名：maxLines(1) + Ellipsis 超长省略，防止长试卷名把卡片撑爆
+        // 字阶取"小标题"档（16/600）；既不换行也被 maxLines(1) 锁死，故不配 lineHeight——
+        // 套上去只会把行盒撑高、基线漂移，单行标签/胶囊一类一律不配行高
         Text(this.paper.paperName)
-          .fontSize(CommonConstants.FONT_BODY)
+          .fontSize(CommonConstants.FONT_HEADLINE_SM)
+          .fontWeight(CommonConstants.WEIGHT_SEMI)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .fontWeight(FontWeight.Bold)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
         // 下行：共 X 题 · Y 分钟 · 及格 Z 分
         // 模板字符串把三个契约字段拼成一行说明文字
+        // 副文案行按 §3.3 配对行高：三个契约值拼接后长度不可控，窄窗/分屏/折叠屏窄态会折行，
+        // 且父 Column 高度自适应，套 18 的行高不会裁切
         Text(`共 ${this.paper.questionCount} 题 · ${this.paper.duration} 分钟 · 及格 ${this.paper.passScore} 分`)
-          .fontSize(12)
+          .fontSize(CommonConstants.FONT_BODY_SM)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
+          .lineHeight(CommonConstants.LINE_BODY_SM)
           .fontColor(CommonConstants.COLOR_TEXT_SUB)
           .margin({ top: 8 })
       }
@@ -39,25 +46,38 @@ export struct PaperCard {
 
       // 右侧：等级标签 + 角标垂直排列，居中对齐
       Column() {
-        // 等级标签：主色描边圆角胶囊（描边样式：透明底 + 边框色 = 主色）
+        // 等级标签：浅蓝底全圆胶囊（换装前是"透明底 + 主色 1vp 描边 + 圆角 4"）
+        // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
         Text(this.paper.levelName)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_LABEL_SM)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_PRIMARY)
-          .border({ width: 1, color: CommonConstants.COLOR_PRIMARY })
-          .borderRadius(4)
-          .padding({ left: 4, right: 4, top: 2, bottom: 2 })
+          .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
+          .borderRadius(CommonConstants.RADIUS_TAG)
+          .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+          .height(24)
 
-        // 角标：条件渲染——考过显示最好成绩（成功色），没考过显示"未考"（提示色）
-        // if 分支在 build 里直接写即可，条件变化时这块 UI 自动切换
+        // 角标：条件渲染——考过显示最好成绩（成功色 + 成功浅底），没考过显示"未考"（提示色 + 静息底）
+        // 形态与等级标签同构（同一套胶囊属性链），if 分支在 build 里直接写即可，条件变化时这块 UI 自动切换
         if (this.paper.bestScore > 0) {
           Text(`最好 ${this.paper.bestScore} 分`)
-            .fontSize(CommonConstants.FONT_CAPTION)
+            .fontSize(CommonConstants.FONT_LABEL_SM)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(CommonConstants.COLOR_SUCCESS)
+            .backgroundColor(CommonConstants.COLOR_SUCCESS_BG)
+            .borderRadius(CommonConstants.RADIUS_TAG)
+            .height(24)
+            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
             .margin({ top: 6 })
         } else {
           Text('未考')
-            .fontSize(CommonConstants.FONT_CAPTION)
+            .fontSize(CommonConstants.FONT_LABEL_SM)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(CommonConstants.COLOR_TEXT_HINT)
+            .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+            .borderRadius(CommonConstants.RADIUS_TAG)
+            .height(24)
+            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
             .margin({ top: 6 })
         }
       }
@@ -66,8 +86,10 @@ export struct PaperCard {
     }
     .width('100%')
     .padding(CommonConstants.SPACE_M)
-    .borderRadius(12)
-    .backgroundColor('#FFFFFF')
+    .borderRadius(CommonConstants.RADIUS_CARD)
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+    .shadow(CommonConstants.SHADOW_CARD)
     .onClick(() => {
       // 沉浸式详情：push 到**根栈**，答题页会盖住底部 Tab（对比"刷题"Tab 里的域内跳转，
       // 后者 push 到 examStack，底部 Tab 仍在——两种栈的行为差异是本章的教学点）
