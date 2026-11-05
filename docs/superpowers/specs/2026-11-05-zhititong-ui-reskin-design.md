@@ -117,7 +117,7 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 | 屏 | 文件 | 改动 |
 |---|---|---|
 | F01 登录 | `login/view/LoginPage.ets` | 表单收进单张白卡（圆角 16 + Level 1 阴影）；输入框底 `#F2F4F6` → 聚焦转白 + 1.5 主色描边；按钮纯色 |
-| F02 首页 | `home/view/HomeView.ets`、`components/PaperCard.ets` | 轮播改浅底药丸卡；`PaperCard` 等级标签从"描边方角"改"浅蓝底全圆胶囊"，成绩角标同改；收编 `#FFFFFF` 硬编码 |
+| F02 首页 | `home/view/HomeView.ets`、`components/PaperCard.ets` | 轮播保持现有图片 banner + `RADIUS_CARD` 圆角，**并加 `.clip(true)`**（ArkUI 容器圆角默认不裁剪子节点，不加则是方图盖圆框，圆角等于没落地）；**不改造成"浅底药丸卡"**——导出稿那张药丸卡上是「47 套模拟卷已更新」这类数据型文案（App 无此字段）+ Material Symbols 图标（ArkUI 无该字体），照改属内容替换不是换装，且会废掉六张现有 banner 与自动轮播行为；`PaperCard` 等级标签从"描边方角"改"浅蓝底全圆胶囊"（**tint 底、无描边**，见 §6.4），成绩角标同改；收编 `#FFFFFF` 硬编码 |
 | F03 考试科目 | `exam/view/ExamSubjectView.ets`、`components/ExamSubjectCard.ets` | 双列网格卡按新令牌重排（科目名 + `共 N 套`）；**不加稿子里的图标容器、属性标签与"进入练习"链接**——`categoryName` 之外没有可填的字段；错误态按新令牌 |
 | F04 考卷列表 | `exam/view/ExamListPage.ets` | 行结构与 F02 统一；**不加筛选器与排序** |
 | F05 答题页 | `exam/view/ExamDetailPage.ets` | 告警条改浅红底红字 + 盾牌位；进度条改主色纤细；选项卡选中态 = 主色描边 + `#140A59F7` 底；底部控制栏三行结构；**提交按钮去渐变** |
@@ -155,6 +155,29 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 ### 6.3 主色从 #007AFF 变 #0A59F7
 
 应用图标、启动页背景、商店截图里的蓝会与新界面不一致。本次不动图标，但上架素材要另行重出，否则商店图与 App 内观感割裂。
+
+### 6.4 设计源自相矛盾时的取舍原则：取更克制的那一读
+
+执行中发现 `DESIGN.md` 的 prose 与导出屏的实际 HTML **两处互相矛盾**，且方向相反：
+
+| 案例 | prose 怎么说 | 导出屏怎么做 | 取谁 |
+|---|---|---|---|
+| 底部导航毛玻璃（Task 11） | "杜绝毛玻璃模糊"（Zero Decorative Bloat） | `backdrop-blur-xl` + `bg-surface/90` | **prose**（更克制） |
+| 胶囊描边（Task 5） | "Hairline border paired with matching tint background"，Success 示例给 `1px solid rgba(0,181,120,.20)` | 胶囊 class 里**没有** border | **导出屏**（更克制） |
+
+**原则不是"prose 优先"也不是"屏优先"，而是"取更克制的那一读"。** 理由：这套方案的立身之本就是克制（无渐变、无插画、无弥散光），两处冲突都往回收才不会把"设计系统文档"读成"允许加装饰的许可证"。
+
+**由此定：胶囊只做 tint 底，不加描边。** 这不省不了事——令牌层根本没有 tint 描边色（`rgba(0,181,120,.20)` ≈ `#3300B578`，全表无此项），补描边要先扩三个令牌再改 Task 1 的钉表测试；但即便补得起也不补，因为原则在先。
+
+留给终审的反面意见：Task 5 审查认为按 Task 11 判例应当 prose 赢、补描边。两条裁决方向相反是**有意的**，判据是克制程度而非文档层级。若终审不认同这条原则，需要同时翻掉毛玻璃与描边两处，不能只翻一处。
+
+### 6.5 底部 Tab 条：改高度与字阶，不加图标
+
+`MainPage.ets` 原不在任何任务的认领范围内（Task 5 实施时发现），现归 Task 11 Step 0。
+
+- 高度 52 → 64，对齐导出稿的 `h-16`；标签走 `FONT_LABEL_SM` + 选中态 `WEIGHT_SEMI`。
+- **不加图标。** 稿子的图标是 Material Symbols 连字（`menu_book` 等），ArkUI 没有这套字体；加图标等于引一条图标素材管道，而本计划从未预算素材资源。代价明说：与稿子有一处可见差异，若终审判定必须补，属新增范围另立任务。
+- 导航条用平面 `COLOR_CARD_BG` + Level 3 阴影（`SHADOW_BOTTOM_BAR`），不做毛玻璃——见 §6.4。
 
 ## 7. 风险
 
