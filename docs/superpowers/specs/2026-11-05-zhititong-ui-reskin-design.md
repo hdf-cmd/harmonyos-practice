@@ -201,8 +201,18 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 - **推送**：master 已 ahead 10 未推送。本次换装不推送，push 另需明确指令并先扫历史。
 - **回退**：换装走独立 feature 分支，一次提交对应一屏或一组同构屏，改坏可单点回退，不做大爆炸提交。
 
-## 8. 我纠正的三条先前说法
+## 8. 我纠正的先前说法（执行期回补，共四条）
 
 1. ~~"五档字号设置必须重新标定，否则极大可能比现在还小"~~ —— 错。`FontSetting` 存偏移量不存绝对值，换基准不影响档位机制。真正的问题是极小档下限（§6.2）。
-2. ~~"答题卡 A/B 出成了独立整屏，不是半模态"~~ —— 错。DESIGN.md F06 明确写 Bottom Sheet，缩略图上是把抽屉单独展示而已。
+2. ~~"答题卡 A/B 出成了独立整屏，不是半模态"~~ —— 结论对、**出处写错**（Task 8 审查核出）。
+   真实的半模态证据在导出的第 11 屏 HTML：`fixed bottom` + `rounded-t-2xl` + 内含"答题卡/提交试卷"；
+   而 `DESIGN.md` 全文**没有逐屏章节、没有 F06 标识、没有 Bottom Sheet 字样**（只有 §Elevation 的
+   Level 4 "System Dialog & Inspection Sheets"，那是阴影档不是形态指派）。原句"DESIGN.md F06 明确写
+   Bottom Sheet"是把结论安到了没写过它的文档上，本条已改按导出 HTML 立据。
+4. ~~"模拟器起不来，要修得手动补约 1GB 系统镜像"~~ —— 错，Task 8 审查核盘推翻。
+   `D:/system-image/HarmonyOS-6.1.1/phone_all_x86/system.img` = 3,670,016,000 B 完整在盘，
+   AVD 的 `hardware-qemu.ini` 正指过去；`devecocli` 报"找不到"是它按 AVD `config.ini` 的
+   `sdkPath=D:/DevEco Studio/sdk` + `imageSubPath=system-image/...` 拼了一个不存在的位置。
+   直启入口在 `D:/DevEco Studio/tools/emulator/Emulator.exe`。**设备门禁没被环境打断，是被一次没做全的排查打断**，
+   §5 的模拟器目检步骤据此恢复为可执行项（真阻塞只剩内存余量：实测 free 1.0 GB 时不起，先报数再启）。
 3. ~~"有了字段白名单，它就没地方编出正确率 88.5%"~~ —— 只对一半。白名单管得住数据型发明，管不住惯例型发明（登录页的记住我/忘记密码、顶栏的搜索和头像）。v2 实测：加了字段白名单后统计卡确实消失，但英文顶栏残留 9 处、溢出菜单残留 9 屏，都是惯例型。

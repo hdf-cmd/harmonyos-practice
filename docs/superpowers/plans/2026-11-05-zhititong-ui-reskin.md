@@ -45,6 +45,21 @@
   这条不能省：四个旧别名与新档同值（`FONT_TITLE`=`FONT_HEADLINE_LG_MOBILE`=22、`FONT_SUBTITLE`=`FONT_BODY_SM`=18、`FONT_BODY`=`FONT_BODY_LG`=`FONT_HEADLINE_SM`=16、`FONT_CAPTION`=`FONT_BODY_MD`=`FONT_LABEL_MD`=14），漏改**渲染结果一模一样**，模拟器目检抓不出来，只有这条 grep 能抓。
   ⚠️ 模式必须带词边界。写成 `FONT_BODY:` 这种形式实测只命中 53 行，词边界版命中 92 行——漏掉 39 处引用。
 
+- **简报沉默时该不该越出简报（Task 9 审查讲清，controller 升格为计划级判据，适用 Task 10-13 全部派单）**：
+  - **conform 类必做** —— 代码里已有的字面量与 spec 声明的规范值直接冲突。典型：§3.4:98 那行「卡片圆角 | 新值 16 | 现值 12」
+    的"现值 12"就是在指各屏残留的裸 `borderRadius(12)`；§3.3 档位表带"字重"列，采用该档即采用其配对字重。
+    不做的后果不是"少做优化"，是**代码里留着一个令牌表已宣布作废的值**（且 12 不在任何令牌里）。
+  - **extend 类不做、只登记** —— 引入该屏 §4 改动行没点名的新属性。判据是 §4 逐屏行：F01 明写了「圆角 16 + Level 1 阴影」，
+    F07 逐项只列大分值/胶囊/分布图，不列卡面装饰——本计划的一贯做法是把卡面装饰在逐屏行里点名，未点名即不 invoke。
+    依据是立身之本"只移植设计语言、不加新区块"(spec:11) 与 §6.4 克制原则。
+  - 一句话：**简报沉默 ≠ 禁止（conform 照做）；沉默且属新增装饰（extend）不做**。
+    越界或不动都必须在报告里点名**决定性的文档行**，不许只写"先例如此"或"简报未提"。
+- **设备门禁是可执行项，不是环境死局（Task 8 审查核盘纠正，此前我判错过一次）**：6.1.1 镜像完整在
+  `D:/system-image/HarmonyOS-6.1.1/phone_all_x86/`（`system.img` 3,670,016,000 B），AVD `hardware-qemu.ini` 正指过去；
+  `devecocli`/`devecocli run --device` 报"系统镜像找不到"是它按 AVD `config.ini` 的 `sdkPath=D:/DevEco Studio/sdk` +
+  `imageSubPath=…` 拼了一个不存在的位置。正解：直启 `D:/DevEco Studio/tools/emulator/Emulator.exe -start "Pura 90"`。
+  唯一真实约束是内存——启前必须先量 free（本机实测 1.0 GB 时不起，会拖垮并行会话），并把读数写进报告。
+
 ## 关于"测试"的说明（执行者先读这段）
 
 这是纯视觉换装，ArkTS 的 hypium LocalUnit 跑在无 UI 环境，**断言不了布局、圆角、阴影**。所以本计划里只有三个任务带真正的单元测试（Task 1 钉令牌值、Task 2/3 是纯逻辑），其余视图任务的门禁是：
@@ -1037,13 +1052,23 @@ Run: `DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor
 Run: `DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=common@default --no-daemon`
 Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
-- [ ] **Step 4b: 刷新验收（模拟器，不能省）**
+- [ ] **Step 4b: 刷新验收（模拟器，改口径）**
 
-Step 0 的 `@Trace` 改动**没有任何自动化能证明它生效**——单测跑在无 UI 环境，构建也不管渲染依赖。
-必须在模拟器上做一次：`devecocli run --module entry --device "Pura 90"`，打开答题卡抽屉，
-**不关抽屉**直接答下一题，看 `已答 x / y` 的 x 和那一格的底色是否当场跳。
+~~打开答题卡抽屉、**不关抽屉**直接答下一题，看 x 是否当场跳~~ —— 这条验收动作在原计划里就写错了，
+Task 8 审查核 SDK 判出：`SheetOptions.enableOutsideInteractive` **默认 false**（`common.d.ts:11877 @default false`），
+遮罩吃掉抽屉外的一切触点，抽屉开着时根本答不了题，"当场跳"这个症状在现交互里**不可能发生**。
+本页的交互模型是"开抽屉 → 看 → 点继续作答关闭 → 答题"，逐题作答与抽屉互斥，不存在实时刷新需求。
 
-不跳就是 Step 0 没生效，回到 Step 0 查，不要靠"关掉再打开就好了"交付——那正是这类缺陷的表现形态。
+上机真正要验的是另外三件（都在本交互内可执行）：
+1. **关掉抽屉、答一题、再开抽屉**，`已答 x / y` 与逐格底色是不是新值。这验的是 `bindSheet` 内容
+   关闭即销毁还是被复用——被复用时靠 `@Trace answers` + 整体替换失效，销毁重建时靠 build 现值，
+   两条都成立才算过。SDK 声明层没有这一条，只能上机。
+2. **抽屉顶部是不是只有系统一条拖拽条**（手绘条按 Ruling T8-1 删除后，验证没有双层条、也没有空白）。
+3. `detents: [520, 300]` 拖到 300 档时汇总行与双按钮是否被裁。
+
+模拟器入口按 Ruling T8-3 更正：`devecocli run --device` 会因 AVD `config.ini` 的 `sdkPath` 拼错而报"镜像找不到"，
+正解是直启 `D:/DevEco Studio/tools/emulator/Emulator.exe -start "Pura 90"`（镜像完整在 `D:/system-image/`，见 spec §8.3）。
+起之前先量内存（本机实测 free 仅 1.0 GB 时不起，会拖垮并行会话）。
 
 - [ ] **Step 5: Commit**
 
@@ -1337,8 +1362,27 @@ Button('重新登录')
 .margin({ bottom: CommonConstants.SPACE_CARD_GAP })   // 12，与首页同轨
 ```
 
+同一条还覆盖 `AnswerResultPage.ets:120` 的「答题卡」分区标题——Task 9 审查登记：它写的是
+`margin({ top: SPACE_L, bottom: SPACE_M })`，其中 **bottom 16 与 §3.4 的 12 冲突**，bottom 改为
+`SPACE_CARD_GAP`；`top` 是"上一区块到本标题"的容器间距，阶梯上有现成的 `SPACE_L`，保留不动。
+
 注意 §3.4 的边界条款：这条只管**分区标题到其下方内容**，不要顺手去改胶囊 `margin({top: 6})`
 或卡片内标题到副行的 `margin({top: 8})`——那些是组件内部构造，由各自简报逐字规定。
+
+- [ ] **Step 1d: 结果页主按钮补按压态**（Task 9 审查 → Ruling T9-B）
+
+`AnswerResultPage.ets:184` 的「重新刷题」是全 App 唯一没有按压反馈的实心主色钮——其余四颗
+（登录、交卷、抽屉提交、`ExamDetailPage:248/:569`）都挂 `stateStyles.pressed` → `COLOR_PRIMARY_PRESSED`。
+§3.1 那枚 token 存在的唯一用途就是它，且 Ruling T4-D 已裁过"stateStyles 是声明式样式不是行为"。
+补两行，与页内既有那颗同写法：
+
+```ts
+            .stateStyles({ pressed: { .backgroundColor(CommonConstants.COLOR_PRIMARY_PRESSED) } })
+```
+
+同屏**不做**的两条（Ruling T9-C/T9-D，已裁，勿再翻）：白卡不加 hairline + Level 1 阴影（extend 类，
+§4 F07 行未点名，§6.4 取克制读法，张力已交终审）；分布图网格 gap 双轴 8 豁免两轴模型（与
+`AnswerResultViewModel:124-127` 高度公式同源且被单测钉死）。
 
 - [ ] **Step 2: 证书卡**
 
