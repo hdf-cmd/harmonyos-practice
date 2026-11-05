@@ -80,7 +80,9 @@ export class CommonConstants {
   static readonly RADIUS_BUTTON: number = 8
   static readonly RADIUS_INPUT: number = 10
   static readonly RADIUS_CHECKBOX: number = 6
-  static readonly RADIUS_TAG: number = 9999   // 全圆胶囊
+  // 全圆胶囊：9999 不是笔误，靠 ArkUI 把 borderRadius 钳制到"短边的一半"实现正圆/胶囊。
+  // 内容尺寸自适应的 Text 在构建期拿不到宽高，没法写 Math.min(h,w)/2；改成普通小数值会失去全圆效果。
+  static readonly RADIUS_TAG: number = 9999
   static readonly SPACE_M: number = 16
   static readonly SPACE_L: number = 24
   static readonly SPACE_CARD_GAP: number = 12

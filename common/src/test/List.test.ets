@@ -1,9 +1,11 @@
 import localUnitTest from './LocalUnit.test';
 import paperFilterTest from './PaperUtils.test';
 import fontSettingTest from './FontSetting.test';
+import commonConstantsTest from './CommonConstants.test';
 
 export default function testsuite() {
   localUnitTest();
   paperFilterTest();
   fontSettingTest();
+  commonConstantsTest();
 }
