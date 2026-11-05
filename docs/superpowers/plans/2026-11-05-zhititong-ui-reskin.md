@@ -25,6 +25,16 @@
 - 页面文案保持现有中文，不得引入英文标题（HarmonyOS/ArkTS/Stage/UIAbility 等专有名词除外）。
 - 未经用户明确要求，不 commit 到 master、不 push、不切分支覆盖写。本计划在 feature 分支 `feat/ui-reskin` 上逐任务提交，末任务再 ff 合并。
 - 每个任务的验证**必须同时跑** `devecocli build` 与 `hvigorw test`：`hvigorw test` 不编译 view，只跑单测等于没验视图。
+- **单测门禁必须跑两个模块**（Task 2 实测纠正，影响所有任务）：`-p module=entry@default` **完全不执行** `common` HAR 的 `src/test`。实测证据：entry 结果文件里 18 个 describe 全是 entry 模块的（`homeViewModelTest`、`examDetailViewModelTest` 等），`FontSettingTest`/`PaperUtilsTest` 零命中；common 的用例只出现在 `common/.test/default/intermediates/test/coverage_data/test_result.txt`。
+  所以只跑 entry 一条命令，`common` 侧的改动（Task 1 的 8 个令牌断言、Task 2 的 2 个字号断言）在门禁里是**隐形的**。两条都要跑：
+
+  ```bash
+  rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt
+  DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon
+  DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=common@default --no-daemon
+  ```
+
+  然后分别读两个 `test_result.txt` 的尾行，**两个数字都要写进报告**。当前基线：entry 123 / common 32（Task 1 修复后 30，Task 3 后 entry 123）。
 - **别名迁移门禁（每个视图任务都要跑一次）**：`grep -rnE "CommonConstants\.FONT_(TITLE|SUBTITLE|BODY|CAPTION)\b" entry/src/main/ets` 的命中数必须**逐任务递减**，Task 13 时必须为 0。
   这条不能省：四个旧别名与新档同值（`FONT_TITLE`=`FONT_HEADLINE_LG_MOBILE`=22、`FONT_SUBTITLE`=`FONT_BODY_SM`=18、`FONT_BODY`=`FONT_BODY_LG`=`FONT_HEADLINE_SM`=16、`FONT_CAPTION`=`FONT_BODY_MD`=`FONT_LABEL_MD`=14），漏改**渲染结果一模一样**，模拟器目检抓不出来，只有这条 grep 能抓。
   ⚠️ 模式必须带词边界。写成 `FONT_BODY:` 这种形式实测只命中 53 行，词边界版命中 92 行——漏掉 39 处引用。
@@ -290,7 +300,7 @@ import commonConstantsTest from './CommonConstants.test';
 - [ ] **Step 6: 单测回归**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 129, Failure: 0, Error: 0, Pass: 129, Ignore: 0`（121 + 本步 8 例）
+Expected: entry 尾行 Tests run: 121（本任务不动 entry）；common 尾行 Tests run: 30（22 + 本步 8 例）
 
 若计数仍是 121，说明 `common/src/test` 没被 entry 轮跑到——先查 `common/src/test/List.test.ets` 的挂号，别把"没跑"当成"通过"。
 
@@ -358,7 +368,7 @@ export const FONT_LEVELS: FontLevel[] = [
 - [ ] **Step 4: 跑测试确认通过**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 131, Failure: 0, Error: 0, Pass: 131`（129 + 新增 2）
+Expected: entry 尾行 Tests run: 121（不动）；common 尾行 Tests run: 24（22 + 本步 2 例）— 实测值，Task 2 已按此落地
 
 - [ ] **Step 5: Commit**
 
@@ -432,7 +442,7 @@ Expected: `Failure` 或编译错误 `Property 'answeredCount' does not exist`—
 - [ ] **Step 4: 跑测试确认通过**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 133, Failure: 0, Error: 0, Pass: 133`（131 + 新增 2）
+Expected: entry 尾行 Tests run: 123（121 + 本步 2 例）；common 尾行 Tests run: 32
 
 若第二条用例失败，先读 `isQuestionAnswered()` 的实现确认它对 `TRUE_FALSE` 走的是哪条分支——判断题的正确答案以选项 `A`/`B` 提交（见 AGENTS.md 硬约束），不要为了过测试改判据。
 
@@ -508,7 +518,7 @@ Expected: `0`
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 133, Failure: 0, Error: 0`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 7: Commit**
 
@@ -576,7 +586,7 @@ Expected: 两个文件都 `0`
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/.../test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 133, Failure: 0, Error: 0`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 7: Commit**
 
@@ -654,7 +664,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 7: Commit**
 
@@ -784,7 +794,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 10: Commit**
 
@@ -877,7 +887,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 5: Commit**
 
@@ -941,7 +951,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 ```bash
 git add entry/src/main/ets/features/exam/view/AnswerResultPage.ets
@@ -995,7 +1005,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 ```bash
 git add entry/src/main/ets/features/exam/view/ReviewQuestionCard.ets entry/src/main/ets/features/exam/view/ReviewPage.ets
@@ -1047,7 +1057,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 ```bash
 git add entry/src/main/ets/features/mine
@@ -1146,7 +1156,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 ```bash
 git add entry/src/main/ets/features/exam/view/AttemptHistoryPage.ets entry/src/main/ets/features/exam/view/CertificatePage.ets
@@ -1189,7 +1199,7 @@ Expected: 空输出（基线是 24 处，此处必须归零）
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 133, Failure: 0, Error: 0, Pass: 133`（基线 121 + Task 1 的 8 + Task 2 的 2 + Task 3 的 2）
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 - [ ] **Step 5: 模拟器逐屏目检**
 
@@ -1230,7 +1240,7 @@ git branch -d feat/ui-reskin
 - [ ] **Step 8: 合并态复跑**
 
 Run: 同 Step 4
-Expected: `Tests run: 133, Failure: 0, Error: 0`，且 `test_result.txt` 的 mtime 晚于本轮起跑时刻
+Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
 
 ---
 
