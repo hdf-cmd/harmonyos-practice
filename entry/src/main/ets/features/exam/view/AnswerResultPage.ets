@@ -30,60 +30,70 @@ export struct AnswerResultPage {
       Column() {
         // ===== 结果卡：白底圆角大卡，居中展示得分、通过标签与交卷信息 =====
         Column() {
-          // 大号得分：通过用成功色，未通过用错误色
-          // Text 里嵌 Span：同一行文字用不同字号/颜色——48 号数字 + 小一号的"分"单位
+          // 大号得分：通过用主色，未通过用错误色（方案A F07：大分值改主色）
+          // Text 里嵌 Span：同一行文字用不同字号/颜色——36 号数字 + FONT_CAPTION_UNIT 弱化的"分"单位
+          // 得分行与"分"都不换行（定宽内容），按行高规则不配 lineHeight——配了反而裁切
           Text() {
             Span(`${this.vm.result.score}`)
-              .fontSize(48)
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
+              .fontSize(CommonConstants.FONT_DISPLAY_SCORE_MOBILE)
+              .fontWeight(CommonConstants.WEIGHT_BOLD)
+              .fontColor(this.vm.result.passed ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_ERROR)
             Span(' 分')
-              .fontSize(CommonConstants.FONT_BODY)
-              .fontColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
+              .fontSize(CommonConstants.FONT_CAPTION_UNIT)
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
+              .fontColor(CommonConstants.COLOR_TEXT_SUB)
           }
 
-          // 通过/未通过标签：同色描边胶囊（与试卷卡片等级标签同风格）
-          // 三元表达式根据 passed 切换文字、颜色、描边色，一处数据驱动两套视觉
+          // 通过/未通过徽章：tint 底 + 同色相饱和字的全圆胶囊（§6.4 裁决：胶囊一律无描边）
+          // 三元表达式根据 passed 切换文字、字色、底色，一处数据驱动两套视觉
+          // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
           Text(this.vm.result.passed ? '通过' : '未通过')
-            .fontSize(CommonConstants.FONT_CAPTION)
+            .fontSize(CommonConstants.FONT_LABEL_MD)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
-            .border({
-              width: 1,
-              color: this.vm.result.passed ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR,
-              radius: 4
-            })
-            .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+            .backgroundColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_ERROR_BG)
+            .borderRadius(CommonConstants.RADIUS_TAG)
+            .height(28)
+            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
             .margin({ top: CommonConstants.SPACE_M })
 
-          // 及格线 · 用时 · 交卷方式（12 号次文本色）
+          // 及格线 · 用时 · 交卷方式（body-sm 次文本色）
           // 用时调 TimeUtils.formatDuration 把秒数转成"X 分 X 秒"；交卷方式文案由 VM 提供
+          // 三段拼在一行，窄屏或交卷方式文案变长时会换行——本页唯一"可换行"文本，配行高
           Text(`及格线 ${this.vm.result.passScore} 分・用时 ${formatDuration(this.vm.result.usedTime)}・${
             this.vm.getSubmitTypeLabel()}`)
-            .fontSize(12)
+            .fontSize(CommonConstants.FONT_BODY_SM)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            .lineHeight(CommonConstants.LINE_BODY_SM)
             .fontColor(CommonConstants.COLOR_TEXT_SUB)
             .margin({ top: CommonConstants.SPACE_M })
 
           // 防作弊提示（成绩区下方一行）：文案由 VM 派生，本页不读 AppStorageV2——
-          // 与"数据归 VM、View 只渲染"同一口径，样式沿用上面那行说明文字（12 号 + 次文本色）
+          // 与"数据归 VM、View 只渲染"同一口径，样式沿用上面那行说明文字（body-sm + 次文本色）。
+          // 最长也就"本场切出应用 N 次"十来个字，卡内宽度装不下换行，单行判定——不配行高
           Text(this.vm.getBackgroundHint())
-            .fontSize(12)
+            .fontSize(CommonConstants.FONT_BODY_SM)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
             .fontColor(CommonConstants.COLOR_TEXT_SUB)
             .margin({ top: CommonConstants.SPACE_M })
         }
         .width('100%')
         .padding(CommonConstants.SPACE_L)
-        .borderRadius(12)
-        .backgroundColor(Color.White)
-        .alignItems(HorizontalAlign.Center)   // 结果卡内容整体水平居中
+        .borderRadius(CommonConstants.RADIUS_CARD)
+        .backgroundColor(CommonConstants.COLOR_CARD_BG)
+        .alignItems(HorizontalAlign.Center)   // 结果卡内容整体居中
+        // 不加 .clip(true)：卡内边距 24 大于圆角半径 16，内容永远碰不到圆角弧线（Task 7 同一论证）
 
-        // ===== 证书提示条：仅通过后展示（浅色底静态占位） =====
+        // ===== 证书提示条：仅通过后展示（成功色 tint 底的静态占位条） =====
         // 条件渲染：passed 为 false 时整块从布局中移除（不是隐藏占位）
+        // 文案固定十来个字，通栏也到不了换行阈值——单行判定，不配行高
         if (this.vm.result.passed) {
           Text('📜已生成电子证书，可在个人中心查看')
-            .fontSize(CommonConstants.FONT_CAPTION)
+            .fontSize(CommonConstants.FONT_LABEL_MD)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(CommonConstants.COLOR_SUCCESS)
-            .backgroundColor('#E8F5E9')
-            .borderRadius(8)
+            .backgroundColor(CommonConstants.COLOR_SUCCESS_BG)
+            .borderRadius(CommonConstants.RADIUS_BUTTON)
             .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M, top: 10, bottom: 10 })
             .width('100%')
             .textAlign(TextAlign.Center)
@@ -102,34 +112,41 @@ export struct AnswerResultPage {
         }
 
         // ===== 答题卡区：六列格子，逐题标识 答对/答错/未答 =====
+        // 分区标题走 headline-md 档（与抽屉"答题卡"标题同档），单行标题不配行高
         Text('答题卡')
-          .fontSize(CommonConstants.FONT_SUBTITLE)
-          .fontWeight(FontWeight.Bold)
+          .fontSize(CommonConstants.FONT_HEADLINE_MD)
+          .fontWeight(CommonConstants.WEIGHT_SEMI)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
           .margin({ top: CommonConstants.SPACE_L, bottom: CommonConstants.SPACE_M })
 
         // ===== Grid（3.2.2）=====
         // columnsTemplate 写 6 个 '1fr' → 精确 6 列等分（对照科目页的 2 列 '1fr 1fr'）
-        // ForEach 里用格子下标 index 显示题号，用 answer 字段决定底色：
-        //   未答 → 灰（提示色）；答对 → 绿（成功色）；答错 → 红（错误色）
+        // ForEach 里用格子下标 index 显示题号，按 answer 字段取 tint 底 + 同色相题号：
+        //   未答 → 静息浅底 + 提示色字；答对 → 成功浅底 + 成功色字；答错 → 错误浅底 + 错误色字
+        //   （迷你分布图换 tint 色是 F07 的核心变化；0.5 发丝边框用 DIVIDER_WIDTH + 发丝描边色）
         // 嵌套三元表达式按"先判未答、再判对错"的优先级取色——颜色是渲染决策，留在 View
         Grid() {
           ForEach(this.vm.result.answers, (answer: AnswerItem, index: number) => {
             GridItem() {
               Column() {
-                Text(`${index + 1}`)   // 题号从 1 开始（下标 + 1）
-                  .fontSize(CommonConstants.FONT_CAPTION)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor(Color.White)
+                Text(`${index + 1}`)   // 题号从 1 开始（下标 + 1）；定宽单行，不配行高
+                  .fontSize(CommonConstants.FONT_BODY_MD)
+                  .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                  .fontColor(
+                    !answer.answered ? CommonConstants.COLOR_TEXT_HINT
+                      : answer.correct ? CommonConstants.COLOR_SUCCESS
+                      : CommonConstants.COLOR_ERROR
+                  )
               }
               .width('100%')
               .height(ANSWER_CARD_CELL_HEIGHT)   // 格子固定高，配合下方显式 Grid 高度
               .justifyContent(FlexAlign.Center)  // 题号在格子里垂直居中
-              .borderRadius(ANSWER_CARD_GAP)
+              .borderRadius(CommonConstants.RADIUS_BUTTON)
+              .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
               .backgroundColor(
-                !answer.answered ? CommonConstants.COLOR_TEXT_HINT
-                  : answer.correct ? CommonConstants.COLOR_SUCCESS
-                  : CommonConstants.COLOR_ERROR
+                !answer.answered ? CommonConstants.COLOR_SUBTLE_BG
+                  : answer.correct ? CommonConstants.COLOR_SUCCESS_BG
+                  : CommonConstants.COLOR_ERROR_BG
               )
             }
           }, (answer: AnswerItem) => answer.questionId)
@@ -146,14 +163,16 @@ export struct AnswerResultPage {
         Row()
           .layoutWeight(1)
 
-        // ===== 底部按钮行：查看回顾（白底主色字）+ 重新刷题（渐变主按钮） =====
+        // ===== 底部按钮行：查看回顾（白底主色描边）+ 重新刷题（实心主色，§6.1 去渐变） =====
         Row({ space: CommonConstants.SPACE_M }) {
           Button('查看回顾')
-            .type(ButtonType.Normal)
+            .type(ButtonType.Normal)   // Capsule 会吞掉 borderRadius，设 RADIUS_BUTTON 必须用 Normal
             .layoutWeight(1)   // 两个按钮各占一半宽度
             .height(CommonConstants.BTN_HEIGHT)
-            .fontSize(CommonConstants.FONT_BODY)
-            .backgroundColor(Color.White)
+            .borderRadius(CommonConstants.RADIUS_BUTTON)
+            .fontSize(CommonConstants.FONT_BODY_LG)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // 按钮默认字重即 500，写明不改观感（与答题页按钮一致）
+            .backgroundColor(CommonConstants.COLOR_CARD_BG)
             .fontColor(CommonConstants.COLOR_PRIMARY)
             .border({ width: 1, color: CommonConstants.COLOR_PRIMARY })
             .onClick(() => {
@@ -165,12 +184,12 @@ export struct AnswerResultPage {
             .type(ButtonType.Normal)
             .layoutWeight(1)
             .height(CommonConstants.BTN_HEIGHT)
-            .fontSize(CommonConstants.FONT_BODY)
-            .fontColor(Color.White)
-            .linearGradient({
-              direction: GradientDirection.Right,
-              colors: [[CommonConstants.GRADIENT_START, 0], [CommonConstants.GRADIENT_END, 1]]
-            })
+            .borderRadius(CommonConstants.RADIUS_BUTTON)
+            .fontSize(CommonConstants.FONT_BODY_LG)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+            .fontColor(CommonConstants.COLOR_CARD_BG)
+            // 换装后全项目杜绝渐变（§6.1）：原来的整块横向渐变填充删除，改纯色主色底
+            .backgroundColor(CommonConstants.COLOR_PRIMARY)
             .onClick(() => {
               // 弹出结果页，回到答题页重新作答（按记录跳转的完整逻辑项目 6 接入数据后实现）
               this.pageStack.pop()
