@@ -361,7 +361,7 @@ export struct ExamDetailPage {
                 })
 
               // 标记存疑：再点一次取消；标记与答案一起实时上报（同一保存接口承载两者）
-              // 选中态由"写死的 #FFF3E0"换成告警浅底令牌 COLOR_WARN_BG
+              // 选中态底：换装前是写死的浅橙值，现取告警浅底令牌 COLOR_WARN_BG（与答题卡存疑格同一档）
               Button(this.vm.isQuestionFlagged(this.vm.getCurrentQuestion().id)
                 ? '已存疑' : '标记存疑')
                 .type(ButtonType.Normal)
