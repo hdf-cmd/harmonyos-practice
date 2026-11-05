@@ -27,13 +27,29 @@ export default function fontSettingTest() {
       expect(font.sizeOf(16)).assertEqual(16 + FONT_LEVELS[FONT_LEVELS.length - 1].size)
     })
 
-    // 边界兜底：基准很小又被调到最小档时，算出 0 或负数必须兜到 1，否则文字直接不渲染
+    // 边界兜底：基准很小又被调到最小档时，算出 0 或负数必须兜到 1，否则文字直接不渲染。
+    // 基准值由最小档偏移反推（-FONT_LEVELS[0].size 恰好把结果压到 0），档位改了用例不假红
     it('should_floor_at_one_for_non_positive_result', 0, () => {
       const font: FontSetting = new FontSetting()
       font.fontSize = FONT_LEVELS[0].size
-      expect(font.sizeOf(4)).assertEqual(1)
-      expect(font.sizeOf(2)).assertEqual(1)
+      const floorBase: number = -FONT_LEVELS[0].size
+      expect(font.sizeOf(floorBase)).assertEqual(1)
+      expect(font.sizeOf(floorBase - 1)).assertEqual(1)
       expect(font.sizeOf(0)).assertEqual(1)
+    })
+
+    // 换装后基准字号最小是 11（FONT_CAPTION_UNIT），极小档若仍是 -4 会算出 7fp，
+    // 中文辅助文字基本看不清。下限收到 -2 后最小 9fp。
+    it('polar_min_keeps_caption_unit_legible', 0, () => {
+      const fs = new FontSetting()
+      fs.stepTo(0)                       // 极小档
+      expect(fs.sizeOf(11)).assertEqual(9)
+    })
+
+    it('polar_max_does_not_exceed_display_mobile_base', 0, () => {
+      const fs = new FontSetting()
+      fs.stepTo(4)                       // 极大档
+      expect(fs.sizeOf(11)).assertEqual(13)
     })
   })
 

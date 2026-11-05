@@ -21,12 +21,14 @@ export interface FontLevel {
 }
 
 // 五档字号偏移档位。增减档位只改这一处
+// 上限取 ±2 而不是原来的 ±4：换装后最小基准字号降到 11（辅助标签），
+// ±4 会让它掉到 7fp、中文看不清；±2 时极小档 9fp 仍在可读线以上。
 export const FONT_LEVELS: FontLevel[] = [
-  { label: '极小', size: -4 },
-  { label: '小', size: -2 },
+  { label: '极小', size: -2 },
+  { label: '小', size: -1 },
   { label: '标准', size: 0 },
-  { label: '大', size: 2 },
-  { label: '极大', size: 4 }
+  { label: '大', size: 1 },
+  { label: '极大', size: 2 }
 ]
 
 // 标准档的偏移量：档位表里没有 size 为 0 的档时用它兜底
