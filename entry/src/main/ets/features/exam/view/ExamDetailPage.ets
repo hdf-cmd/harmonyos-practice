@@ -6,10 +6,12 @@
 // 【分层说明】本文件位于 features/exam/view/：它是"考试"feature 的页面，
 //   页面根节点用 NavDestination（Navigation 体系的要求），路由名统一见 @zhititong/common 的 RouteConstants。
 // 【MVVM】试卷名/题目/索引/选中状态全在 ExamDetailViewModel（@Trace），本页只渲染与转发事件；
-//   onReady 从路由参数取 paperId 调 vm.loadPaper(paperId)，按 id 命中试卷名（Mock 阶段题目固定 MOCK_QUESTIONS）。
-// 【切后台防作弊】进页 onReady 调 vm.startExam() 开始监视、交卷前先调 vm.submitPaper() 定格计数；
+//   onReady 从路由参数取 paperId 调 vm.startExam(paperId)，场次/题目/倒计时都由开考响应带回。
+// 【切后台防作弊】进页 onReady 调 vm.startExam() 开始监视、交卷时由 VM 调 monitor.stop() 定格计数；
 //   计数本身由 EntryAbility.onBackground 累加；提醒用 @Monitor 记账、onShown 补弹
 //   （count 变更那一刻应用在后台，当场弹等于弹给空气，原因见 hintPending 的注释）。
+//   F05 起页内另有一条常驻告警条（build 里顶部卡片之上那段 if）：条负责"持续留痕"、
+//   Toast 负责"回前台即时告知"，两者并存、不是替换关系。
 import { CommonConstants, RouteConstants, OptionItem, QuestionItem, FontSetting, StateKeys, BackgroundMonitor, Logger } from '@zhititong/common'
 import { AppStorageV2, PersistenceV2 } from '@kit.ArkUI'
 import { BusinessError } from '@kit.BasicServicesKit'
@@ -98,18 +100,28 @@ export struct ExamDetailPage {
     }
   }
 
-  // 答题卡面板：四种格子态——当前=主色描边、已答=绿、存疑=橙、未答=灰
+  // 选项行是否处于选中态：多选取 checkboxSelected、单选/判断取 radioSelected。
+  // 判据住在 view 是因为它只为高亮服务，不参与提交数据（提交流转在 VM）。
+  // 注意别和"已答"混：答题卡格子统计的是跨题累计，走 vm.isQuestionAnswered()（读 VM 的 answers 表）；
+  // 这里只关心"当前题此刻勾了什么"，所以取的是当前题的渲染态。
+  private isOptionActive(option: OptionItem): boolean {
+    const q: QuestionItem = this.vm.getCurrentQuestion()
+    return q.type === 'MULTI' ? this.vm.checkboxSelected.has(option.label) : this.vm.radioSelected === option.label
+  }
+
+  // 答题卡面板：四种格子态——当前=主色描边、已答=成功浅底、存疑=告警浅底、未答=静息浅底
   @Builder
   AnswerCardSheet() {
     Column({ space: CommonConstants.SPACE_M }) {
       Text('答题卡')
-        .fontSize(CommonConstants.FONT_SUBTITLE)
-        .fontWeight(FontWeight.Bold)
+        .fontSize(CommonConstants.FONT_HEADLINE_MD)
+        .fontWeight(CommonConstants.WEIGHT_SEMI)
         .fontColor(CommonConstants.COLOR_TEXT_MAIN)
         .width('100%')
 
-      Text('绿色已答 · 橙色存疑 · 蓝框当前题 · 点击跳转')
-        .fontSize(CommonConstants.FONT_CAPTION)
+      Text('已答 · 存疑 · 当前题 · 点击跳转')
+        .fontSize(CommonConstants.FONT_BODY_SM)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
         .fontColor(CommonConstants.COLOR_TEXT_SUB)
         .width('100%')
 
@@ -117,18 +129,20 @@ export struct ExamDetailPage {
         ForEach(this.vm.questions, (q: QuestionItem, index: number) => {
           GridItem() {
             Text(`${index + 1}`)
-              .fontSize(CommonConstants.FONT_BODY)
-              .fontColor(this.vm.isQuestionAnswered(q.id) ? Color.White : CommonConstants.COLOR_TEXT_MAIN)
+              .fontSize(CommonConstants.FONT_BODY_MD)
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
+              .fontColor(this.vm.isQuestionAnswered(q.id) && !this.vm.isQuestionFlagged(q.id)
+                ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_TEXT_MAIN)
               .width(40)
               .height(40)
               .textAlign(TextAlign.Center)
-              .backgroundColor(this.vm.isQuestionFlagged(q.id)
-                ? CommonConstants.COLOR_WARN
-                : (this.vm.isQuestionAnswered(q.id) ? CommonConstants.COLOR_SUCCESS : '#EEEEEE'))
-              .borderRadius(8)
+              .backgroundColor(
+                this.vm.isQuestionFlagged(q.id) ? CommonConstants.COLOR_WARN_BG
+                  : (this.vm.isQuestionAnswered(q.id) ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_SUBTLE_BG))
+              .borderRadius(CommonConstants.RADIUS_BUTTON)
               .border({
-                width: index === this.vm.currentIndex ? 2 : 0,
-                color: CommonConstants.COLOR_PRIMARY
+                width: index === this.vm.currentIndex ? 2 : 0.5,
+                color: index === this.vm.currentIndex ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
               })
               .onClick(() => {
                 this.vm.jumpTo(index)
@@ -138,7 +152,7 @@ export struct ExamDetailPage {
         }, (q: QuestionItem) => q.id)
       }
       .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr')
-      .rowsGap(CommonConstants.SPACE_M)
+      .rowsGap(CommonConstants.SPACE_CARD_GAP)
       .columnsGap(CommonConstants.SPACE_M)
       .layoutWeight(1)
     }
@@ -157,7 +171,9 @@ export struct ExamDetailPage {
         Column() {
           Text(this.vm.errorMessage !== '' ? this.vm.errorMessage :
             (this.vm.loading ? '试卷加载中…' : '本卷暂无题目'))
-            .fontSize(CommonConstants.FONT_BODY)
+            .fontSize(CommonConstants.FONT_BODY_LG)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            .lineHeight(CommonConstants.LINE_BODY_LG)
             .fontColor(this.vm.errorMessage !== ''
               ? CommonConstants.COLOR_ERROR : CommonConstants.COLOR_TEXT_HINT)
         }
@@ -166,12 +182,31 @@ export struct ExamDetailPage {
         .justifyContent(FlexAlign.Center)
       } else {
         Column() {
+          // ===== 切屏常驻告警条（spec §4 F05）=====
+          // 只在"本场进行中且确实切出过"时出现：monitoring 为假（未开考/已交卷）或 count 归零都不渲染，
+          // 与 @Monitor + onShown 的 Toast 并存——条是页内持续留痕，Toast 是回前台那一刻的及时告知。
+          if (this.monitor.monitoring && this.monitor.count > 0) {
+            Row({ space: 8 }) {
+              Text('检测到切出应用，已记录 ' + this.monitor.count + ' 次，请专心作答')
+                .fontSize(CommonConstants.FONT_BODY_SM)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                .lineHeight(CommonConstants.LINE_BODY_SM)
+                .fontColor(CommonConstants.COLOR_ERROR)
+                .layoutWeight(1)
+            }
+            .width('100%')
+            .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+            .borderRadius(CommonConstants.RADIUS_INPUT)
+            .backgroundColor(CommonConstants.COLOR_ERROR_BG)
+            .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
+          }
+
           // ===== 顶部标题区 =====
           Column() {
             // 试卷名
             Text(this.vm.paperName)
-              .fontSize(CommonConstants.FONT_BODY)
-              .fontWeight(FontWeight.Bold)
+              .fontSize(CommonConstants.FONT_HEADLINE_SM)
+              .fontWeight(CommonConstants.WEIGHT_SEMI)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -188,37 +223,46 @@ export struct ExamDetailPage {
                 Span(this.vm.questions.length.toString())
                 Span(' 题')
               }
-              .fontSize(CommonConstants.FONT_CAPTION)
+              .fontSize(CommonConstants.FONT_BODY_MD)
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
               .fontColor(CommonConstants.COLOR_TEXT_SUB)
 
               Blank()   // 弹性空隙：把倒计时推到行尾
 
               // 倒计时：绑服务端权威剩余秒数格式化结果（6-4 起不再是写死的静态值）
+              // 字重按 §3.3 取该档强调上限 600，不再用系统枚举 Bold(700)
               Text(this.vm.getRemainingText())
-                .fontSize(CommonConstants.FONT_CAPTION)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_SEMI)
                 .fontColor(CommonConstants.COLOR_WARN)
-                .fontWeight(FontWeight.Bold)
             }
             .width('100%')
-            .margin({ top: CommonConstants.SPACE_M })
+            .margin({ top: CommonConstants.SPACE_CARD_GAP })
           }
           .width('100%')
-          .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M, top: CommonConstants.SPACE_M, bottom: CommonConstants.SPACE_M })
-          .backgroundColor(Color.White)
-          .borderRadius(8)
+          .padding(CommonConstants.SPACE_M)
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
+          .borderRadius(CommonConstants.RADIUS_CARD)
+          .shadow(CommonConstants.SHADOW_CARD)
 
           // ===== 中部题目区域 =====
           Column() {
-            // 题型标签
+            // 题型标签：浅蓝底全圆胶囊（与 Task 5 的等级标签同构；换装前是"透明底 + 主色 1vp 描边 + 圆角 4"）
+            // 按 §6.4 定案：tint 底 + 同色相饱和字，**不加描边**。
+            // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊。
             Text(this.vm.getTypeLabel(this.vm.getCurrentQuestion().type))
-              .fontSize(CommonConstants.FONT_CAPTION)
+              .fontSize(CommonConstants.FONT_LABEL_SM)
+              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
               .fontColor(CommonConstants.COLOR_PRIMARY)
-              .border({ width: 1, color: CommonConstants.COLOR_PRIMARY, radius: 4 })
-              .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+              .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
+              .borderRadius(CommonConstants.RADIUS_TAG)
+              .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+              .height(24)
 
             // 题干
             Text(this.vm.getCurrentQuestion().content)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY))
+              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
               // 行高与字号走同一个偏移量：只放大字不动行高，五档下会越挤越近（24/16=1.5 的余量被吃掉）
               .lineHeight(this.font.sizeOf(24))
@@ -226,7 +270,7 @@ export struct ExamDetailPage {
               .width('100%')
 
             // 选项列表：Column + ForEach（题目最多 4 个选项，够短，没必要上 List）
-            Column({ space: CommonConstants.SPACE_M }) {
+            Column({ space: CommonConstants.SPACE_CARD_GAP }) {
               ForEach(this.vm.getCurrentQuestion().options, (option: OptionItem) => {
                 Row() {
                   // 按题型分流：多选用 Checkbox（可多勾），单选/判断用 Radio（互斥单勾）
@@ -253,11 +297,22 @@ export struct ExamDetailPage {
                   }
 
                   Text(this.vm.getOptionText(option))
-                    .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY))
+                    .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
+                    .fontWeight(CommonConstants.WEIGHT_REGULAR)
                     .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                    // 选项正文与题干同类：内容长度随题目变，窄窗/分屏/极大档下会折行 → 配行高，
+                    // 且与字号走同一偏移（不写死值，否则放大档位下行距会被压回原尺寸）
+                    .lineHeight(this.font.sizeOf(24))
                     .margin({ left: 8 })
                 }
                 .width('100%')
+                .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                .borderRadius(CommonConstants.RADIUS_INPUT)
+                .backgroundColor(this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY_BG : CommonConstants.COLOR_CARD_BG)
+                .border({
+                  width: 1,
+                  color: this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
+                })
               }, (option: OptionItem) => this.vm.getCurrentQuestion().id + '_' + option.label)
               // ↑ 键值生成器：必须带题目 id。选项 label 只有 A/B/C/D，跨题重复——
               //   若只用 label 当 key，切题时 key 不变，ForEach 判定"没变"就复用旧节点，
@@ -269,9 +324,10 @@ export struct ExamDetailPage {
           .width('100%')
           .layoutWeight(1)   // 中部吃掉剩余高度，把顶部/底部压在两端
           .padding(CommonConstants.SPACE_M)
-          .margin({ top: CommonConstants.SPACE_M })
-          .backgroundColor(Color.White)
-          .borderRadius(8)
+          .margin({ top: CommonConstants.SPACE_CARD_GAP })
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
+          .borderRadius(CommonConstants.RADIUS_CARD)
+          .shadow(CommonConstants.SHADOW_CARD)
 
           // ===== 底部操作区 =====
           Column() {
@@ -280,9 +336,11 @@ export struct ExamDetailPage {
               Button('上一题')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
-                .fontSize(CommonConstants.FONT_CAPTION)
-                .backgroundColor(CommonConstants.COLOR_TEXT_HINT)
-                .fontColor(Color.White)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // 按钮默认字重即 500（SDK button.d.ts），写明不改观感
+                .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+                .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                .borderRadius(CommonConstants.RADIUS_BUTTON)
                 .enabled(this.vm.currentIndex > 0)   // 第 1 题时禁用，防越界
                 .onClick(() => {
                   // 边界判断 + 换题重置选中，规则都在 VM 里
@@ -292,23 +350,28 @@ export struct ExamDetailPage {
               Button('下一题')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
-                .fontSize(CommonConstants.FONT_CAPTION)
-                .backgroundColor(CommonConstants.COLOR_TEXT_HINT)
-                .fontColor(Color.White)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+                .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+                .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                .borderRadius(CommonConstants.RADIUS_BUTTON)
                 .enabled(this.vm.currentIndex < this.vm.questions.length - 1)   // 最后一题时禁用
                 .onClick(() => {
                   this.vm.goToNext()
                 })
 
               // 标记存疑：再点一次取消；标记与答案一起实时上报（同一保存接口承载两者）
+              // 选中态由"写死的 #FFF3E0"换成告警浅底令牌 COLOR_WARN_BG
               Button(this.vm.isQuestionFlagged(this.vm.getCurrentQuestion().id)
                 ? '已存疑' : '标记存疑')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
-                .fontSize(CommonConstants.FONT_CAPTION)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_MEDIUM)
                 .backgroundColor(this.vm.isQuestionFlagged(this.vm.getCurrentQuestion().id)
-                  ? '#FFF3E0' : Color.White)
+                  ? CommonConstants.COLOR_WARN_BG : CommonConstants.COLOR_CARD_BG)
                 .fontColor(CommonConstants.COLOR_WARN)
+                .borderRadius(CommonConstants.RADIUS_BUTTON)
                 .border({ width: 1, color: CommonConstants.COLOR_WARN })
                 .onClick(() => {
                   this.vm.toggleFlagCurrent()
@@ -317,10 +380,12 @@ export struct ExamDetailPage {
               Button('答题卡')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
-                .fontSize(CommonConstants.FONT_CAPTION)
-                .backgroundColor(Color.White)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+                .backgroundColor(CommonConstants.COLOR_CARD_BG)
                 .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-                .border({ width: 1, color: CommonConstants.COLOR_TEXT_HINT })
+                .borderRadius(CommonConstants.RADIUS_BUTTON)
+                .border({ width: 1, color: CommonConstants.COLOR_BORDER_HAIRLINE })
                 .onClick(() => {
                   this.showAnswerCard = true
                 })
@@ -335,16 +400,22 @@ export struct ExamDetailPage {
             .width('100%')
             .justifyContent(FlexAlign.SpaceBetween)   // 四个按钮两端对齐铺满一行
 
-            // 提交试卷按钮：渐变主按钮（整页视觉重心）
+            // 提交试卷按钮：纯色主按钮（spec §6.1——本计划去掉的最后一处渐变）
             Button('提交试卷')
               .type(ButtonType.Normal)
               .width('100%')
               .height(CommonConstants.BTN_HEIGHT)
-              .fontSize(CommonConstants.FONT_SUBTITLE)
-              .fontColor(Color.White)
-              .linearGradient({
-                direction: GradientDirection.Right,
-                colors: [[CommonConstants.GRADIENT_START, 0], [CommonConstants.GRADIENT_END, 1]]
+              .borderRadius(CommonConstants.RADIUS_BUTTON)
+              .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+              .fontColor(CommonConstants.COLOR_CARD_BG)
+              .backgroundColor(CommonConstants.COLOR_PRIMARY)
+              // 按下态：与登录页主按钮同一机制（stateStyles 的 pressed 键，纯声明式、只支持通用属性）。
+              // 用 SDK 认可的属性调用写法 `{ .backgroundColor(...) }`，不是对象字面量写法。
+              .stateStyles({
+                pressed: {
+                  .backgroundColor(CommonConstants.COLOR_PRIMARY_PRESSED)
+                }
               })
               .margin({ top: CommonConstants.SPACE_M })
               .onClick(() => {
@@ -355,7 +426,7 @@ export struct ExamDetailPage {
           }
           .width('100%')
           .padding(CommonConstants.SPACE_M)
-          .backgroundColor(Color.White)
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
         }
         .width('100%')
         .height('100%')
