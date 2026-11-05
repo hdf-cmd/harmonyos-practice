@@ -140,13 +140,15 @@ export struct ExamListPage {
       } else {
         // ===== List 列表（3.2.1）=====
         // 考卷行用 List + ListItem + ForEach 驱动；考卷可能很多，List 的按需渲染正是为此
-        List() {
+        // 行间距统一交给构造参数 { space: 12 }（令牌 SPACE_CARD_GAP，spec §3.4 纵向节奏），
+        // 与首页 HomeView 的推荐试卷列表同轨——原先加在 ListItem 上的 margin(SPACE_M=16) 一并撤掉，
+        // 否则 space 与 margin 叠加成 28（HomeView 已踩过并留了同样的说明）。
+        List({ space: CommonConstants.SPACE_CARD_GAP }) {
           ForEach(this.vm.papers, (paper: PaperInfo) => {
             ListItem() {
               // 点击跳转由 PaperRow 自己处理（取根栈 push 答题页），容器这里只管排版
               PaperRow({ paper: paper })
             }
-            .margin({ bottom: CommonConstants.SPACE_M })   // 行间距加在 ListItem 上
           }, (paper: PaperInfo) => paper.id)   // 键值用试卷全局唯一的 id，禁止用下标
           // ↑ 用稳定 id 当 key：数据增删/顺序变化时框架才判断得准哪些项可复用，
           //   用下标会导致复用错位（角标、标签串到别的行上）

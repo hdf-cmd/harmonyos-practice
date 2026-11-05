@@ -111,7 +111,8 @@ export struct ExamSubjectView {
         //   columnsTemplate('1fr 1fr') —— 定义 2 列，每列宽度均分。
         //     "fr" 是份数单位，1fr:1fr 即对半分；3 列写 '1fr 1fr 1fr'；
         //     也可以混写如 '2fr 1fr'（第一列占 2/3）。不写 columnsTemplate 时 Grid 会按行排（需配 rowsTemplate）。
-        //   columnsGap / rowsGap —— 列间距 / 行间距（vp），这里都用 SPACE_M(16)。
+        //   columnsGap / rowsGap —— 横向沟 16（SPACE_M）、纵向节奏 12（SPACE_CARD_GAP）。
+        //     spec §3.4 的间距模型只有这一套，横纵两轴对网格同样成立，不是列表专属。
         //   layoutWeight(1) —— 在外层 Column 里吃掉剩余高度；内容超出高度时 Grid 自带滚动能力。
         // 注意：Grid 的子项必须包在 GridItem 里，直接放组件会不参与网格布局。
         // 三态顺序：加载中 → 加载失败 → 正常网格。错误优先于"空网格"判：
@@ -131,8 +132,8 @@ export struct ExamSubjectView {
             // ↑ 键值生成器：科目名在本页数据里唯一，用它当 key 保证聚合结果变化时正确复用
           }
           .columnsTemplate('1fr 1fr')
-          .columnsGap(CommonConstants.SPACE_M)
-          .rowsGap(CommonConstants.SPACE_M)
+          .columnsGap(CommonConstants.SPACE_M)          // 16 横向沟
+          .rowsGap(CommonConstants.SPACE_CARD_GAP)      // 12 纵向节奏，与列表同轨
           .width('100%')
           .layoutWeight(1)
         }
