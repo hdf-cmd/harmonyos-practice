@@ -35,15 +35,23 @@ export struct ExamSubjectView {
   @Builder
   LoadFailed() {
     Column() {
+      // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，按 §3.3 配对行高
+      //（同首页 HomeView 的失败区口径；三态视觉的统一归口留给 Task 12）
       Text(this.vm.errorMessage)
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_LG)
         .fontColor(CommonConstants.COLOR_ERROR)
         .textAlign(TextAlign.Center)
 
+      // 按钮只做令牌同值迁移（旧别名 16 → 大正文档 16）：形态保持主色胶囊不变，
+      // 白色字取 COLOR_CARD_BG（常量表注明该令牌接管全部白色用法）；
+      // 文案 ≤4 字且按钮自定高度，属"不换行"类——不配行高，套上只会裁字
       Button(this.vm.authExpired ? '重新登录' : '重试')
         .type(ButtonType.Capsule)
-        .fontSize(CommonConstants.FONT_BODY)
-        .fontColor(Color.White)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+        .fontColor(CommonConstants.COLOR_CARD_BG)
         .backgroundColor(CommonConstants.COLOR_PRIMARY)
         .margin({ top: CommonConstants.SPACE_M })
         .onClick(() => {
@@ -65,8 +73,12 @@ export struct ExamSubjectView {
   @Builder
   Loading() {
     Column() {
+      // 同首页加载提示的口径：整句提示在窄窗/分屏可折行，父 Column 自适应高度不裁切；
+      // 字阶同值迁移（旧别名 16 → 大正文档 16），降档统一留给 Task 12
       Text('科目加载中…')
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+        .lineHeight(CommonConstants.LINE_BODY_LG)
         .fontColor(CommonConstants.COLOR_TEXT_HINT)
     }
     .width('100%')
@@ -86,11 +98,12 @@ export struct ExamSubjectView {
     // Navigation：Exam 域的子栈容器，域内页面在这里层层压栈，不会影响根栈和底部 Tab
     Navigation(this.examStack) {
       Column() {
-        // 页面标题
+        // 页面标题：与首页分区标题同一档（20/600 + 配对行高，Task 5 对四字页面级标题判"可换行"）
         Text('考试科目')
-          .fontSize(CommonConstants.FONT_SUBTITLE)
+          .fontSize(CommonConstants.FONT_HEADLINE_MD)
+          .fontWeight(CommonConstants.WEIGHT_SEMI)
+          .lineHeight(CommonConstants.LINE_HEADLINE_MD)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .fontWeight(FontWeight.Bold)
           .margin({ bottom: CommonConstants.SPACE_M })
 
         // ===== Grid 网格（3.2.2）=====

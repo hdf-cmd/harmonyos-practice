@@ -10,7 +10,8 @@
 import { CommonConstants, RouteConstants, PaperInfo } from '@zhititong/common'
 import { ExamListViewModel } from '../viewmodel/ExamListViewModel'
 
-// 考卷行组件：白底圆角，展示试卷名 / 等级标签 / 题量信息 / 已考次数 / 成绩角标
+// 考卷行组件：卡面走方案A 令牌（圆角 16 + Level 1 阴影 + 0.5 发丝描边，与首页 PaperCard 同构），
+// 展示试卷名 / 等级胶囊 / 题量信息 / 已考次数 / 成绩角标
 // 独立成 @ComponentV2 子组件（而不是塞在页面的 ForEach 里），列表项逻辑才不糊成一团
 @ComponentV2
 struct PaperRow {
@@ -26,59 +27,72 @@ struct PaperRow {
       // 左侧主内容区：layoutWeight(1) 吃掉剩余宽度，把右侧标签挤到最右边
       Column() {
         // 试卷名：单行省略，防止长试卷名把行撑爆
+        // 字阶取"小标题"档（16/600，与 PaperCard 试卷名同链）；maxLines(1) 锁死行数，不配行高
         Text(this.paper.paperName)
-          .fontSize(CommonConstants.FONT_BODY)
+          .fontSize(CommonConstants.FONT_HEADLINE_SM)
+          .fontWeight(CommonConstants.WEIGHT_SEMI)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .fontWeight(FontWeight.Bold)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
         // 第二行：共 X 题 · Y 分钟 · 及格 Z 分
+        // 模板字符串把三个契约字段拼成一行说明文字，长度随数据变→判"可换行"，配对行高
+        //（父 Column 高度自适应，折行能显示，不裁切——与 PaperCard 副行同一判定）
         Text(`共 ${this.paper.questionCount} 题 · ${this.paper.duration} 分钟 · 及格 ${this.paper.passScore} 分`)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_BODY_SM)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
+          .lineHeight(CommonConstants.LINE_BODY_SM)
           .fontColor(CommonConstants.COLOR_TEXT_SUB)
           .margin({ top: 8 })
 
         // 第三行：已考次数（读契约字段 attemptCount / maxAttempts）
+        // "已考 x/y 次"最宽也就十来字符，左列宽度容得下，归"不换行"类——不配行高
         Text(`已考 ${this.paper.attemptCount}/${this.paper.maxAttempts} 次`)
-          .fontSize(CommonConstants.FONT_CAPTION)
-          .fontColor(CommonConstants.COLOR_TEXT_HINT)
+          .fontSize(CommonConstants.FONT_BODY_SM)
+          .fontWeight(CommonConstants.WEIGHT_REGULAR)
+          .fontColor(CommonConstants.COLOR_TEXT_SUB)
           .margin({ top: 6 })
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
 
-      // 右侧：等级标签 + 成绩角标，垂直排列并居中
+      // 右侧：等级胶囊 + 成绩角标，垂直排列并居中
       Column() {
-        // 等级标签：主色描边胶囊（与首页 PaperCard 保持同一套视觉语言）
+        // 等级标签：浅蓝底全圆胶囊（换装前是"透明底 + 主色 1vp 描边 + 圆角 4"）
+        // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
         Text(this.paper.levelName)
-          .fontSize(CommonConstants.FONT_CAPTION)
+          .fontSize(CommonConstants.FONT_LABEL_SM)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_PRIMARY)
-          .border({ width: 1, color: CommonConstants.COLOR_PRIMARY })
-          .borderRadius(4)
-          .padding({ left: 4, right: 4, top: 2, bottom: 2 })
+          .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
+          .borderRadius(CommonConstants.RADIUS_TAG)
+          .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+          .height(24)
 
-        // 成绩角标：条件渲染——考过显示最好成绩，没考过显示"未考"
-        if (this.paper.bestScore > 0) {
-          Text(`最好 ${this.paper.bestScore} 分`)
-            .fontSize(CommonConstants.FONT_CAPTION)
-            .fontColor(CommonConstants.COLOR_SUCCESS)
-            .margin({ top: 6 })
-        } else {
-          Text('未考')
-            .fontSize(CommonConstants.FONT_CAPTION)
-            .fontColor(CommonConstants.COLOR_TEXT_HINT)
-            .margin({ top: 6 })
-        }
+        // 成绩角标：条件渲染——考过显示最好成绩（成功色 + 成功浅底），没考过显示"未考"（提示色 + 静息底）
+        // 形态与等级胶囊同构（同一套属性链）；原先是两个 if 分支各一条 Text，
+        // 现按简报合写为一条三元 Text——条件在这里是真的（不再是分支内的"永真死代码"），
+        // 属性链顺序与 PaperCard 右侧角标逐字一致
+        Text(this.paper.bestScore > 0 ? `最好 ${this.paper.bestScore} 分` : '未考')
+          .fontSize(CommonConstants.FONT_LABEL_SM)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+          .fontColor(this.paper.bestScore > 0 ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_TEXT_HINT)
+          .backgroundColor(this.paper.bestScore > 0 ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_SUBTLE_BG)
+          .borderRadius(CommonConstants.RADIUS_TAG)
+          .height(24)
+          .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+          .margin({ top: 6 })
       }
       .alignItems(HorizontalAlign.Center)
       .justifyContent(FlexAlign.Center)
     }
     .width('100%')
     .padding(CommonConstants.SPACE_M)
-    .borderRadius(12)
-    .backgroundColor(Color.White)
+    .borderRadius(CommonConstants.RADIUS_CARD)
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+    .shadow(CommonConstants.SHADOW_CARD)
     .onClick(() => {
       // 沉浸式跳转：push 到根栈，答题页全屏盖住底部 Tab
       // 第二个参数传的是这张卷的 id（答题页后续按它取卷，当前 Mock 阶段答题页还没用上）
@@ -100,10 +114,12 @@ export struct ExamListPage {
   // 套一层 @Builder，里面的 Text 才会跟着 @Local 变化重新渲染
   @Builder
   titleBuilder() {
+    // 档级对齐首页/科目页标题（20/600）；标题栏是系统固定高度的容器，
+    // 科目名超长由标题栏自身处理——这里归"单行标签"类，不配行高，套上会在栏内裁字
     Text(this.categoryName)
-      .fontSize(CommonConstants.FONT_SUBTITLE)
+      .fontSize(CommonConstants.FONT_HEADLINE_MD)
+      .fontWeight(CommonConstants.WEIGHT_SEMI)
       .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-      .fontWeight(FontWeight.Bold)
   }
 
   build() {
@@ -111,9 +127,11 @@ export struct ExamListPage {
       // 条件渲染：有卷就列出来，没卷显示空态
       if (this.vm.papers.length === 0) {
         // 空态：某个科目一张卷都没有时（当前 Mock 数据里不存在这种科目，逻辑先备好）
+        // 六字定文案居中于整页 Column，判"不换行"——不配行高
         Column() {
           Text('该科目暂无考卷')
-            .fontSize(CommonConstants.FONT_BODY)
+            .fontSize(CommonConstants.FONT_BODY_MD)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
             .fontColor(CommonConstants.COLOR_TEXT_HINT)
         }
         .width('100%')

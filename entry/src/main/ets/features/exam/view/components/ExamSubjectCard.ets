@@ -1,4 +1,4 @@
-// 科目卡片组件：白底圆角 12，展示科目名与该科目试卷数
+// 科目卡片组件：卡面走方案A 令牌（圆角 16 + Level 1 阴影 + 0.5 发丝描边），展示科目名与该科目试卷数
 //
 // 【分层说明】放在 features/exam/view/components/ 下：
 //   它是"考试"这个业务 feature 私有的展示型子组件，只被同 feature 的 ExamSubjectView 复用，
@@ -17,23 +17,28 @@ export struct ExamSubjectCard {
   build() {
     Column() {
       // 科目名：单行省略，防止长科目名撑破格子
+      // 字阶取"小标题"档（16/600，与首页 PaperCard 试卷名同档同重）；
+      // maxLines(1) 已把行数锁死，归"不换行"一类——套行高只会撑行盒、移基线，不配
       Text(this.group.categoryName)
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_HEADLINE_SM)
+        .fontWeight(CommonConstants.WEIGHT_SEMI)
         .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-        .fontWeight(FontWeight.Bold)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-      // 该科目试卷数
+      // 该科目试卷数：短计数句"共 N 套"，半格宽度下不可能折行，同样不配行高
       Text(`共 ${this.group.count} 套`)
-        .fontSize(CommonConstants.FONT_CAPTION)
+        .fontSize(CommonConstants.FONT_BODY_SM)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
         .fontColor(CommonConstants.COLOR_TEXT_SUB)
         .margin({ top: 8 })
     }
     .width('100%')      // 撑满 GridItem 分给的格子宽度
     .padding(CommonConstants.SPACE_M)
-    .borderRadius(12)
-    .backgroundColor('#FFFFFF')
+    .borderRadius(CommonConstants.RADIUS_CARD)
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+    .shadow(CommonConstants.SHADOW_CARD)
     .alignItems(HorizontalAlign.Start)
     .onClick(() => {
       // 域内跳转：push 到 examStack，考卷列表会压在"刷题"Tab 内部，底部 Tab 仍然可见
