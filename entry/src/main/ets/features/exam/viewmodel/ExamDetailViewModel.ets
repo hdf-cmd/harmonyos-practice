@@ -234,6 +234,19 @@ export class ExamDetailViewModel extends BaseViewModel {
     return this.flaggedIds.indexOf(questionId) !== -1
   }
 
+  // 已答题数：答题卡底部"已答 x / y"与提交前确认都用它。
+  // 按题型分流而不是统一查一张 answerMap——单选存 radioSelected（全局一个），
+  // 多选存 checkboxSelected（Set），两者的"是否作答"判法不同。
+  answeredCount(): number {
+    let count: number = 0
+    for (let i = 0; i < this.questions.length; i++) {
+      if (this.isQuestionAnswered(this.questions[i].id)) {
+        count++
+      }
+    }
+    return count
+  }
+
   /** 切换当前题的存疑标记，并连同当前答案一起实时上报 */
   toggleFlagCurrent(): void {
     const q = this.getCurrentQuestion()

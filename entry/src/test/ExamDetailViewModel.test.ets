@@ -342,5 +342,30 @@ export default function examDetailViewModelTest() {
       mocker.verify('submit', ['A1', 'TAB_SWITCH', 0]).times(1)
       vm.dispose()
     })
+
+    // 答题卡底部要显示"已答 x / y"。计数是纯逻辑，能单测。
+    it('answered_count_zero_before_any_selection', 0, () => {
+      const vm = new ExamDetailViewModel(service)
+      vm.questions = [{ id: 'q1', type: 'SINGLE', content: 'c', score: 10, options: [] }]
+      expect(vm.answeredCount()).assertEqual(0)
+    })
+
+    // 已答与否的事实源是私有 answers 表（只有 selectSingleOption / toggleMultiOption 会写它），
+    // radioSelected / checkboxSelected 只是"当前这一题"的渲染态：radio 全局只有一个值，
+    // 因此一次单选 + 一次多选各答一题、共 2 题；直接给字段赋值不落到题号上，等于没作答。
+    it('answered_count_counts_single_and_multi_and_true_false', 0, () => {
+      const vm = new ExamDetailViewModel(service)
+      vm.questions = [
+        { id: 'q1', type: 'SINGLE', content: 'c', score: 10, options: [] },
+        { id: 'q2', type: 'MULTI', content: 'c', score: 10, options: [] },
+        { id: 'q3', type: 'JUDGE', content: 'c', score: 10, options: [] },
+        { id: 'q4', type: 'SINGLE', content: 'c', score: 10, options: [] }
+      ]
+      vm.selectSingleOption('A')        // 当前题 q1（单选）：radioSelected → answers['q1']='A'
+      vm.jumpTo(1)                      // 切到 q2（多选）
+      vm.toggleMultiOption('A', true)   // answers['q2']='A'
+      vm.toggleMultiOption('C', true)   // answers['q2']='AC'，两个勾选项仍只算一题
+      expect(vm.answeredCount()).assertEqual(2)
+    })
   })
 }
