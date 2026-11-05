@@ -845,6 +845,69 @@ Text(`${index + 1}`)
 
 图例文案改为 `已答 · 存疑 · 当前题 · 点击跳转`（去掉"绿色/橙色/蓝框"三个颜色词——换 tint 底后色名与观感不再一一对应）。
 
+- [ ] **Step 7b: 中部加滚动容器（换装引入的回归，必修）**
+
+Step 4 给选项行加了 `padding({top:10,bottom:10})` + 1vp 描边，每行 +22vp、四行 +88vp；告警条在场时再吃约 56vp。
+而中部是 `layoutWeight(1)` 的 `Column`，全文件没有任何滚动能力——长题干 + 四选项在中小屏会被裁掉且无法滚。
+**这是本次换装自己造成的回归**，不是存量问题，必须在本任务修。
+
+正解是把中部卡的内容整体包进 `Scroll`（单子 `Column` 作内容体，卡壳的圆角/阴影留在外层）：
+
+```ts
+Scroll() {
+  Column() {
+    // 题型标签、题干、选项列表原样搬进来
+  }
+  .width('100%')
+  .alignItems(HorizontalAlign.Start)
+}
+.layoutWeight(1)
+.scrollBar(BarState.Auto)
+.width('100%')
+```
+
+不要用"选项 `Column` 换 `List`"——那只救选项，救不了长题干和极大字号档。
+也不要包页级 `Scroll`——会破坏三段式 `layoutWeight` 结构。
+
+同时改写 `:272` 那句注释「题目最多 4 个选项，够短，没必要上 List」：它的前提已被本轮改动打破。
+
+- [ ] **Step 7c: 补 spec 明文但简报漏写的两处元素**
+
+两处都是"spec 要求、简报没写、目前无人认领"，与 Task 4 的聚焦态、Task 7 的滚动同类。
+
+**① F05 纤细进度条**（顶部标题区，`currentIndex+1 / questions.length` 全在 VM，不新增数据通路）：
+
+```ts
+Row()
+  .width('100%')
+  .height(3)
+  .borderRadius(2)
+  .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+  .margin({ top: CommonConstants.SPACE_CARD_GAP })
+
+Row()
+  .width(`${Math.round((this.vm.currentIndex + 1) / this.vm.questions.length * 100)}%`)
+  .height(3)
+  .borderRadius(2)
+  .backgroundColor(CommonConstants.COLOR_PRIMARY)
+```
+
+外层用 `Stack(Alignment.Start)` 叠放，或直接把第二条放在第一条内部——取可读的那种。
+
+**② F06 存疑格右上实心点**（`isQuestionFlagged` 现成可用）：`GridItem` 内套 `Stack(Alignment.TopEnd)`，
+数字 `Text` 保持原链，右上角叠一个点：
+
+```ts
+Text('')
+  .width(8)
+  .height(8)
+  .borderRadius(4)
+  .backgroundColor(CommonConstants.COLOR_WARN)
+  .position({ x: 30, y: 2 })
+```
+
+存疑与"当前题"是**复合态**（第 7 题同时具备）：底色走 tint、描边走主色，圆点独立叠加，三者互不覆盖。
+
 - [ ] **Step 8: 硬编码清零检查**
 
 Run: `grep -c "Color\.White\|'#EEEEEE'\|'#FFF3E0'" entry/src/main/ets/features/exam/view/ExamDetailPage.ets`

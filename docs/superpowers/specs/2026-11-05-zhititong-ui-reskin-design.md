@@ -185,7 +185,9 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 `MainPage.ets` 原不在任何任务的认领范围内（Task 5 实施时发现），现归 Task 11 Step 0。
 
 - 高度 52 → 64，对齐导出稿的 `h-16`；标签走 `FONT_LABEL_SM` + 选中态 `WEIGHT_SEMI`。
-- **不加图标。** 稿子的图标是 Material Symbols 连字（`menu_book` 等），ArkUI 没有这套字体；加图标等于引一条图标素材管道，而本计划从未预算素材资源。代价明说：与稿子有一处可见差异，若终审判定必须补，属新增范围另立任务。
+- **不加图标。** ⚠️ 这条理由**修正过一次**：我原本写"稿子的图标是 Material Symbols 连字，ArkUI 没有这套字体，加图标等于引一条图标素材管道"——Task 7 审查指出该论证不成立，我随后在 SDK 里核实：`SymbolGlyph` 是 ArkUI 内置组件（`component/symbolglyph.d.ts`），`sys.symbol.*` 系统图库存在，**加图标并不需要外部素材**。
+  裁决不变，但地基换成两条真的：① 当前 Tab 条是纯文字，加图标属于**新增 UI 元素**，超出本计划已批准的"只移植设计语言、不加新区块"范围；② Material 图标到鸿蒙 symbol 的映射（`menu_book` 对应哪个 `sys.symbol`）是审美决定，归用户，不该由执行链静默选定。
+  若用户点头要图标，这是一条独立小任务，成本不高（`SymbolGlyph($r('sys.symbol.xxx'))` + 字号/颜色），不是素材工程。
 - 导航条用平面 `COLOR_CARD_BG` + Level 3 阴影（`SHADOW_BOTTOM_BAR`），不做毛玻璃——见 §6.4。
 
 ## 7. 风险
