@@ -25,17 +25,21 @@
 - 页面文案保持现有中文，不得引入英文标题（HarmonyOS/ArkTS/Stage/UIAbility 等专有名词除外）。
 - 未经用户明确要求，不 commit 到 master、不 push、不切分支覆盖写。本计划在 feature 分支 `feat/ui-reskin` 上逐任务提交，末任务再 ff 合并。
 - 每个任务的验证**必须同时跑** `devecocli build` 与 `hvigorw test`：`hvigorw test` 不编译 view，只跑单测等于没验视图。
+- **别名迁移门禁（每个视图任务都要跑一次）**：`grep -rnE "CommonConstants\.FONT_(TITLE|SUBTITLE|BODY|CAPTION)\b" entry/src/main/ets` 的命中数必须**逐任务递减**，Task 13 时必须为 0。
+  这条不能省：四个旧别名与新档同值（`FONT_TITLE`=`FONT_HEADLINE_LG_MOBILE`=22、`FONT_SUBTITLE`=`FONT_BODY_SM`=18、`FONT_BODY`=`FONT_BODY_LG`=`FONT_HEADLINE_SM`=16、`FONT_CAPTION`=`FONT_BODY_MD`=`FONT_LABEL_MD`=14），漏改**渲染结果一模一样**，模拟器目检抓不出来，只有这条 grep 能抓。
+  ⚠️ 模式必须带词边界。写成 `FONT_BODY:` 这种形式实测只命中 53 行，词边界版命中 92 行——漏掉 39 处引用。
 
 ## 关于"测试"的说明（执行者先读这段）
 
-这是纯视觉换装，ArkTS 的 hypium LocalUnit 跑在无 UI 环境，**断言不了布局、圆角、阴影**。所以本计划里只有三个任务带真正的单元测试（Task 2/3 是纯逻辑，Task 13 复核用例总数）；其余视图任务的门禁是：
+这是纯视觉换装，ArkTS 的 hypium LocalUnit 跑在无 UI 环境，**断言不了布局、圆角、阴影**。所以本计划里只有三个任务带真正的单元测试（Task 1 钉令牌值、Task 2/3 是纯逻辑），其余视图任务的门禁是：
 
 1. `devecocli build` 0 ERROR —— 唯一能逼出视图编译错的手段；
 2. `hvigorw test` 尾行 `Tests run: N, Failure: 0, Error: 0`，且 N 与上一任务相同（用例数变了就是回归）；
-3. 静态 grep —— 该文件的硬编码色值计数必须降到 0；
-4. 模拟器目检 —— 对 `design/stitch/v2-final2/stitch_harmonyos_exam_client/_<n>/screen.png` 逐屏比。
+3. **别名迁移 grep**（见 Global Constraints）—— 旧字号别名与新档同值，漏改渲染不出来，只能靠 grep；
+4. 静态 grep —— 该文件的硬编码色值计数必须降到 0；
+5. 模拟器目检 —— 对 `design/stitch/v2-final2/stitch_harmonyos_exam_client/_<n>/screen.png` 逐屏比。
 
-给视图硬写"断言字号等于 16"的单测是假测试，不要写。
+给视图硬写"断言字号等于 16"的单测是假测试，不要写。但**令牌值本身可以且必须钉**：69 个常量改错一个十六进制位，编译照过、回归照绿，只有装机才看得出来。
 
 ---
 
@@ -174,15 +178,126 @@ Expected: `0`，且日志尾行 `Build completed successfully`
 
 若报 `Cannot find name 'ShadowOptions'`（`common` 是 HAR；`session/SessionManager.ets` 已证明它能 import `@kit.ArkUI`，但全局类型仍可能不解析）：**不要卡住**，把三个 `SHADOW_*` 从 `CommonConstants` 移到各 view 调用点内联书写，`radius`/`type`/`color`/`offsetX`/`offsetY` 五个字段值照抄。在报告里写明走了这条分支——后续任务的 dispatch 会带上这个决定。
 
-- [ ] **Step 4: 单测回归**
+- [ ] **Step 5: 用单测把令牌表钉死**
 
-Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 121, Failure: 0, Error: 0, Pass: 121, Ignore: 0`
+69 个常量全是 `static readonly string/number`，hypium 不渲染也能断言。不钉的后果很具体：以后谁把 `#0A59F7` 手滑改成 `#0A59F6`，编译照过、121 例照绿、只有装机才看得出来，而肉眼几乎分不出这两档蓝。
 
-- [ ] **Step 5: Commit**
+新建 `common/src/test/CommonConstants.test.ets`：
+
+```ts
+import hilog from '@ohos.hilog';
+import { describe, it, expect, assertContain } from '@ohos/hypium';
+import { CommonConstants } from '../main/ets/constants/CommonConstants';
+
+export default function commonConstantsTest() {
+  describe('CommonConstantsTest', () => {
+    // 每个值都对着 restrained_native_precision/DESIGN.md 断言一次。
+    // 这里不测"看起来对不对"，只测"有没有被人改动"——换装后 12 个屏都引用这些名字，
+    // 改错一个数字不会编译失败，也不会让现有 121 例变红。
+    it('primary_and_surface_colors', 0, () => {
+      expect(CommonConstants.COLOR_PRIMARY).assertEqual('#0A59F7');
+      expect(CommonConstants.COLOR_PRIMARY_PRESSED).assertEqual('#084ECC');
+      expect(CommonConstants.COLOR_BG_PAGE).assertEqual('#F1F3F5');
+      expect(CommonConstants.COLOR_CARD_BG).assertEqual('#FFFFFF');
+      expect(CommonConstants.COLOR_SUBTLE_BG).assertEqual('#F2F4F6');
+    });
+
+    it('text_hierarchy_colors', 0, () => {
+      expect(CommonConstants.COLOR_TEXT_MAIN).assertEqual('#182431');
+      expect(CommonConstants.COLOR_TEXT_SUB).assertEqual('#525F70');
+      expect(CommonConstants.COLOR_TEXT_HINT).assertEqual('#8A95A5');
+      expect(CommonConstants.COLOR_TEXT_DISABLED).assertEqual('#BAC2CE');
+    });
+
+    it('semantic_colors_and_tints', 0, () => {
+      expect(CommonConstants.COLOR_SUCCESS).assertEqual('#00B578');
+      expect(CommonConstants.COLOR_ERROR).assertEqual('#E84026');
+      expect(CommonConstants.COLOR_WARN).assertEqual('#FA6400');
+      // 浅色底必须是 #AARRGGBB，alpha = round(0.08 × 255) = 20 = 0x14
+      expect(CommonConstants.COLOR_SUCCESS_BG).assertEqual('#1400B578');
+      expect(CommonConstants.COLOR_ERROR_BG).assertEqual('#14E84026');
+      expect(CommonConstants.COLOR_WARN_BG).assertEqual('#14FA6400');
+      expect(CommonConstants.COLOR_PRIMARY_BG).assertEqual('#140A59F7');
+    });
+
+    it('hairline_and_focus_borders', 0, () => {
+      expect(CommonConstants.COLOR_BORDER_HAIRLINE).assertEqual('#0A000000');
+      expect(CommonConstants.COLOR_BORDER_FOCUS).assertEqual('#660A59F7');
+      expect(CommonConstants.COLOR_OVERLAY).assertEqual('#66182431');
+    });
+
+    it('font_scale_matches_design_md', 0, () => {
+      expect(CommonConstants.FONT_DISPLAY_SCORE).assertEqual(48);
+      expect(CommonConstants.FONT_DISPLAY_SCORE_MOBILE).assertEqual(36);
+      expect(CommonConstants.FONT_HEADLINE_LG).assertEqual(28);
+      expect(CommonConstants.FONT_HEADLINE_LG_MOBILE).assertEqual(22);
+      expect(CommonConstants.FONT_HEADLINE_MD).assertEqual(20);
+      expect(CommonConstants.FONT_HEADLINE_SM).assertEqual(16);
+      expect(CommonConstants.FONT_BODY_LG).assertEqual(16);
+      expect(CommonConstants.FONT_BODY_MD).assertEqual(14);
+      expect(CommonConstants.FONT_BODY_SM).assertEqual(12);
+      expect(CommonConstants.FONT_LABEL_MD).assertEqual(14);
+      expect(CommonConstants.FONT_LABEL_SM).assertEqual(12);
+      expect(CommonConstants.FONT_CAPTION_UNIT).assertEqual(11);
+    });
+
+    it('line_heights_pair_with_their_font_tier', 0, () => {
+      // 字号与行高成对写死：只改字号不改行高，五档下会越挤越近
+      expect(CommonConstants.LINE_DISPLAY_SCORE).assertEqual(56);
+      expect(CommonConstants.LINE_DISPLAY_SCORE_MOBILE).assertEqual(44);
+      expect(CommonConstants.LINE_HEADLINE_LG).assertEqual(36);
+      expect(CommonConstants.LINE_HEADLINE_LG_MOBILE).assertEqual(30);
+      expect(CommonConstants.LINE_HEADLINE_MD).assertEqual(28);
+      expect(CommonConstants.LINE_HEADLINE_SM).assertEqual(24);
+      expect(CommonConstants.LINE_BODY_LG).assertEqual(26);
+      expect(CommonConstants.LINE_BODY_MD).assertEqual(22);
+      expect(CommonConstants.LINE_BODY_SM).assertEqual(18);
+      expect(CommonConstants.LINE_LABEL_MD).assertEqual(20);
+      expect(CommonConstants.LINE_LABEL_SM).assertEqual(16);
+      expect(CommonConstants.LINE_CAPTION_UNIT).assertEqual(14);
+    });
+
+    it('shape_and_space_scale', 0, () => {
+      expect(CommonConstants.BTN_HEIGHT).assertEqual(48);
+      expect(CommonConstants.BTN_HEIGHT_SECONDARY).assertEqual(36);
+      expect(CommonConstants.RADIUS_CARD).assertEqual(16);
+      expect(CommonConstants.RADIUS_BUTTON).assertEqual(8);
+      expect(CommonConstants.RADIUS_INPUT).assertEqual(10);
+      expect(CommonConstants.RADIUS_CHECKBOX).assertEqual(6);
+      expect(CommonConstants.SPACE_M).assertEqual(16);
+      expect(CommonConstants.SPACE_L).assertEqual(24);
+      expect(CommonConstants.SPACE_CARD_GAP).assertEqual(12);
+    });
+
+    it('legacy_aliases_stay_until_task_13', 0, () => {
+      // 这四个是过渡期脚手架，Task 13 删除；此处断言它们的存在本身就是防误删
+      expect(CommonConstants.FONT_TITLE).assertEqual(22);
+      expect(CommonConstants.FONT_SUBTITLE).assertEqual(18);
+      expect(CommonConstants.FONT_BODY).assertEqual(16);
+      expect(CommonConstants.FONT_CAPTION).assertEqual(14);
+    });
+  });
+}
+```
+
+在 `common/src/test/List.test.ets` 挂号（漏挂号等于一条不跑）：
+
+```ts
+import commonConstantsTest from './CommonConstants.test';
+```
+并在 `testsuite()` 内调用 `commonConstantsTest();`
+
+- [ ] **Step 6: 单测回归**
+
+Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
+Expected: 尾行 `Tests run: 129, Failure: 0, Error: 0, Pass: 129, Ignore: 0`（121 + 本步 8 例）
+
+若计数仍是 121，说明 `common/src/test` 没被 entry 轮跑到——先查 `common/src/test/List.test.ets` 的挂号，别把"没跑"当成"通过"。
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add common/src/main/ets/constants/CommonConstants.ets
+git add common/src/main/ets/constants/CommonConstants.ets common/src/test/CommonConstants.test.ets common/src/test/List.test.ets
 git commit -m "refactor: 换装令牌层扩容（方案A 色值/字阶/圆角/阴影）"
 ```
 
@@ -243,7 +358,7 @@ export const FONT_LEVELS: FontLevel[] = [
 - [ ] **Step 4: 跑测试确认通过**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 123, Failure: 0, Error: 0, Pass: 123`（121 + 新增 2）
+Expected: `Tests run: 131, Failure: 0, Error: 0, Pass: 131`（129 + 新增 2）
 
 - [ ] **Step 5: Commit**
 
@@ -317,7 +432,7 @@ Expected: `Failure` 或编译错误 `Property 'answeredCount' does not exist`—
 - [ ] **Step 4: 跑测试确认通过**
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 125, Failure: 0, Error: 0, Pass: 125`（123 + 新增 2）
+Expected: `Tests run: 133, Failure: 0, Error: 0, Pass: 133`（131 + 新增 2）
 
 若第二条用例失败，先读 `isQuestionAnswered()` 的实现确认它对 `TRUE_FALSE` 走的是哪条分支——判断题的正确答案以选项 `A`/`B` 提交（见 AGENTS.md 硬约束），不要为了过测试改判据。
 
@@ -393,7 +508,7 @@ Expected: `0`
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 125, Failure: 0, Error: 0`
+Expected: `Tests run: 133, Failure: 0, Error: 0`
 
 - [ ] **Step 7: Commit**
 
@@ -461,7 +576,7 @@ Expected: 两个文件都 `0`
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/.../test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 125, Failure: 0, Error: 0`
+Expected: `Tests run: 133, Failure: 0, Error: 0`
 
 - [ ] **Step 7: Commit**
 
@@ -539,7 +654,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 - [ ] **Step 7: Commit**
 
@@ -669,7 +784,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 - [ ] **Step 10: Commit**
 
@@ -762,7 +877,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 - [ ] **Step 5: Commit**
 
@@ -826,7 +941,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 ```bash
 git add entry/src/main/ets/features/exam/view/AnswerResultPage.ets
@@ -880,7 +995,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 ```bash
 git add entry/src/main/ets/features/exam/view/ReviewQuestionCard.ets entry/src/main/ets/features/exam/view/ReviewPage.ets
@@ -932,7 +1047,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 ```bash
 git add entry/src/main/ets/features/mine
@@ -1031,7 +1146,7 @@ Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: 尾行 `Tests run: 125, Failure: 0, Error: 0, Pass: 125`
+Expected: 尾行 `Tests run: 133, Failure: 0, Error: 0, Pass: 133`
 
 ```bash
 git add entry/src/main/ets/features/exam/view/AttemptHistoryPage.ets entry/src/main/ets/features/exam/view/CertificatePage.ets
@@ -1050,10 +1165,16 @@ git commit -m "style: 考试记录与我的证书对齐方案A"
 - Consumes: 前 12 个任务全部完成
 - Produces: 可合并的 master
 
-- [ ] **Step 1: 确认旧别名无引用**
+- [ ] **Step 1: 确认旧别名与渐变已无引用**
 
-Run: `grep -rn "FONT_TITLE\|FONT_SUBTITLE\|FONT_BODY:\|FONT_CAPTION\|GRADIENT_START\|GRADIENT_END" entry/src common/src --include=*.ets | grep -v "CommonConstants.ets"`
-Expected: 空输出。若非空，先改完那些引用再删。
+Run: `grep -rnE "CommonConstants\.(FONT_(TITLE|SUBTITLE|BODY|CAPTION)|GRADIENT_(START|END))\b" entry/src common/src --include=*.ets | grep -v "constants/CommonConstants.ets" | grep -v "test/CommonConstants.test.ets"`
+Expected: 空输出。
+
+注意两条：
+- 模式必须带词边界 `\b`。`grep "FONT_BODY:"` 这种写法实测只命中 53 行、词边界版命中 92 行，会漏掉 39 处引用。
+- Task 1 新增的 `CommonConstants.test.ets` 里有一组 `legacy_aliases_stay_until_task_13` 断言，是**故意**引用这四个别名的；本步删除别名时必须连同那个 `it()` 一起删，否则编译不过。
+
+若仍有其它引用，先改完那些文件再删别名，不要跳过。
 
 - [ ] **Step 2: 删别名与渐变**
 
@@ -1068,7 +1189,7 @@ Expected: 空输出（基线是 24 处，此处必须归零）
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
 Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
-Expected: `Tests run: 125, Failure: 0, Error: 0, Pass: 125`（基线 121 + Task 2 的 2 + Task 3 的 2）
+Expected: `Tests run: 133, Failure: 0, Error: 0, Pass: 133`（基线 121 + Task 1 的 8 + Task 2 的 2 + Task 3 的 2）
 
 - [ ] **Step 5: 模拟器逐屏目检**
 
@@ -1109,7 +1230,7 @@ git branch -d feat/ui-reskin
 - [ ] **Step 8: 合并态复跑**
 
 Run: 同 Step 4
-Expected: `Tests run: 125, Failure: 0, Error: 0`，且 `test_result.txt` 的 mtime 晚于本轮起跑时刻
+Expected: `Tests run: 133, Failure: 0, Error: 0`，且 `test_result.txt` 的 mtime 晚于本轮起跑时刻
 
 ---
 
