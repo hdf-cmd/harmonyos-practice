@@ -656,7 +656,14 @@ git commit -m "style: 首页与试卷卡片对齐方案A（胶囊标签 + 令牌
 
 - [ ] **Step 1: ExamSubjectCard 令牌化**
 
-科目名 `FONT_HEADLINE_SM` + `COLOR_TEXT_MAIN`；`共 N 套` `FONT_BODY_SM` + `COLOR_TEXT_SUB`；卡面 `COLOR_CARD_BG` + `RADIUS_CARD` + `SHADOW_CARD` + 0.5 发丝边框。Grid 的 `columnsGap`/`rowsGap` 保持 16。
+科目名 `FONT_HEADLINE_SM` + `COLOR_TEXT_MAIN`；`共 N 套` `FONT_BODY_SM` + `COLOR_TEXT_SUB`；卡面 `COLOR_CARD_BG` + `RADIUS_CARD` + `SHADOW_CARD` + 0.5 发丝边框。
+
+Grid 的 gap 按 spec §3.4 的间距模型拆开——**横向沟 16、纵向节奏 12**，不是两个都 16：
+
+```ts
+.columnsGap(CommonConstants.SPACE_M)          // 16，横向沟
+.rowsGap(CommonConstants.SPACE_CARD_GAP)      // 12，纵向节奏，与列表同轨
+```
 
 - [ ] **Step 2: 明确不加的东西**
 
@@ -694,6 +701,15 @@ Text(paper.bestScore > 0 ? `最好 ${paper.bestScore} 分` : '未考')
 ```
 
 `已考 x/y 次` 用 `FONT_BODY_SM` + `COLOR_TEXT_SUB`。空态「该科目暂无考卷」`FONT_BODY_MD` + `COLOR_TEXT_HINT`。
+
+行间距必须与首页同轨（spec §3.4 纵向节奏 12，F04 要求行结构与 F02 统一）：
+
+```ts
+List({ space: CommonConstants.SPACE_CARD_GAP })   // 12
+```
+
+并**删掉** `ListItem` 上的 `.margin({ bottom: CommonConstants.SPACE_M })`。两处叠加会变成 28，
+`HomeView.ets` 里已踩过并留了注释说明。
 
 - [ ] **Step 4: 不加筛选器与排序**
 
@@ -1177,6 +1193,7 @@ git commit -m "style: 我的页对齐方案A（发丝分割线 + 令牌化行高
 **Files:**
 - Modify: `entry/src/main/ets/features/exam/view/AttemptHistoryPage.ets`
 - Modify: `entry/src/main/ets/features/exam/view/CertificatePage.ets`
+- Modify: `entry/src/main/ets/features/exam/view/ExamSubjectView.ets`（Step 1b 的会话失效块要覆盖各页错误态，而 Task 6 只做了同值迁移没动形态；不列进来这个文件就会漏到终审之后）
 
 **Interfaces:**
 - Consumes: Task 1 令牌、Task 5 的胶囊写法
