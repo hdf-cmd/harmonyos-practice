@@ -351,9 +351,9 @@ export default function examDetailViewModelTest() {
     })
 
     // 已答与否的事实源是私有 answers 表（只有 selectSingleOption / toggleMultiOption 会写它），
-    // radioSelected / checkboxSelected 只是"当前这一题"的渲染态：radio 全局只有一个值，
-    // 因此一次单选 + 一次多选各答一题、共 2 题；直接给字段赋值不落到题号上，等于没作答。
-    it('answered_count_counts_single_and_multi_and_true_false', 0, () => {
+    // radioSelected / checkboxSelected 只是"当前这一题"的渲染态：radio 全局只存最后一个值，
+    // 因此必须跨题连续作答——按渲染态计数的写法会在答到第 4 题时把前面答过的单选/判断题丢掉。
+    it('answered_count_accumulates_across_single_multi_and_judge', 0, () => {
       const vm = new ExamDetailViewModel(service)
       vm.questions = [
         { id: 'q1', type: 'SINGLE', content: 'c', score: 10, options: [] },
@@ -366,6 +366,11 @@ export default function examDetailViewModelTest() {
       vm.toggleMultiOption('A', true)   // answers['q2']='A'
       vm.toggleMultiOption('C', true)   // answers['q2']='AC'，两个勾选项仍只算一题
       expect(vm.answeredCount()).assertEqual(2)
+      vm.jumpTo(2)                      // q3 判断题：同样走 radio（后端正确答案以 A/B 提交）
+      vm.selectSingleOption('B')        // answers['q3']='B'
+      vm.jumpTo(3)                      // q4 单选——此刻 radioSelected 只剩这一个值
+      vm.selectSingleOption('A')        // answers['q4']='A'
+      expect(vm.answeredCount()).assertEqual(4)
     })
   })
 }
