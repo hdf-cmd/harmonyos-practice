@@ -109,7 +109,9 @@ export struct ExamDetailPage {
     return q.type === 'MULTI' ? this.vm.checkboxSelected.has(option.label) : this.vm.radioSelected === option.label
   }
 
-  // 答题卡面板：四种格子态——当前=主色描边、已答=成功浅底、存疑=告警浅底、未答=静息浅底
+  // 答题卡面板：四种格子态——当前=主色描边、已答=成功浅底、存疑=告警浅底 + 右上实心点、未答=静息浅底。
+  // 底色、描边、圆点是三层独立叠加，谁都不覆盖谁：第 7 题那种"存疑 + 当前"的复合态
+  // 必须同时是告警浅底、主色 2vp 描边，并且带点（spec §4 F06 的复合态就靠叠放成立，不靠三元互斥）。
   @Builder
   AnswerCardSheet() {
     Column({ space: CommonConstants.SPACE_M }) {
@@ -128,26 +130,43 @@ export struct ExamDetailPage {
       Grid() {
         ForEach(this.vm.questions, (q: QuestionItem, index: number) => {
           GridItem() {
-            Text(`${index + 1}`)
-              .fontSize(CommonConstants.FONT_BODY_MD)
-              .fontWeight(CommonConstants.WEIGHT_REGULAR)
-              .fontColor(this.vm.isQuestionAnswered(q.id) && !this.vm.isQuestionFlagged(q.id)
-                ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_TEXT_MAIN)
-              .width(40)
-              .height(40)
-              .textAlign(TextAlign.Center)
-              .backgroundColor(
-                this.vm.isQuestionFlagged(q.id) ? CommonConstants.COLOR_WARN_BG
-                  : (this.vm.isQuestionAnswered(q.id) ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_SUBTLE_BG))
-              .borderRadius(CommonConstants.RADIUS_BUTTON)
-              .border({
-                width: index === this.vm.currentIndex ? 2 : 0.5,
-                color: index === this.vm.currentIndex ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
-              })
-              .onClick(() => {
-                this.vm.jumpTo(index)
-                this.showAnswerCard = false
-              })
+            Stack({ alignContent: Alignment.TopEnd }) {
+              Text(`${index + 1}`)
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                .fontColor(this.vm.isQuestionAnswered(q.id) && !this.vm.isQuestionFlagged(q.id)
+                  ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_TEXT_MAIN)
+                .width(40)
+                .height(40)
+                .textAlign(TextAlign.Center)
+                .backgroundColor(
+                  this.vm.isQuestionFlagged(q.id) ? CommonConstants.COLOR_WARN_BG
+                    : (this.vm.isQuestionAnswered(q.id) ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_SUBTLE_BG))
+                .borderRadius(CommonConstants.RADIUS_BUTTON)
+                .border({
+                  width: index === this.vm.currentIndex ? 2 : 0.5,
+                  color: index === this.vm.currentIndex ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
+                })
+                .onClick(() => {
+                  this.vm.jumpTo(index)
+                  this.showAnswerCard = false
+                })
+
+              if (this.vm.isQuestionFlagged(q.id)) {
+                // F06 存疑标记点：数字 Text 保持原链不动，点叠在右上角。
+                // position 相对 Stack 左上角——x=30 让 8vp 的点落在 40vp 格内、右边与上边各留 2vp 余量。
+                // hitTestBehavior(None) 不是装饰：点正落在格子的可点区域内，默认模式会阻塞兄弟节点的命中测试，
+                // 用户恰好点在点上时就会"按了没反应"；None 才是自身不响应、兄弟与祖先照常响应
+                // （SDK component/enums.d.ts 的 HitTestMode 注释）。
+                Text('')
+                  .width(8)
+                  .height(8)
+                  .borderRadius(4)
+                  .backgroundColor(CommonConstants.COLOR_WARN)
+                  .position({ x: 30, y: 2 })
+                  .hitTestBehavior(HitTestMode.None)
+              }
+            }
           }
         }, (q: QuestionItem) => q.id)
       }
@@ -238,6 +257,29 @@ export struct ExamDetailPage {
             }
             .width('100%')
             .margin({ top: CommonConstants.SPACE_CARD_GAP })
+
+            // F05 纤细进度条（spec §4 答题页明文"进度条改主色纤细"）：轨道通铺、主色按当前题号占比叠在上层。
+            // 数据只取现成的 currentIndex / questions.length，不新增任何数据通路；
+            // 上面那行"第 N 题 / 共 M 题"仍是权威文字，本条只表达比例，不参与任何判定。
+            // 除零无需防御：能进到本分支就代表外层判据已保证 questions.length > 0。
+            // 取 Stack 叠放而非"把填充条塞进轨道内部"——两条平级、各自 width/height，一眼看出谁盖谁。
+            Stack({ alignContent: Alignment.Start }) {
+              // 轨道：静息浅底
+              Row()
+                .width('100%')
+                .height(3)
+                .borderRadius(2)
+                .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+
+              // 填充：主色，宽度＝ (currentIndex + 1) / questions.length
+              Row()
+                .width(`${Math.round((this.vm.currentIndex + 1) / this.vm.questions.length * 100)}%`)
+                .height(3)
+                .borderRadius(2)
+                .backgroundColor(CommonConstants.COLOR_PRIMARY)
+            }
+            .width('100%')
+            .margin({ top: CommonConstants.SPACE_CARD_GAP })
           }
           .width('100%')
           .padding(CommonConstants.SPACE_M)
@@ -246,79 +288,99 @@ export struct ExamDetailPage {
           .shadow(CommonConstants.SHADOW_CARD)
 
           // ===== 中部题目区域 =====
+          // 结构：外层 Column 是"卡壳"（底色/圆角/阴影/内边距全在它身上），里面只有一个 Scroll，
+          //   Scroll 的唯一子节点是内容 Column（题型标签 + 题干 + 选项列表）。圆角/阴影留外层，
+          //   是因为它们描述的是卡片外形，不该随内容一起滚走。
+          // 为什么必须能滚：Step 4 给选项行加了上下各 10 的内边距与 1vp 描边，每行高约 +22vp、四行 +88vp；
+          //   切屏告警条在场时顶部还要再吃掉约 56vp。本区高度由 layoutWeight(1) 分配、自己不会长，
+          //   于是长题干 + 四选项在中小屏或极大字号档下必然超出——不滚就是裁掉且摸不着。
+          // 两条被否决的替代写法：选项 Column 换 List 只救选项、救不了长题干与最大字号档；
+          //   页级 Scroll 会把顶部/中部/底部的三段式 layoutWeight 结构拆掉。
           Column() {
-            // 题型标签：浅蓝底全圆胶囊（与 Task 5 的等级标签同构；换装前是"透明底 + 主色 1vp 描边 + 圆角 4"）
-            // 按 §6.4 定案：tint 底 + 同色相饱和字，**不加描边**。
-            // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊。
-            Text(this.vm.getTypeLabel(this.vm.getCurrentQuestion().type))
-              .fontSize(CommonConstants.FONT_LABEL_SM)
-              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
-              .fontColor(CommonConstants.COLOR_PRIMARY)
-              .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
-              .borderRadius(CommonConstants.RADIUS_TAG)
-              .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-              .height(24)
+            Scroll() {
+              Column() {
+                // 题型标签：浅蓝底全圆胶囊（与 Task 5 的等级标签同构；换装前是"透明底 + 主色 1vp 描边 + 圆角 4"）
+                // 按 §6.4 定案：tint 底 + 同色相饱和字，**不加描边**。
+                // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊。
+                Text(this.vm.getTypeLabel(this.vm.getCurrentQuestion().type))
+                  .fontSize(CommonConstants.FONT_LABEL_SM)
+                  .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+                  .fontColor(CommonConstants.COLOR_PRIMARY)
+                  .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
+                  .borderRadius(CommonConstants.RADIUS_TAG)
+                  .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+                  .height(24)
 
-            // 题干
-            Text(this.vm.getCurrentQuestion().content)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
-              .fontWeight(CommonConstants.WEIGHT_REGULAR)
-              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-              // 行高与字号走同一个偏移量：只放大字不动行高，五档下会越挤越近（24/16=1.5 的余量被吃掉）
-              .lineHeight(this.font.sizeOf(24))
-              .margin({ top: CommonConstants.SPACE_M })
-              .width('100%')
+                // 题干
+                Text(this.vm.getCurrentQuestion().content)
+                  .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
+                  .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                  .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                  // 行高与字号走同一个偏移量：只放大字不动行高，五档下会越挤越近（24/16=1.5 的余量被吃掉）
+                  .lineHeight(this.font.sizeOf(24))
+                  .margin({ top: CommonConstants.SPACE_M })
+                  .width('100%')
 
-            // 选项列表：Column + ForEach（题目最多 4 个选项，够短，没必要上 List）
-            Column({ space: CommonConstants.SPACE_CARD_GAP }) {
-              ForEach(this.vm.getCurrentQuestion().options, (option: OptionItem) => {
-                Row() {
-                  // 按题型分流：多选用 Checkbox（可多勾），单选/判断用 Radio（互斥单勾）
-                  if (this.vm.getCurrentQuestion().type === 'MULTI') {
-                    // 多选：Checkbox
-                    // select(条件)：受控模式——勾选态由 VM 的 Set 决定，而非组件自己记忆
-                    Checkbox()
-                      .select(this.vm.checkboxSelected.has(option.label))
-                      .onChange((checked: boolean) => {
-                        // 勾选/取消流转住在 VM：整体替换 Set，UI 与数据始终保持一致
-                        this.vm.toggleMultiOption(option.label, checked)
-                      })
-                  } else {
-                    // 单选/判断：Radio
-                    // 同一 group 的 Radio 天然互斥：选中一个，其余自动取消
-                    Radio({ value: option.label, group: 'options' })
-                      .checked(this.vm.radioSelected === option.label)
-                      .onChange((checked: boolean) => {
-                        // 只处理"被选中"分支：取消选中时不动状态（单选总有一个新选中项）
-                        if (checked) {
-                          this.vm.selectSingleOption(option.label)
-                        }
-                      })
-                  }
+                // 选项列表：Column + ForEach。行数确实封顶 4，但每行加了内边距与描边后已经不再"够短"，
+                //   何况题干长度与字号档位本来就不可控——不溢出靠外层 Scroll 兜，不再靠"内容短"自证安全。
+                Column({ space: CommonConstants.SPACE_CARD_GAP }) {
+                  ForEach(this.vm.getCurrentQuestion().options, (option: OptionItem) => {
+                    Row() {
+                      // 按题型分流：多选用 Checkbox（可多勾），单选/判断用 Radio（互斥单勾）
+                      if (this.vm.getCurrentQuestion().type === 'MULTI') {
+                        // 多选：Checkbox
+                        // select(条件)：受控模式——勾选态由 VM 的 Set 决定，而非组件自己记忆
+                        Checkbox()
+                          .select(this.vm.checkboxSelected.has(option.label))
+                          .onChange((checked: boolean) => {
+                            // 勾选/取消流转住在 VM：整体替换 Set，UI 与数据始终保持一致
+                            this.vm.toggleMultiOption(option.label, checked)
+                          })
+                      } else {
+                        // 单选/判断：Radio
+                        // 同一 group 的 Radio 天然互斥：选中一个，其余自动取消
+                        Radio({ value: option.label, group: 'options' })
+                          .checked(this.vm.radioSelected === option.label)
+                          .onChange((checked: boolean) => {
+                            // 只处理"被选中"分支：取消选中时不动状态（单选总有一个新选中项）
+                            if (checked) {
+                              this.vm.selectSingleOption(option.label)
+                            }
+                          })
+                      }
 
-                  Text(this.vm.getOptionText(option))
-                    .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
-                    .fontWeight(CommonConstants.WEIGHT_REGULAR)
-                    .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-                    // 选项正文与题干同类：内容长度随题目变，窄窗/分屏/极大档下会折行 → 配行高，
-                    // 且与字号走同一偏移（不写死值，否则放大档位下行距会被压回原尺寸）
-                    .lineHeight(this.font.sizeOf(24))
-                    .margin({ left: 8 })
+                      Text(this.vm.getOptionText(option))
+                        .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
+                        .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                        .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                        // 选项正文与题干同类：内容长度随题目变，窄窗/分屏/极大档下会折行 → 配行高，
+                        // 且与字号走同一偏移（不写死值，否则放大档位下行距会被压回原尺寸）
+                        .lineHeight(this.font.sizeOf(24))
+                        .margin({ left: 8 })
+                    }
+                    .width('100%')
+                    .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                    .borderRadius(CommonConstants.RADIUS_INPUT)
+                    .backgroundColor(this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY_BG : CommonConstants.COLOR_CARD_BG)
+                    .border({
+                      width: 1,
+                      color: this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
+                    })
+                  }, (option: OptionItem) => this.vm.getCurrentQuestion().id + '_' + option.label)
+                  // ↑ 键值生成器：必须带题目 id。选项 label 只有 A/B/C/D，跨题重复——
+                  //   若只用 label 当 key，切题时 key 不变，ForEach 判定"没变"就复用旧节点，
+                  //   选项文字会永远卡在第一题（实测：高级卷 12/13/14 题全显示第 1 题选项）。
                 }
+                .margin({ top: CommonConstants.SPACE_L })
                 .width('100%')
-                .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                .borderRadius(CommonConstants.RADIUS_INPUT)
-                .backgroundColor(this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY_BG : CommonConstants.COLOR_CARD_BG)
-                .border({
-                  width: 1,
-                  color: this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_BORDER_HAIRLINE
-                })
-              }, (option: OptionItem) => this.vm.getCurrentQuestion().id + '_' + option.label)
-              // ↑ 键值生成器：必须带题目 id。选项 label 只有 A/B/C/D，跨题重复——
-              //   若只用 label 当 key，切题时 key 不变，ForEach 判定"没变"就复用旧节点，
-              //   选项文字会永远卡在第一题（实测：高级卷 12/13/14 题全显示第 1 题选项）。
+              }
+              .width('100%')
+              // 内容一律左对齐：Column 默认 alignItems 是 Center，不写明则题型胶囊会被推到卡片正中，
+              // 与它下面左起的题干/选项不成一条排版线（这是进 Scroll 时顺手收掉的一处错位）。
+              .alignItems(HorizontalAlign.Start)
             }
-            .margin({ top: CommonConstants.SPACE_L })
+            .layoutWeight(1)   // Scroll 取卡内剩余高度作视口：没有确定视口就没有"可滚"，只有溢出
+            .scrollBar(BarState.Auto)
             .width('100%')
           }
           .width('100%')
