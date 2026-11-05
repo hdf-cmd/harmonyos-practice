@@ -52,8 +52,10 @@ export struct LoginPage {
             .objectFit(ImageFit.Cover)
 
           // 标题跟着 isReg 变：登录态"欢迎使用智题通"、注册态"注册智题通账号"
+          // FONT_HEADLINE_LG_MOBILE（22）是方案A 该屏 h1 的字阶，与旧别名 FONT_TITLE 同值，
+          // 换名不换渲染，只为把本文件从待废弃的四个旧别名里迁出去（见计划的全局门禁）。
           Text(this.viewModel.isReg ? '注册智题通账号' : '欢迎使用智题通')
-            .fontSize(CommonConstants.FONT_TITLE)
+            .fontSize(CommonConstants.FONT_HEADLINE_LG_MOBILE)
             .fontWeight(FontWeight.Bold)
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .margin({ top: CommonConstants.SPACE_M })
@@ -62,76 +64,117 @@ export struct LoginPage {
         .alignItems(HorizontalAlign.Center)
         .margin({ top: CommonConstants.SPACE_L })
 
-        // 下部表单区
-        Column({ space: CommonConstants.SPACE_M }) {
-          TextInput({ placeholder: '请输入用户名', text: this.viewModel.username })
-            .width('80%')
-            .fontSize(CommonConstants.FONT_BODY)
-            .onChange((value: string) => {
-              this.viewModel.username = value
-            })
-
-          TextInput({ placeholder: '请输入密码', text: this.viewModel.password })
-            .width('80%')
-            .fontSize(CommonConstants.FONT_BODY)
-            .type(InputType.Password)
-            .onChange((value: string) => {
-              this.viewModel.password = value
-            })
-
-          // 注册态才出现的确认密码框（条件渲染由 isReg 驱动）
-          if (this.viewModel.isReg) {
-            TextInput({ placeholder: '请再次输入密码', text: this.viewModel.confirmPwd })
+        // 下部表单区：方案A 把 Logo 以下的表单整体收进一张白卡
+        // 卡面令牌：圆角 RADIUS_CARD + 内边距 SPACE_M + Level 1 阴影
+        Column() {
+          Column({ space: CommonConstants.SPACE_M }) {
+            TextInput({ placeholder: '请输入用户名', text: this.viewModel.username })
               .width('80%')
-              .fontSize(CommonConstants.FONT_BODY)
+              .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+              .borderRadius(CommonConstants.RADIUS_INPUT)
+              .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+              .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+              .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
+              .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
+              .onChange((value: string) => {
+                this.viewModel.username = value
+              })
+
+            TextInput({ placeholder: '请输入密码', text: this.viewModel.password })
+              .width('80%')
+              .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+              .borderRadius(CommonConstants.RADIUS_INPUT)
+              .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+              .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+              .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
+              .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
               .type(InputType.Password)
               .onChange((value: string) => {
-                this.viewModel.confirmPwd = value
+                this.viewModel.password = value
               })
-          }
 
-          // 错误提示区（errorMessage 非空才渲染）
-          if (this.viewModel.errorMessage !== '') {
-            Text(this.viewModel.errorMessage)
-              .fontSize(CommonConstants.FONT_CAPTION)
-              .fontColor(CommonConstants.COLOR_ERROR)
+            // 注册态才出现的确认密码框（条件渲染由 isReg 驱动）
+            if (this.viewModel.isReg) {
+              TextInput({ placeholder: '请再次输入密码', text: this.viewModel.confirmPwd })
+                .width('80%')
+                .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+                .borderRadius(CommonConstants.RADIUS_INPUT)
+                .border({ width: 0.5, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+                .fontSize(CommonConstants.FONT_BODY_LG)
+                .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+                .placeholderColor(CommonConstants.COLOR_TEXT_DISABLED)
+                .placeholderFont({ size: CommonConstants.FONT_BODY_MD })
+                .type(InputType.Password)
+                .onChange((value: string) => {
+                  this.viewModel.confirmPwd = value
+                })
+            }
+
+            // 错误提示区（errorMessage 非空才渲染）
+            if (this.viewModel.errorMessage !== '') {
+              Text(this.viewModel.errorMessage)
+                .fontSize(CommonConstants.FONT_BODY_SM)
+                .fontColor(CommonConstants.COLOR_ERROR)
+                .width('80%')
+            }
+
+            // 按钮文案三态：加载中 / 注册 / 登录；加载中禁用点击，防重复提交
+            Button(this.viewModel.loading
+              ? '请稍候...'
+              : (this.viewModel.isReg ? '注册' : '登录'))
+              // ButtonType.Normal 不是装饰：Capsule 形态由组件自己定圆角，会把 .borderRadius() 吃掉，
+              // 令牌里的 RADIUS_BUTTON(8) 落不了地。改 Normal 才让 8vp 圆角真正生效。
+              .type(ButtonType.Normal)
               .width('80%')
-          }
-
-          // 按钮文案三态：加载中 / 注册 / 登录；加载中禁用点击，防重复提交
-          Button(this.viewModel.loading
-            ? '请稍候...'
-            : (this.viewModel.isReg ? '注册' : '登录'))
-            .type(ButtonType.Capsule)
-            .width('80%')
-            .height(CommonConstants.BTN_HEIGHT)
-            .backgroundColor(CommonConstants.COLOR_PRIMARY)
-            .fontColor(Color.White)
-            .fontSize(CommonConstants.FONT_SUBTITLE)
-            .enabled(!this.viewModel.loading)
-            .onClick(() => {
-              // View 不做任何判断，只转发事件。跳转不在这做——
-              // 登录成功会点亮 session.loggedIn，由上面的 @Monitor 统一接管（导航单一出口）
-              this.viewModel.submit()
-            })
-
-          // 登录/注册切换
-          Row() {
-            Text(this.viewModel.isReg ? '已有账号？' : '没有账号？')
-              .fontSize(CommonConstants.FONT_CAPTION)
-              .fontColor(CommonConstants.COLOR_TEXT_SUB)
-            Text(this.viewModel.isReg ? '返回登录' : '立即注册')
-              .fontSize(CommonConstants.FONT_CAPTION)
-              .fontColor(CommonConstants.COLOR_PRIMARY)
-              .onClick(() => {
-                this.viewModel.isReg = !this.viewModel.isReg
-                this.viewModel.errorMessage = ''
+              .height(CommonConstants.BTN_HEIGHT)
+              .borderRadius(CommonConstants.RADIUS_BUTTON)
+              .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+              // 卡面白（COLOR_CARD_BG）顶掉原先写死的白色枚举——本文件的硬编码色值清零点
+              .fontColor(CommonConstants.COLOR_CARD_BG)
+              .backgroundColor(this.viewModel.loading
+                ? CommonConstants.COLOR_TEXT_DISABLED
+                : CommonConstants.COLOR_PRIMARY)
+              // 按下态：stateStyles 的内联对象是 ArkUI 文档给的写法，只支持通用属性
+              .stateStyles({
+                pressed: {
+                  .backgroundColor(CommonConstants.COLOR_PRIMARY_PRESSED)
+                }
               })
+              .enabled(!this.viewModel.loading)
+              .onClick(() => {
+                // View 不做任何判断，只转发事件。跳转不在这做——
+                // 登录成功会点亮 session.loggedIn，由上面的 @Monitor 统一接管（导航单一出口）
+                this.viewModel.submit()
+              })
+
+            // 登录/注册切换
+            Row() {
+              Text(this.viewModel.isReg ? '已有账号？' : '没有账号？')
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontColor(CommonConstants.COLOR_TEXT_SUB)
+              Text(this.viewModel.isReg ? '返回登录' : '立即注册')
+                .fontSize(CommonConstants.FONT_BODY_MD)
+                .fontColor(CommonConstants.COLOR_PRIMARY)
+                .onClick(() => {
+                  this.viewModel.isReg = !this.viewModel.isReg
+                  this.viewModel.errorMessage = ''
+                })
+            }
+            .margin({ top: CommonConstants.SPACE_M })
           }
-          .margin({ top: CommonConstants.SPACE_M })
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
         }
         .width('100%')
-        .alignItems(HorizontalAlign.Center)
+        .padding(CommonConstants.SPACE_M)
+        .borderRadius(CommonConstants.RADIUS_CARD)
+        .backgroundColor(CommonConstants.COLOR_CARD_BG)
+        .shadow(CommonConstants.SHADOW_CARD)
+        // .margin 从原来的表单 Column 上移到卡片：卡片贴住 Logo 底会显得没有呼吸，
+        // 留在子节点上则变成"卡内多 24vp 空白"。间距语义（Logo 与表单之间 24）不变。
         .margin({ top: CommonConstants.SPACE_L })
       }
       .width('100%')
