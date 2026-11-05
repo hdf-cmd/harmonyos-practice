@@ -425,9 +425,10 @@ Expected: `Failure` 或编译错误 `Property 'answeredCount' does not exist`—
 在 `ExamDetailViewModel.ets` 的 `isQuestionFlagged` 方法之后插入。注意：`radioSelected` 是单选取值、`checkboxSelected` 是多选取值，两者互斥使用，所以按题型分流数：
 
 ```ts
-  // 已答题数：答题卡底部"已答 x / y"与提交前确认都用它。
-  // 按题型分流而不是统一查一张 answerMap——单选存 radioSelected（全局一个），
-  // 多选存 checkboxSelected（Set），两者的"是否作答"判法不同。
+  // 已答题数：答题卡底部"已答 x / y"用它。
+  // 统一以 answers 表为判据（委托 isQuestionAnswered），不按题型分流——
+  // radioSelected / checkboxSelected 只是"当前题"的渲染态，不承载"已答"语义；
+  // 跨题累计只认 answers（见本类第 53 行"唯一事实源"）。
   answeredCount(): number {
     let count: number = 0
     for (let i = 0; i < this.questions.length; i++) {
@@ -438,6 +439,10 @@ Expected: `Failure` 或编译错误 `Property 'answeredCount' does not exist`—
     return count
   }
 ```
+
+⚠️ 本步原稿的注释写反了（"单选存 radioSelected、多选存 checkboxSelected，两者判法不同"），
+Task 3 审查按 `ExamDetailViewModel.ets:53` 的"唯一事实源"注释判为 materially false 并要求改正。
+以上面这版为准。
 
 - [ ] **Step 4: 跑测试确认通过**
 
@@ -814,6 +819,27 @@ git commit -m "style: 答题页对齐方案A（去渐变、选项选中态、常
 - Consumes: Task 3 `vm.answeredCount()`、`vm.getRemainingText()`、`vm.questions.length`
 - Produces: 无
 
+- [ ] **Step 0: 先把 answers 变成可追踪的（否则 x 不会跳）**
+
+Task 3 审查确认的刷新风险，本任务必须一并解决：`ExamDetailViewModel.ets:54` 的
+`private answers: Map<string, string>` **没有 `@Trace`**。ArkUI V2 的渲染依赖是在 build 期读 `@Trace` 时建立的，
+而 `answeredCount()` 只读 `questions`（长度不变）和这个未追踪的 Map——抽屉里 `已答 ${vm.answeredCount()}`
+因此对"答了另一道题"这件事**没有任何失效来源**，数字不会跳。
+
+改法就一个词，与本类既有的 `@Trace checkboxSelected: Set<string>`（:51）同形态，V2 支持集合：
+
+```ts
+  // 唯一事实源：questionId → 已选答案（字母拼接，如 'AC'）
+  // 必须 @Trace：答题卡抽屉的"已答 x / y"与逐格状态都靠它失效，
+  //   没有 @Trace 时答完一题抽屉数字不动，且不会报错——是最难发现的一类缺陷。
+  @Trace private answers: Map<string, string> = new Map<string, string>()
+```
+
+同一处改动顺带修掉一个**换装前就存在**的隐患：抽屉网格里每格调 `isQuestionAnswered(q.id)`，
+读的也是这个未追踪 Map，所以格子态同样不会实时更新（此前没人发现是因为答完题抽屉就关了）。
+
+不要选 `@Computed`：本仓库零 `@Computed` 用例，为一个计数引入新模式不值；`@Trace` 是一词改动且与邻行一致。
+
 - [ ] **Step 1: 抽屉加手柄条与标题行**
 
 `AnswerCardSheet` 顶部 `Column` 前插入手柄条，标题行改为左标题右关闭：
@@ -886,8 +912,18 @@ Row({ space: CommonConstants.SPACE_M }) {
 Run: `devecocli build 2>&1 | grep -c ERROR`
 Expected: `0`，日志尾行 `Build completed successfully`
 
-Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt && DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
+Run: `rm -f entry/.test/default/intermediates/test/coverage_data/test_result.txt common/.test/default/intermediates/test/coverage_data/test_result.txt`
+Run: `DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=entry@default --no-daemon`
+Run: `DEVECO_SDK_HOME="D:/DevEco Studio/sdk" node "D:/DevEco Studio/tools/hvigor/bin/hvigorw.js" test --mode module -p module=common@default --no-daemon`
 Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模块都要报）
+
+- [ ] **Step 4b: 刷新验收（模拟器，不能省）**
+
+Step 0 的 `@Trace` 改动**没有任何自动化能证明它生效**——单测跑在无 UI 环境，构建也不管渲染依赖。
+必须在模拟器上做一次：`devecocli run --module entry --device "Pura 90"`，打开答题卡抽屉，
+**不关抽屉**直接答下一题，看 `已答 x / y` 的 x 和那一格的底色是否当场跳。
+
+不跳就是 Step 0 没生效，回到 Step 0 查，不要靠"关掉再打开就好了"交付——那正是这类缺陷的表现形态。
 
 - [ ] **Step 5: Commit**
 
