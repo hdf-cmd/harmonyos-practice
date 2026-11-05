@@ -19,6 +19,7 @@ import backgroundMonitorTest from './BackgroundMonitor.test';
 import reviewViewModelTest from './ReviewViewModel.test';
 import attemptHistoryViewModelTest from './AttemptHistoryViewModel.test';
 import certificateViewModelTest from './CertificateViewModel.test';
+import attemptReportBuilderTest from './AttemptReportBuilder.test';
 
 // 测试入口：函数名固定为 testsuite，由框架约定调用
 export default function testsuite() {
@@ -39,4 +40,5 @@ export default function testsuite() {
   reviewViewModelTest();
   attemptHistoryViewModelTest();
   certificateViewModelTest();
+  attemptReportBuilderTest();
 }

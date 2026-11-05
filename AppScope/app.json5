@@ -1,7 +1,11 @@
 {
   "app": {
-    "bundleName": "com.example.myapplication",
-    "vendor": "example",
+    // 包名即应用身份：AGC 建应用、小艺开放平台"关联应用"、端插件绑定应用三处都以此为准，
+    //   改这里必须同步重配手动签名（自动签名的临时身份与 AGC 应用对不上，拉不起智能体）。
+    // 教材示例包名 com.xyr.zhititong 在 AGC 查重时被全局占用（2026-11-04 新建 APP ID 报"应用包名已存在"），
+    //   故改用自有前缀。对应 AGC APP ID 6917620886067339507，应用名"智题通"，状态"准备提交"（只创建、未上架）。
+    "bundleName": "com.hdf.zhititong",
+    "vendor": "xyr",
     "versionCode": 1000000,
     "versionName": "1.0.0",
     "buildVersion": "1",

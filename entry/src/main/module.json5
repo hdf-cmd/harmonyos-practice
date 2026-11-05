@@ -29,6 +29,15 @@
               "ohos.want.action.home"
             ]
           }
+        ],
+        // 意图注册三件套的第三件：告诉系统"去哪找注册文件"。
+        //   name 固定为 ohos.ability.insight_intent；$profile: 指向 resources/base/profile/，
+        //   insight_intent 即文件名（不带扩展名）。少这一段，系统压根不知道本应用支持哪些意图。
+        "metadata": [
+          {
+            "name": "ohos.ability.insight_intent",
+            "resource": "$profile:insight_intent"
+          }
         ]
       }
     ],
