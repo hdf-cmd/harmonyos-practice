@@ -434,7 +434,6 @@ git commit -m "fix: 极小档偏移收到 -2，避免辅助文字掉到 7fp"
 1. 题型枚举是 `SINGLE`/`MULTI`/`JUDGE`，**没有 `TRUE_FALSE`**（`QuestionModel.ets:7`）。
 2. `QuestionItem.score` 是必填字段，夹具不写会编译不过。
 3. **不能用 `vm.radioSelected = 'A'` / `vm.checkboxSelected = new Set(...)` 直接灌状态**——`isQuestionAnswered()` 读的是私有 `answers: Map`（`ExamDetailViewModel.ets:227-230`），那两个字段只是当前题的渲染态。原稿这样写实测得 0。必须走 `selectSingleOption` / `toggleMultiOption` / `jumpTo` 这些公开方法让答案真正落进 `answers`。
-```
 
 - [ ] **Step 2: 跑测试确认失败**
 
@@ -443,7 +442,7 @@ Expected: `Failure` 或编译错误 `Property 'answeredCount' does not exist`—
 
 - [ ] **Step 3: 实现 getter**
 
-在 `ExamDetailViewModel.ets` 的 `isQuestionFlagged` 方法之后插入。注意：`radioSelected` 是单选取值、`checkboxSelected` 是多选取值，两者互斥使用，所以按题型分流数：
+在 `ExamDetailViewModel.ets` 的 `isQuestionFlagged` 方法之后插入。计数只委托 `isQuestionAnswered`（它读 `answers` Map），**不按题型分流**——`radioSelected`/`checkboxSelected` 是当前题的渲染态，不承载"已答"语义。
 
 ```ts
   // 已答题数：答题卡底部"已答 x / y"用它。
