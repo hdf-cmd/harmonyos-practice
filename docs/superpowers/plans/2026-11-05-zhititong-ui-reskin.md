@@ -1264,6 +1264,19 @@ Button('重新登录')
 
 三态的**触发逻辑**（`AuthExpiredError` 分流、空数据判定）在 `427029c` 已入库，本步只改呈现，不碰 VM 分支。
 
+- [ ] **Step 1c: 分区标题间距归一**
+
+`ExamSubjectView.ets:107` 的页内标题「考试科目」目前 `margin({ bottom: SPACE_M })` = 16，
+而同域的首页「推荐试卷」（`HomeView.ets:156`）已是 12。spec §3.4 已把"分区标题→下方内容"定死 12，
+两屏不对称会被装机目检抓出来。改为：
+
+```ts
+.margin({ bottom: CommonConstants.SPACE_CARD_GAP })   // 12，与首页同轨
+```
+
+注意 §3.4 的边界条款：这条只管**分区标题到其下方内容**，不要顺手去改胶囊 `margin({top: 6})`
+或卡片内标题到副行的 `margin({top: 8})`——那些是组件内部构造，由各自简报逐字规定。
+
 - [ ] **Step 2: 证书卡**
 
 证书名 `FONT_HEADLINE_SM`；状态胶囊 有效=`COLOR_SUCCESS`/`COLOR_SUCCESS_BG`、已过期=`COLOR_TEXT_HINT`/`COLOR_SUBTLE_BG`；编号与两个日期用 `Grid`/`Row` 两列网格排布，标签 `FONT_CAPTION_UNIT` + `COLOR_TEXT_HINT`、值 `FONT_BODY_MD` + `COLOR_TEXT_MAIN`。`status` 判等用英文枚举 `VALID`/`EXPIRED`（列表接口是英文，详情接口是中文，不可混用——AGENTS.md 硬约束）。**不加**下载按钮、重新认证、哈希防伪说明。
