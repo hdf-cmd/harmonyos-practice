@@ -14,6 +14,7 @@ import { SettingItem } from './components/SettingItem'
 import { MineViewModel } from '../viewmodel/MineViewModel'
 import { AttemptHistoryPage } from '../../exam/view/AttemptHistoryPage'
 import { CertificatePage } from '../../exam/view/CertificatePage'
+import { AssistantEntry } from '../../assistant/AssistantEntry'
 
 @ComponentV2
 export struct MineView {
@@ -138,6 +139,11 @@ export struct MineView {
         .backgroundColor(Color.White)
         .borderRadius(12)
         .margin({ top: CommonConstants.SPACE_M })
+
+        // 助教入口（通用问答）：只给标题，不带考试上下文——这里没有"当前这场考试"可带。
+        //   设备不具备 AgentKit 或在模拟器上时，组件内部整体不渲染，页面其余部分不受影响。
+        AssistantEntry({ title: 'AI 备考助教' })
+          .margin({ top: CommonConstants.SPACE_M })
 
         // 退出登录按钮：Blank() 把它推到页面底部
         Blank()

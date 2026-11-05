@@ -7,6 +7,7 @@
  */
 import { httpClient } from '../network/http'
 import { HttpResult } from '../network/types'
+import { AuthExpiredError } from './AuthExpiredError'
 
 /** 后端统一响应包（smart_exam_system 契约：成功 code=200） */
 export interface ApiResponse<T> {
@@ -37,6 +38,11 @@ export abstract class BaseService {
       throw new Error(`HTTP ${result.code}，响应解析失败`)
     }
     if (body.code !== 200) {
+      // 会话失效单独成类型：这类失败重试一万次也还是 401，UI 要给的是"重新登录"而不是"重试"
+      // HTTP 层与业务层两个口径都判——后端目前两处一致，但不保证以后
+      if (result.code === 401 || body.code === 401) {
+        throw new AuthExpiredError(body.message || '登录已过期，请重新登录')
+      }
       // 后端把错误原因放在 message（如"账号或密码错误""未登录或token已过期"）
       throw new Error(body.message)
     }

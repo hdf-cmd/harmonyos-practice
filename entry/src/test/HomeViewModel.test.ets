@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach } from '@ohos/hypium'
 import { MockKit, when } from '@ohos/hamock'
 import { HomeViewModel } from '../main/ets/features/home/viewmodel/HomeViewModel'
 import { PaperService } from '../main/ets/features/exam/service/PaperService'
-import { PaperInfo, MOCK_PAPERS } from '@zhititong/common'
+import { PaperInfo, Result, MOCK_PAPERS, AuthExpiredError } from '@zhititong/common'
 
 export default function homeViewModelTest() {
   describe('homeViewModelTest', () => {
@@ -60,6 +60,62 @@ export default function homeViewModelTest() {
       await vm.loadRecommendedPapers()
       expect(vm.loading).assertEqual(false)
       expect(vm.errorMessage).assertEqual('')
+    })
+
+    // 加载态契约：请求还在路上时 loading 必须已经置真——首页"推荐试卷加载中…"这块
+    // UI 就挂在这个字段上，VM 漏置位（或置位在 await 之后）等于界面永远不显示
+    it('should_be_loading_while_request_pending', 0, async () => {
+      let resolveFn: (v: PaperInfo[]) => void = () => {}
+      const pending: Promise<PaperInfo[]> =
+        new Promise<PaperInfo[]>((res: (v: PaperInfo[]) => void) => { resolveFn = res })
+      const mPend: Function = mocker.mockFunc(service, service.getPapers)
+      when(mPend)().afterReturn(pending)
+
+      const vm = new HomeViewModel(service)
+      const inflight: Promise<Result<PaperInfo[]>> = vm.loadRecommendedPapers()
+      expect(vm.loading).assertEqual(true)
+
+      resolveFn(MOCK_PAPERS)
+      await inflight
+      expect(vm.loading).assertEqual(false)
+    })
+
+    // 会话失效（401）：错误类型要单独标出来，View 才有依据给"重新登录"而不是"重试"
+    it('should_flag_auth_expired_on_401', 0, async () => {
+      const mFail: Function = mocker.mockFunc(service, service.getPapers)
+      when(mFail)().afterReturn(Promise.reject(new AuthExpiredError('登录已过期，请重新登录')))
+      const vm = new HomeViewModel(service)
+      const res = await vm.loadRecommendedPapers()
+      expect(res.ok).assertEqual(false)
+      expect(vm.authExpired).assertEqual(true)
+      expect(vm.errorMessage).assertEqual('登录已过期，请重新登录')
+    })
+
+    // 反向断言：普通失败不许被标成会话失效——否则断网也会把用户往登录页踢
+    it('should_not_flag_auth_expired_on_ordinary_failure', 0, async () => {
+      const mFail: Function = mocker.mockFunc(service, service.getPapers)
+      when(mFail)().afterReturn(Promise.reject(new Error('后端没起')))
+      const vm = new HomeViewModel(service)
+      await vm.loadRecommendedPapers()
+      expect(vm.authExpired).assertEqual(false)
+      expect(vm.errorMessage).assertEqual('后端没起')
+    })
+
+    // 复位：重新登录成功后再拉一次，authExpired 必须归 false
+    // （漏复位的话，用户已经登录了页面还在提示"重新登录"）
+    it('should_clear_auth_expired_after_next_success', 0, async () => {
+      const vm = new HomeViewModel(service)
+      const mFail: Function = mocker.mockFunc(service, service.getPapers)
+      when(mFail)().afterReturn(Promise.reject(new AuthExpiredError('登录已过期，请重新登录')))
+      await vm.loadRecommendedPapers()
+      expect(vm.authExpired).assertEqual(true)
+
+      const mOk: Function = mocker.mockFunc(service, service.getPapers)
+      when(mOk)().afterReturn(Promise.resolve(MOCK_PAPERS))
+      await vm.loadRecommendedPapers()
+      expect(vm.authExpired).assertEqual(false)
+      expect(vm.errorMessage).assertEqual('')
+      expect(vm.papers.length).assertEqual(4)
     })
   })
 }

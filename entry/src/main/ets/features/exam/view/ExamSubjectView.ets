@@ -19,14 +19,59 @@ import { ExamListPage } from './ExamListPage'
 export struct ExamSubjectView {
   // 三级导航：Exam 域自持子栈
   @Provider('examStack') examStack: NavPathStack = new NavPathStack()
+  // 会话失效要跳登录页——登录页注册在根栈，这里跨层级取根栈（与首页同一套口径）
+  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；groups 是 @Trace 字段，VM 加载完成后 Grid 自动刷新
   @Local vm: ExamSubjectViewModel = new ExamSubjectViewModel()
 
-  // 页面创建时加载一次科目分组。返回的 Result 这里不处理——
-  // 失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 聚合不会失败
+  // 页面创建时加载一次科目分组。返回的 Result 这里不处理——失败态由 vm.errorMessage 承载，
+  // 由下面的 LoadFailed 分支渲染成可见的错误区（曾经这里什么都不画，401 时整页只剩一个标题）
   aboutToAppear(): void {
     this.vm.loadSubjectGroups()
+  }
+
+  // 加载失败区：与首页同一套分流——会话失效跳登录，其它失败留在本页重拉
+  @Builder
+  LoadFailed() {
+    Column() {
+      Text(this.vm.errorMessage)
+        .fontSize(CommonConstants.FONT_BODY)
+        .fontColor(CommonConstants.COLOR_ERROR)
+        .textAlign(TextAlign.Center)
+
+      Button(this.vm.authExpired ? '重新登录' : '重试')
+        .type(ButtonType.Capsule)
+        .fontSize(CommonConstants.FONT_BODY)
+        .fontColor(Color.White)
+        .backgroundColor(CommonConstants.COLOR_PRIMARY)
+        .margin({ top: CommonConstants.SPACE_M })
+        .onClick(() => {
+          if (this.vm.authExpired) {
+            this.vm.clearExpiredSession()
+            this.pageStack.replacePathByName(RouteConstants.LOGIN, null)
+          } else {
+            this.vm.loadSubjectGroups()
+          }
+        })
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
+  }
+
+  // 加载区：只在"科目还空着"时出现，占满网格那格剩余高度
+  //   （断后端到超时那几秒，页面既不该空着、也不该让人以为一个科目都没有）
+  @Builder
+  Loading() {
+    Column() {
+      Text('科目加载中…')
+        .fontSize(CommonConstants.FONT_BODY)
+        .fontColor(CommonConstants.COLOR_TEXT_HINT)
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
   }
 
   // Exam 域内路由注册：name 与 push 时用的 RouteConstants 常量一一对应
@@ -56,20 +101,28 @@ export struct ExamSubjectView {
         //   columnsGap / rowsGap —— 列间距 / 行间距（vp），这里都用 SPACE_M(16)。
         //   layoutWeight(1) —— 在外层 Column 里吃掉剩余高度；内容超出高度时 Grid 自带滚动能力。
         // 注意：Grid 的子项必须包在 GridItem 里，直接放组件会不参与网格布局。
-        Grid() {
-          ForEach(this.vm.groups, (group: CategoryGroup) => {
-            GridItem() {
-              // 点击跳转由 ExamSubjectCard 自己处理（取 examStack push 域内路由）
-              ExamSubjectCard({ group: group })
-            }
-          }, (group: CategoryGroup) => group.categoryName)
-          // ↑ 键值生成器：科目名在本页数据里唯一，用它当 key 保证聚合结果变化时正确复用
+        // 三态顺序：加载中 → 加载失败 → 正常网格。错误优先于"空网格"判：
+        // 拉到了但真没科目，和根本没拉到，界面要说的是两句话。
+        if (this.vm.loading && this.vm.groups.length === 0) {
+          this.Loading()
+        } else if (this.vm.errorMessage !== '' && this.vm.groups.length === 0) {
+          this.LoadFailed()
+        } else {
+          Grid() {
+            ForEach(this.vm.groups, (group: CategoryGroup) => {
+              GridItem() {
+                // 点击跳转由 ExamSubjectCard 自己处理（取 examStack push 域内路由）
+                ExamSubjectCard({ group: group })
+              }
+            }, (group: CategoryGroup) => group.categoryName)
+            // ↑ 键值生成器：科目名在本页数据里唯一，用它当 key 保证聚合结果变化时正确复用
+          }
+          .columnsTemplate('1fr 1fr')
+          .columnsGap(CommonConstants.SPACE_M)
+          .rowsGap(CommonConstants.SPACE_M)
+          .width('100%')
+          .layoutWeight(1)
         }
-        .columnsTemplate('1fr 1fr')
-        .columnsGap(CommonConstants.SPACE_M)
-        .rowsGap(CommonConstants.SPACE_M)
-        .width('100%')
-        .layoutWeight(1)
       }
       .width('100%')
       .height('100%')

@@ -10,6 +10,7 @@
 // 【MVVM】交卷结果与答题卡布局计算全在 AnswerResultViewModel（@Trace），本页只渲染与转发事件。
 import { CommonConstants, RouteConstants, AnswerItem, formatDuration, Logger } from '@zhititong/common'
 import { AnswerResultViewModel, ANSWER_CARD_CELL_HEIGHT, ANSWER_CARD_GAP } from '../viewmodel/AnswerResultViewModel'
+import { AssistantEntry } from '../../assistant/AssistantEntry'
 
 @Preview
 @ComponentV2
@@ -86,6 +87,17 @@ export struct AnswerResultPage {
             .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M, top: 10, bottom: 10 })
             .width('100%')
             .textAlign(TextAlign.Center)
+            .margin({ top: CommonConstants.SPACE_M })
+        }
+
+        // ===== 助教入口：成绩加载完成后再创建 =====
+        // 【为什么用 assistantReady 卡时机】FunctionComponent 的 queryText 只在创建时读一次，
+        //   数据没到位就创建，入口会永远带着初始的"0 分 / 空卷面"。
+        if (this.vm.assistantReady) {
+          AssistantEntry({
+            title: '问问 AI 助教',
+            queryText: this.vm.assistantQuery
+          })
             .margin({ top: CommonConstants.SPACE_M })
         }
 

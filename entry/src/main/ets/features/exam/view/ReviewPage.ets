@@ -7,6 +7,7 @@ import { CommonConstants } from '@zhititong/common'
 import { ReviewViewModel } from '../viewmodel/ReviewViewModel'
 import { ReviewQuestionDetail } from '../service/ExamService'
 import { ReviewQuestionCard } from './ReviewQuestionCard'
+import { AssistantEntry } from '../../assistant/AssistantEntry'
 
 @Preview
 @ComponentV2
@@ -79,13 +80,30 @@ export struct ReviewPage {
           .borderRadius(8)
           .margin({ top: CommonConstants.SPACE_M })
 
-          // ===== 逐题精讲 =====
-          List({ space: CommonConstants.SPACE_M }) {
-            ForEach(this.vm.visibleQuestions, (q: ReviewQuestionDetail) => {
-              ListItem() {
-                ReviewQuestionCard({ question: q, index: this.originalIndex(q) })
-              }
-            }, (q: ReviewQuestionDetail) => q.questionId)
+          // ===== 逐题精讲 + 右下角助教入口（Stack 叠放，入口不占列表布局） =====
+          Stack({ alignContent: Alignment.BottomEnd }) {
+            List({ space: CommonConstants.SPACE_M }) {
+              ForEach(this.vm.visibleQuestions, (q: ReviewQuestionDetail) => {
+                ListItem() {
+                  ReviewQuestionCard({ question: q, index: this.vm.questionNoById(q.questionId) })
+                }
+              }, (q: ReviewQuestionDetail) => q.questionId)
+            }
+            .width('100%')
+            .height('100%')
+            .onScrollIndex((start: number, end: number, center: number): void => {
+              // 中心项就是"正在看的那道题"：中心线落在谁身上，谁的可视面积过半
+              this.vm.updateCurrentVisibleIndex(center)
+            })
+
+            // 【为什么要 ForEach 包一个 key】queryText 是 @Param @Once，入口创建后不再读新值；
+            //   当前题一变 → key 变 → 旧入口销毁、新入口带着那道题的上下文重建。
+            if (this.vm.assistantReady) {
+              ForEach([this.vm.assistantQueryKey], (key: string) => {
+                AssistantEntry({ queryText: this.vm.assistantQuery })
+                  .margin({ right: CommonConstants.SPACE_M, bottom: CommonConstants.SPACE_M })
+              }, (key: string) => key)
+            }
           }
           .width('100%')
           .layoutWeight(1)
@@ -102,11 +120,5 @@ export struct ReviewPage {
       // 结果页 push 时把 attemptId 作为路由参数传进来
       this.vm.loadReview(ctx.pathInfo.param as string)
     })
-  }
-
-  // 原卷题号：过滤后仍按原顺序编号
-  private originalIndex(q: ReviewQuestionDetail): number {
-    return this.vm.review.questions.findIndex(
-      (it: ReviewQuestionDetail): boolean => it.questionId === q.questionId)
   }
 }

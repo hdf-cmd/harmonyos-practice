@@ -102,5 +102,80 @@ export default function reviewViewModelTest() {
       expect(vm.errorMessage).assertEqual('回顾炸了')
       expect(vm.loading).assertEqual(false)
     })
+
+    // ===== 助教上下文（实训 7-2 入口 3：回顾页当前题） =====
+
+    // 就绪判据 + 未滚动时的默认当前题（列表第一题）
+    it('should_gate_entry_and_default_to_first_question', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      expect(vm.assistantReady).assertEqual(false)
+      await vm.loadReview('A1')
+      expect(vm.assistantReady).assertEqual(true)
+      const current: ReviewQuestionDetail | undefined = vm.currentQuestion
+      expect(current !== undefined ? current.questionId : 'none').assertEqual('q0')
+      expect(vm.assistantQueryKey).assertEqual('q0')
+    })
+
+    // 中心项变化 → 当前题变化 → key 变化（View 靠它重建入口，带上新题的 queryText）
+    it('should_switch_current_question_by_center_index', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      await vm.loadReview('A1')
+      vm.updateCurrentVisibleIndex(1)
+      expect(vm.assistantQueryKey).assertEqual('q1')
+      // 答错的题：三段式请求（先结论、再解释错因与考点）
+      expect(vm.assistantQuery).assertEqual(
+        '试卷：3 题小卷\n得分：10/30\n第2题（单选题·我答错了）\n题干：题干1\n选项：\nA：甲\nB：乙\n' +
+        '我的答案：A / 正确答案：B\n请先给出正确结论，再解释我的答案错在哪与相关考点；知识库没有的内容请明确说明。')
+    })
+
+    // 答对的题走另一种问法：讲考点 + 出一道同考点变式题
+    it('should_ask_variant_for_correct_question', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      await vm.loadReview('A1')
+      expect(vm.assistantQuery).assertEqual(
+        '试卷：3 题小卷\n得分：10/30\n第1题（单选题·我答对了）\n题干：题干0\n选项：\nA：甲\nB：乙\n' +
+        '正确答案：A\n请讲解本题考点，再出一道同考点的变式题让我练习；知识库没有的内容请明确说明。')
+    })
+
+    // 契约坑：userAnswer 为 null（未作答）必须写成"未作答"，留空会被大模型当成没给答案去猜
+    it('should_mark_unanswered_in_query', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      await vm.loadReview('A1')
+      vm.updateCurrentVisibleIndex(2)
+      expect(vm.assistantQuery).assertEqual(
+        '试卷：3 题小卷\n得分：10/30\n第3题（多选题·我答错了）\n题干：题干2\n选项：\nA：甲\nB：乙\nC：丙\n' +
+        '我的答案：未作答 / 正确答案：AC\n请先给出正确结论，再解释我的答案错在哪与相关考点；知识库没有的内容请明确说明。')
+    })
+
+    // 开了"只看错题"后，题号仍按原卷编号（q2 在原卷是第 3 题，不是可见列表的第 2 题）
+    it('should_keep_original_number_when_wrong_only', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      await vm.loadReview('A1')
+      vm.showWrongOnly = true
+      expect(vm.visibleQuestions.length).assertEqual(2)
+      vm.updateCurrentVisibleIndex(1)
+      const current: ReviewQuestionDetail | undefined = vm.currentQuestion
+      expect(current !== undefined ? current.questionId : 'none').assertEqual('q2')
+      expect(vm.questionNoById('q2')).assertEqual(2)
+      // 整段比对：题号必须是"第3题"（原卷编号），而不是可见列表里的第 2 条
+      expect(vm.assistantQuery).assertEqual(
+        '试卷：3 题小卷\n得分：10/30\n第3题（多选题·我答错了）\n题干：题干2\n选项：\nA：甲\nB：乙\nC：丙\n' +
+        '我的答案：未作答 / 正确答案：AC\n请先给出正确结论，再解释我的答案错在哪与相关考点；知识库没有的内容请明确说明。')
+    })
+
+    // 非法下标（-1 / 越界）不改状态：越界由 currentQuestion 回落到第一题
+    it('should_ignore_invalid_center_index', 0, async () => {
+      const vm = new ReviewViewModel(service)
+      await vm.loadReview('A1')
+      vm.updateCurrentVisibleIndex(1)
+      vm.updateCurrentVisibleIndex(-1)
+      vm.updateCurrentVisibleIndex(99)
+      expect(vm.assistantQueryKey).assertEqual('q1')
+      vm.showWrongOnly = true
+      vm.updateCurrentVisibleIndex(-1)
+      vm.visibleIndex = 5
+      const current: ReviewQuestionDetail | undefined = vm.currentQuestion
+      expect(current !== undefined ? current.questionId : 'none').assertEqual('q1')
+    })
   })
 }

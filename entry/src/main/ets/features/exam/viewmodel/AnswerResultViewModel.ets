@@ -12,6 +12,7 @@ import {
   BaseViewModel, Result, ExamResult, AnswerItem, BackgroundMonitor, StateKeys, submitTypeLabel
 } from '@zhititong/common'
 import { ExamService, SubmitResult, ReviewInfo, ReviewQuestion } from '../service/ExamService'
+import { ASSISTANT_WRONG_TITLE_LIMIT } from '../../assistant/AssistantConstants'
 
 // 答题卡布局参数：列数 / 格子高度 / 格子间距（vp）
 // 抽成导出常量：高度公式与 View 的格子渲染共用同一份，改任何一个都不会失联
@@ -31,6 +32,13 @@ export class AnswerResultViewModel extends BaseViewModel {
     submitType: 'MANUAL',
     answers: []
   }
+
+  // 试卷名（review 下发，判分卡不需要它，但助教上下文要用）：空串即"还没加载完"
+  @Trace paperName: string = ''
+
+  // 前 N 道错题题干：从答题卡那一趟请求里顺带提取，不额外发请求。
+  //   带上它，助教给的复习建议才针对本场考试，而不是千篇一律的通用建议。
+  @Trace wrongTitles: string[] = []
 
   private examService: ExamService
 
@@ -77,6 +85,13 @@ export class AnswerResultViewModel extends BaseViewModel {
         submitType: score.submitType,
         answers: answers
       }
+      // 同一次 review 响应里顺手取走试卷名与前 N 道错题题干：判分卡用不到它们，
+      //   但助教上下文用得到，为这两项再发一趟请求纯属浪费
+      this.paperName = review.paperName
+      this.wrongTitles = review.questions
+        .filter((q: ReviewQuestion): boolean => !q.isCorrect)
+        .slice(0, ASSISTANT_WRONG_TITLE_LIMIT)
+        .map((q: ReviewQuestion): string => q.content)
       this.logger.info(`交卷结果加载完成：${this.result.score} 分，共 ${answers.length} 题`)
       return Result.ok<ExamResult>(this.result)
     } catch (e) {
@@ -109,5 +124,36 @@ export class AnswerResultViewModel extends BaseViewModel {
   getAnswerCardHeight(): number {
     return this.getAnswerCardRowCount() * ANSWER_CARD_CELL_HEIGHT
       + (this.getAnswerCardRowCount() - 1) * ANSWER_CARD_GAP
+  }
+
+  /**
+   * 助教入口能否创建：成绩数据就绪才创建。
+   *
+   * 【为什么要这个开关】FunctionComponent 的 options/queryText 只在组件创建时读一次，
+   *   在数据到位前创建，入口就会永远带着"0 分、空卷面"的初始值。
+   */
+  get assistantReady(): boolean {
+    return !this.loading && this.errorMessage === '' && this.paperName !== ''
+  }
+
+  /**
+   * 成绩页带给助教的上下文：成绩摘要 + 前若干道错题题干，请求按优先级排序的复习建议。
+   *
+   * 【为什么用 \n 分行】对话里逐行显示更易读，大模型也更容易把题干、得分、请求区分开。
+   * 【措辞刻意保守】"本卷全部答对"与"部分错题"分开说，避免它把答对的题也当成薄弱点。
+   */
+  get assistantQuery(): string {
+    const correct: number = this.result.answers.filter((item: AnswerItem): boolean => item.correct).length
+    const header: string = `试卷：${this.paperName}\n` +
+      `得分：${this.result.score}/${this.result.totalScore}（及格线 ${this.result.passScore}）\n` +
+      `结果：${this.result.passed ? '通过' : '未通过'} · 答对 ${correct}/${this.result.answers.length} 题`
+    if (this.wrongTitles.length === 0) {
+      return `${header}\n本卷全部答对，请基于知识库给出巩固与进阶建议。`
+    }
+    const wrongLines: string = this.wrongTitles
+      .map((title: string, index: number): string => `${index + 1}. ${title}`)
+      .join('\n')
+    return `${header}\n部分错题题干：\n${wrongLines}\n` +
+      '请结合这些错题对应的考点，基于知识库给出按优先级排序的复习建议（不超过3条）。'
   }
 }

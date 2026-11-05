@@ -142,5 +142,82 @@ export default function answerResultViewModelTest() {
       const vm = new AnswerResultViewModel(service)
       expect(vm.getBackgroundHint()).assertEqual('本场未切出应用')
     })
+
+    // ===== 助教上下文（实训 7-2 入口 2：成绩页） =====
+
+    // 同一次 review 响应里顺带取走试卷名与错题题干：不额外发请求
+    it('should_pick_paper_name_and_wrong_titles_from_review', 0, async () => {
+      const vm = new AnswerResultViewModel(service)
+      await vm.loadResult('A1')
+      expect(vm.paperName).assertEqual('3 题小卷')
+      // 6 题里错 3 道（qid_1/3/5），未超过 5 条上限，题干按原顺序进列表
+      expect(vm.wrongTitles.length).assertEqual(3)
+      expect(vm.wrongTitles[0]).assertEqual('题干1')
+    })
+
+    // 错题线索上限 5 条：20 题错 10 道也只带前 5 道（上下文越长，建议越容易被稀释）
+    it('should_cap_wrong_titles_at_limit', 0, async () => {
+      const mReview: Function = mocker.mockFunc(service, service.getReview)
+      when(mReview)(ArgumentMatchers.any).afterReturn(Promise.resolve(makeReview(20)))
+      const vm = new AnswerResultViewModel(service)
+      await vm.loadResult('A1')
+      expect(vm.wrongTitles.length).assertEqual(5)
+    })
+
+    // 就绪判据：加载前不成立（入口绝不能带着初始空数据创建），加载后成立
+    it('should_gate_assistant_entry_until_data_ready', 0, async () => {
+      const vm = new AnswerResultViewModel(service)
+      expect(vm.assistantReady).assertEqual(false)
+      await vm.loadResult('A1')
+      expect(vm.assistantReady).assertEqual(true)
+    })
+
+    // 加载失败时入口不出现：没有卷面数据，助教只能靠猜
+    it('should_not_ready_when_load_failed', 0, async () => {
+      const mScore: Function = mocker.mockFunc(service, service.getResult)
+      when(mScore)(ArgumentMatchers.any).afterReturn(Promise.reject(new Error('后端没起')))
+      const vm = new AnswerResultViewModel(service)
+      await vm.loadResult('A1')
+      expect(vm.assistantReady).assertEqual(false)
+      expect(vm.paperName).assertEqual('')
+    })
+
+    // 发给助教的问题全文钉死：试卷/得分/及格线/结果/错题题干/请求，一条不多一条不少
+    it('should_build_assistant_query_with_score_and_wrong_titles', 0, async () => {
+      const vm = new AnswerResultViewModel(service)
+      await vm.loadResult('A1')
+      const expected: string = '试卷：3 题小卷\n得分：80/100（及格线 60）\n结果：通过 · 答对 3/6 题\n' +
+        '部分错题题干：\n1. 题干1\n2. 题干3\n3. 题干5\n' +
+        '请结合这些错题对应的考点，基于知识库给出按优先级排序的复习建议（不超过3条）。'
+      expect(vm.assistantQuery).assertEqual(expected)
+    })
+
+    // 全对的卷子不能谎报错题，改口要巩固与进阶建议
+    it('should_ask_for_consolidation_when_all_correct', 0, async () => {
+      const qs: ReviewQuestion[] = []
+      for (let i = 0; i < 4; i++) {
+        const q: ReviewQuestion = {
+          questionId: `qid_${i}`, type: 'SINGLE', content: `题干${i}`,
+          correctAnswer: 'A', userAnswer: 'A', isCorrect: true,
+          earnedScore: 10, maxScore: 10, options: []
+        }
+        qs.push(q)
+      }
+      const allRight: ReviewInfo = {
+        attemptId: 'A1', paperName: '满分小卷', score: 40, totalScore: 40, isPassed: 1, questions: qs
+      }
+      // 判分与回顾都要改：assistantQuery 里的得分取自 result(3.5)，不是 review
+      const allRightScore: SubmitResult = { score: 40, totalScore: 40, passScore: 60, passed: true,
+        usedTime: 300, submitType: 'MANUAL', certificateGenerated: true }
+      const mScore: Function = mocker.mockFunc(service, service.getResult)
+      when(mScore)(ArgumentMatchers.any).afterReturn(Promise.resolve(allRightScore))
+      const mReview: Function = mocker.mockFunc(service, service.getReview)
+      when(mReview)(ArgumentMatchers.any).afterReturn(Promise.resolve(allRight))
+      const vm = new AnswerResultViewModel(service)
+      await vm.loadResult('A1')
+      expect(vm.wrongTitles.length).assertEqual(0)
+      expect(vm.assistantQuery).assertEqual(
+        '试卷：满分小卷\n得分：40/40（及格线 60）\n结果：通过 · 答对 4/4 题\n本卷全部答对，请基于知识库给出巩固与进阶建议。')
+    })
   })
 }

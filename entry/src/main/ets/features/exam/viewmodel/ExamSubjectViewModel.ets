@@ -38,8 +38,7 @@ export class ExamSubjectViewModel extends BaseViewModel {
       this.logger.info(`科目分组加载成功：${groups.length} 组（共 ${papers.length} 张卷）`)
       return Result.ok<CategoryGroup[]>(this.groups)
     } catch (e) {
-      const errorMsg = (e as Error).message || '科目加载失败，请稍后重试'
-      this.setError(errorMsg)
+      const errorMsg = this.handleFailure(e, '科目加载失败，请稍后重试')
       this.logger.error(`科目分组加载失败：${errorMsg}`)
       return Result.fail(-1, errorMsg)
     } finally {

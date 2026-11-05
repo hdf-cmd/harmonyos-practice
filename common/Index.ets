@@ -8,6 +8,7 @@
 export { BaseViewModel } from './src/main/ets/base/BaseViewModel';
 export { Result } from './src/main/ets/base/Result';
 export { ApiResponse, BaseService } from './src/main/ets/base/BaseService';
+export { AuthExpiredError } from './src/main/ets/base/AuthExpiredError';
 // config：会变的运行参数（后端地址、超时、日志开关）集中一处
 export { AppConfig } from './src/main/ets/config/AppConfig';
 // network：HTTP 客户端与拦截器链。业务侧通常只用 httpClient（或继承 BaseService），

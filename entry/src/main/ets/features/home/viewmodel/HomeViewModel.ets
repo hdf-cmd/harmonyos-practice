@@ -41,8 +41,7 @@ export class HomeViewModel extends BaseViewModel {
       this.logger.info(`推荐试卷加载成功：${picked.length} 张（池 ${all.length} 张）`)
       return Result.ok<PaperInfo[]>(this.papers)
     } catch (e) {
-      const errorMsg = (e as Error).message || '推荐试卷加载失败，请稍后重试'
-      this.setError(errorMsg)
+      const errorMsg = this.handleFailure(e, '推荐试卷加载失败，请稍后重试')
       this.logger.error(`推荐试卷加载失败：${errorMsg}`)
       return Result.fail(-1, errorMsg)
     } finally {
