@@ -197,8 +197,12 @@ export struct ExamDetailPage {
       .layoutWeight(1)
 
       // ===== 进度汇总行（DESIGN.md F06：抽屉底部要有"已答 x / y"与剩余时间）=====
-      // x 会当场跳，靠的是 answeredCount() 里读到的 answers 已 @Trace（VM 那个字段的注释）：
-      //   渲染依赖在 build 期建立，抽屉开着答下一题，这个 Text 与网格里那一格同时失效重绘。
+      // 数据通路：answeredCount() 读的是 VM 的 answers 表，该表已 @Trace（见 ExamDetailViewModel
+      //   同名字段的注释）——渲染依赖在 build 期建立，答案一变，这一行与网格里对应格子同批失效重绘。
+      //   没有 @Trace 时它只会"重开抽屉才更新"，是一类不报错的刷新缺陷。
+      // 注意本抽屉默认 enableOutsideInteractive=false（SDK common.d.ts 的 @default false），
+      //   抽屉开着时点不到底下的选项，所以这条失效链在现配置下不会"当场被看见"；
+      //   要让它可见，得把抽屉改成非模态——那是交互决定，不归换装，见 Task 8 报告。
       // 两处都是单行短标签、不参与换行，故不配 lineHeight（§3.3 只给可换行正文配行高）。
       Row() {
         Text('已答 ' + this.vm.answeredCount() + ' / ' + this.vm.questions.length)
