@@ -55,8 +55,13 @@ export struct CertificatePage {
           // 空态容器卡：与考试记录页、考卷列表页同一套配方，源值是导出屏
           // design/stitch/v2-final2/stitch_harmonyos_exam_client/_10/code.html 里那张空态卡
           // （bg-surface-container-lowest / rounded-xl / p-space-lg / shadow-sm）⇒ 白卡 + SHADOW_CARD。
-          // 本轮前的 COLOR_SUBTLE_BG 落在 COLOR_BG_PAGE 上两档灰阶只差 1 个 R 值、对比度约 1.004:1，
-          // 等于一张看不见的容器（Ruling T8-1 同一把尺）；卡面不给整周描边（spec §6.6）。
+          // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
+          // 按 WCAG 相对亮度公式算出 **1.0089:1**，等于一张看不见的容器（Ruling T8-1 同一把尺）。
+          // ⚠️ 白卡本身也不等于"读得出来"：白底对页面底的填充对比度只有 **1.1124:1**，
+          // 与当年被判隐形的两条参照（手柄条合成色对白卡 1.0902:1、候选里 SUBTLE_BG 对白卡
+          // 1.1026:1）只差 0.01 量级；
+          // 容器可读性实际由 Level 1 阴影（radius 2 / offsetY 1 / alpha 3.1%）承担，**待上机确认**。
+          // 卡面不给整周描边（spec §6.6）。
           // 字档：本页空态只有这一个句子 ⇒ 占配方的首句档
           // （FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN，源值 text-headline-sm text-on-surface），
           // 与两个兄弟页同向；本轮前按"这句属引导句、永远落第二行"把它降成 BODY_SM + 提示色是反向的。

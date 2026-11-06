@@ -58,8 +58,13 @@ export struct AttemptHistoryPage {
           // 空态容器卡：配方按导出屏 design/stitch/v2-final2/stitch_harmonyos_exam_client/
           // _10/code.html 里那张空态卡（class 含 bg-surface-container-lowest / rounded-xl /
           // p-space-lg / shadow-sm）= 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。
-          // 本轮前写的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上（两档灰阶只差 1 个 R 值）
-          // 对比度约 1.004:1，是无影无描边的隐形装饰（与 Ruling T8-1 判掉的手绘手柄条同一把尺）。
+          // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
+          // 按 WCAG 相对亮度公式算出 **1.0089:1**，加上无影无描边 ⇒ 隐形装饰（Ruling T8-1 同一把尺）。
+          // ⚠️ "改成白卡"不等于"容器就读得出来"：白底对页面底的填充对比度也只有 **1.1124:1**，
+          // 与当年被判隐形的那两条参照（手绘手柄条合成色对白卡 1.0902:1、候选里 SUBTLE_BG 对白卡
+          // 1.1026:1）只差 0.01 量级 ⇒ 单看填充没跳出那把尺。容器可读性实际由 SHADOW_CARD 那层
+          // Level 1 阴影（radius 2 / offsetY 1 / alpha 3.1%）承担，**上机能否读出是未验项**；
+          // 真判不可读时的出路是补回设计源 Level 1 那条 hairline，需连着 §6.4/§6.6 一起翻。
           // 卡面不给整周描边（spec §6.6）。源那个 folder_off 图标圆座不做（spec §6.5）。
           // 字档：本页空态只有一句 ⇒ 占配方里的首句档（源值 text-headline-sm text-on-surface
           // ⇒ FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN）；

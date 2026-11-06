@@ -41,20 +41,26 @@ export struct HomeView {
   LoadFailed() {
     Column() {
       // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，按 §3.3 配对行高（父 Column 自适应高度，不裁切）
+      // 档位收口：这里曾是 body-lg(16/400)，注释挂着"是否降到正文中档留给三态统一"的号；
+      // 本轮三态统一定的就是 body-md——全仓 5 处 errorMessage 文案站点里 4 处已是 body-md
+      //（刷题域、考卷列表、考试记录、我的证书），设计源给状态句的档也是 text-body-md
+      //（导出屏 _10 的「登录已过期，请重新登录」那一行），此处补齐，不再留单点
       Text(this.vm.errorMessage)
-        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontSize(CommonConstants.FONT_BODY_MD)
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
-        .lineHeight(CommonConstants.LINE_BODY_LG)
+        .lineHeight(CommonConstants.LINE_BODY_MD)
         .fontColor(CommonConstants.COLOR_ERROR)
         .textAlign(TextAlign.Center)
 
       // 错误态按钮走次级形态：静息浅蓝底 + 主色字，高 36、圆角 8
       // 圆角必须配 ButtonType.Normal——Capsule 由组件自定端头，borderRadius 会被吞掉
+      // 字档取 §3.3 给次级按钮的 label-md(14/500)，与刷题域失败区那颗同写法；
+      // 这里曾是 body-lg + weight-medium = 16/500，该配对在 §3.3 表里不存在（16 只有 600 与 400 两档）
       Button(this.vm.authExpired ? '重新登录' : '重试')
         .type(ButtonType.Normal)
         .height(CommonConstants.BTN_HEIGHT_SECONDARY)
         .borderRadius(CommonConstants.RADIUS_BUTTON)
-        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontSize(CommonConstants.FONT_LABEL_MD)
         .fontWeight(CommonConstants.WEIGHT_MEDIUM)
         .fontColor(CommonConstants.COLOR_PRIMARY)
         .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
@@ -79,8 +85,9 @@ export struct HomeView {
   Loading() {
     Column() {
       // 提示行同样可能折行（窄窗/分屏），配对行高
-      // 字阶做同值迁移（旧别名 16 → 大正文档 16/400），渲染不变；
-      // 简报没给这条一个档位，是否降到正文中档留给 Task 12 的三态统一，这里不擅自改字号
+      // 档位收口：这句注释一度挂着"是否降到正文中档留给三态统一"的未决号。三态统一做完后的结论是
+      // **加载提示保持 body-lg(16/400)**——它不在 F12 的空态/错误态/会话失效三种状态里（理由见
+      // 刷题域 Loading 区的注释），全仓四处加载提示也内部一致，故这里字号与行高都不动
       Text('推荐试卷加载中…')
         .fontSize(CommonConstants.FONT_BODY_LG)
         .fontWeight(CommonConstants.WEIGHT_REGULAR)

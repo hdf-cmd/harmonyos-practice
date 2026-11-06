@@ -127,12 +127,32 @@ export struct ExamListPage {
 
   build() {
     NavDestination() {
-      // 条件渲染三态：拉取失败 → 空态 → 列表，**错误必须先于"空"判**。
-      // ExamListViewModel.loadPapersByCategory 的 catch 只调 setError(errorMsg)，papers 保持空数组 ⇒
-      // 只看 papers.length === 0 会把断网/5xx 说成"该科目暂无考卷"，
-      // 而本轮把它升成白卡 + 阴影的正式形态后，这句假陈述更像一个官方状态。
-      // 判定条件与首页 HomeView 的 errorMessage 分支同构（同为列表页，那是全仓已有这一分支的对照）。
-      if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
+      // 条件渲染四态：加载中 → 拉取失败 → 空态 → 列表。两条先后次序各有实指：
+      //   一、加载先于错误：loading 由 ExamListViewModel.loadPapersByCategory 的 setLoading 置位、
+      //     在 finally 里复位，所以整个网络窗口内 papers 还是空数组。这一分支缺席时，
+      //     这段时间会直接落进下面的空态分支，把"正在拉取"渲染成一张正式白卡的「该科目暂无考卷」。
+      //   二、错误先于"空"：loadPapersByCategory 的 catch 只调 setError(errorMsg)，papers 保持空数组 ⇒
+      //     只看 papers.length === 0 会把断网/5xx 说成"该科目暂无考卷"，
+      //     而本轮把它升成白卡 + 阴影的正式形态后，这句假陈述更像一个官方状态。
+      // 三处判定条件都与首页 HomeView 的同名分支同构（同为列表页，那是全仓四态齐家的对照）。
+      if (this.vm.loading && this.vm.papers.length === 0) {
+        // 加载态：档位与文案都照仓内既有四处的家写法，不自造——
+        //   HomeView 的 Loading 区、ExamSubjectView 的 Loading 区、考试记录页与证书页的加载分支
+        //   全是 body-lg(16/400) + 提示色这一档（ExamSubjectView 的 Loading 注释已论证
+        //   "加载提示不在 F12 的三种状态里"，故不随错误态降到 body-md）。
+        // 文案取两张兄弟页（同为 NavDestination 子页）现成的「加载中…」，不另立新句子。
+        // 「加载中…」四字定长且居中于整块剩余高度，判"不换行"——不配行高，与那两页同一判定
+        Column() {
+          Text('加载中…')
+            .fontSize(CommonConstants.FONT_BODY_LG)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            .fontColor(CommonConstants.COLOR_TEXT_HINT)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+      } else if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
         // 错误态：文案来自后端/网络层，长度不可控→属"会换行"的文字，配对行高。
         // 字档取 F12 状态配方给错误文案的那一档（FONT_BODY_MD 14/400 + COLOR_ERROR），
         // 与"刷题"域失败区（ExamSubjectView）、考试记录页/证书页的错误区同一轨——
@@ -156,10 +176,16 @@ export struct ExamListPage {
         // 空态：某个科目一张卷都没有时（真接口拉到该科目零条）。
         // 容器卡配方按导出屏 design/stitch/v2-final2/stitch_harmonyos_exam_client/_10/code.html
         // 里那张空态卡（bg-surface-container-lowest / rounded-xl / p-space-lg / shadow-sm）
-        // ⇒ 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。本轮前的 COLOR_SUBTLE_BG
-        // 落在页面底 COLOR_BG_PAGE 上（两档灰阶只差 1 个 R 值）对比度约 1.004:1，是无影无描边的隐形装饰
-        //（与 Ruling T8-1 判掉的手绘手柄条同一把尺）；卡面不给整周描边（spec §6.6），
-        // 源里那个 folder_off 图标圆座不做（spec §6.5）。
+        // ⇒ 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。
+        // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
+        // 按 WCAG 相对亮度公式算出 **1.0089:1**，加上无影无描边 ⇒ 隐形装饰（Ruling T8-1 同一把尺）。
+        // ⚠️ 但"改成白卡"不等于"容器就读得出来"，这句不能写成既成事实：白底对页面底的填充对比度
+        // 也只有 **1.1124:1**，与当年被判隐形的那两条参照——手绘手柄条合成色对白卡的 1.0902:1、
+        // 以及该条候选里 SUBTLE_BG 对白卡的 1.1026:1——**只差 0.01 量级，同一把尺下没分出高下**。
+        // 真正承托容器边界的是 SHADOW_CARD 那层 Level 1 阴影（radius 2 / offsetY 1 / alpha 3.1%），
+        // 而它在上机画面里读不读得出**是未验项**（已列进装机目检累计清单）。真判不可读时的出路是补回
+        // 设计源 Level 1 那条 hairline，那要连着 §6.4/§6.6 两处克制读法一起翻，不是这里单方面加描边。
+        // 卡面不给整周描边（spec §6.6），源里那个 folder_off 图标圆座不做（spec §6.5）。
         // 字档：本页空态只有一句 ⇒ 占配方首句档（源值 text-headline-sm text-on-surface
         // ⇒ FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN）；本轮前那组
         // BODY_LG + WEIGHT_MEDIUM(16/500) 在 §3.3 表里不存在（16 只配 600 或 400，Ruling T10-A）。

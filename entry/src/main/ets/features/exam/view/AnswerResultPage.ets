@@ -85,7 +85,9 @@ export struct AnswerResultPage {
         .backgroundColor(CommonConstants.COLOR_CARD_BG)
         .shadow(CommonConstants.SHADOW_CARD)   // §6.6 卡面配方：白底 + RADIUS_CARD + SHADOW_CARD，不加整周描边（旧 Ruling T9-C"不补阴影"已被翻掉）
         .alignItems(HorizontalAlign.Center)   // 结果卡内容整体居中
-        // 不加 .clip(true)：卡内边距 24 大于圆角半径 16，内容永远碰不到圆角弧线（Task 7 同一论证）
+        // 不加 .clip(true)：卡内边距与圆角半径**相等**（都是 16），内容盒刚好落在圆角弧线之外、
+        // 碰不到弧线；Task 7 给的免 clip 条件是"内边距 ≥ 圆角"，相等即满足（曾是 24 时余量更宽，
+        // 现值由 §3.4 卡内边距 16 定，论证条件没变，只是措辞要从"大于"改成"等于/相切"）
 
         // ===== 证书提示条：仅通过后展示（成功色 tint 底的通栏句子） =====
         // 条件渲染：passed 为 false 时整块从布局中移除（不是隐藏占位）
