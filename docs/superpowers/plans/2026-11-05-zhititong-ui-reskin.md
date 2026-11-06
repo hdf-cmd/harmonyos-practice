@@ -1342,26 +1342,59 @@ F12 不是一屏，是三种跨页状态。逐处按下面三条链改，改完 
 ```ts
 .fontColor(CommonConstants.COLOR_ERROR)
 .backgroundColor(CommonConstants.COLOR_ERROR_BG)
-.borderRadius(CommonConstants.RADIUS_CARD)
+.borderRadius(CommonConstants.RADIUS_TAG)   // 原稿这里写的 RADIUS_CARD 是错的：spec §4 F07 明文"全圆胶囊"，
 ```
+
+胶囊不是卡，`§6.6` 的卡配方不管它。Task 12 实施者拒掉 `RADIUS_CARD` 判对（`AnswerResultPage.ets:50-57` 维持 `RADIUS_TAG`）。
 
 空态块（`ExamListPage.ets` / `CertificatePage.ets`）：
 
+> ⚠️ **本块原稿有三处抄错了设计源，Task 12 审查逐项揭出、controller 已对着导出屏 `_10/code.html` 亲验后改准**
+> （原稿是"人抄进简报"的，所以这三处属 **plan-mandated 缺陷**，不是实施者判断错）：
+> 1. 容器底色原写 `COLOR_SUBTLE_BG`（`#F2F4F6`）落在页面底 `COLOR_BG_PAGE`（`#F1F3F5`）上，
+>    对比度 **≈1.004:1** —— 与 Ruling T8-1 判"手绘手柄条等于隐形装饰"用的是同一把尺，同一把尺不能只量一处。
+>    源值：`<div class="w-full bg-surface-container-lowest rounded-xl p-space-lg shadow-sm ...">`
+>    ⇒ **白卡 + `SHADOW_CARD`**，不是静息灰底。
+> 2. 首句原写 `FONT_BODY_LG`+`WEIGHT_MEDIUM`=16/500，而 §3.3 表里 16 只有 600(`HEADLINE_SM`) 与 400(`BODY_LG`) 两个合法档，
+>    **16/500 这个配对不存在**。源值：`<p class="text-headline-sm ... text-on-surface">该科目暂无考卷</p>`
+>    ⇒ `FONT_HEADLINE_SM` + `WEIGHT_SEMI` + `COLOR_TEXT_MAIN`。
+> 3. 次句原只写了 `fontColor(COLOR_TEXT_HINT)`（tertiary `#8A95A5`）。源值：
+>    `<p class="text-body-sm font-body-sm text-secondary">通过考试即可获得证书</p>`
+>    ⇒ `FONT_BODY_SM` + `WEIGHT_REGULAR` + **`COLOR_TEXT_SUB`**（secondary `#525F70`），且按 Ruling T10-A 补上字重。
+>
+> 另外两条源实测结论，免得下轮再猜：`p-space-lg` = **24 是源给的**，不在 §3.4 的"卡内边距 16/紧凑 12"阶梯里但属本源配方，
+> 按"源点名优先"保留 `SPACE_L`；源在这个空态里还画了一个 `folder_off` 图标圆座
+> （`w-16 h-16 rounded-full bg-surface-container`）——**不做**，依据 §6.5 已裁的"加图标＝加当前没有的元素，超出已批准范围"。
+
 ```ts
-Column({ space: CommonConstants.SPACE_COMPACT }) {
+Column({ space: CommonConstants.SPACE_CARD_GAP }) {
   Text('该科目暂无考卷')
-    .fontSize(CommonConstants.FONT_BODY_LG)
-    .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+    .fontSize(CommonConstants.FONT_HEADLINE_SM)
+    .fontWeight(CommonConstants.WEIGHT_SEMI)
     .fontColor(CommonConstants.COLOR_TEXT_MAIN)
   Text('通过考试即可获得证书')
     .fontSize(CommonConstants.FONT_BODY_SM)
-    .fontColor(CommonConstants.COLOR_TEXT_HINT)
+    .fontWeight(CommonConstants.WEIGHT_REGULAR)
+    .fontColor(CommonConstants.COLOR_TEXT_SUB)
+    .lineHeight(CommonConstants.LINE_BODY_SM)
 }
 .width('100%')
-.padding(CommonConstants.SPACE_L)
+.padding(CommonConstants.SPACE_L)          // 24：源值 p-space-lg，非阶梯值，见上方实测结论
 .borderRadius(CommonConstants.RADIUS_CARD)
-.backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+.backgroundColor(CommonConstants.COLOR_CARD_BG)
+.shadow(CommonConstants.SHADOW_CARD)
 ```
+
+**单句的页不要那层 `Column({ space })`**：只有一个子节点时 `space` 无效果。
+证书页只有「暂无证书」一句 ⇒ 由它占**首句**那一档（`HEADLINE_SM`/`SEMI`/`MAIN`），不要降级成次句档——
+同一条 F12 配方在同构页面上必须同向，`§3.3` 那句"两处一起、不许一升一降"管的就是这个。
+
+**`ExamListPage` 的空态必须先分错误再分空**：该页视图只看 `papers.length === 0`，
+而 `ExamListViewModel.ets:37-45` 的 catch 调 `setError(errorMsg)` 后 `papers` 保持 `[]`
+⇒ 断网/5xx 会渲染成这张正式白卡，把故障说成"该科目暂无考卷"。
+`errorMessage` 是 `BaseViewModel.ets:17` 现成的 `@Trace` 字段，加一条
+`else if (this.vm.errorMessage !== '')` 是**纯呈现层**改动，不触"本步只改呈现、不碰 VM 分支"那条约束。
+对照组：同为列表页的 `HomeView.ets:168-170` 已有这个分支，本页是全仓唯一的漏。
 
 会话失效块（各页错误态里 `AuthExpiredError` 分流出的「重新登录」按钮 + 文案）：
 
@@ -1502,6 +1535,26 @@ git log -p -S"FONT_SUBTITLE" -- entry/src/main/ets | grep -E "^[-+].*FONT_" | so
 
 判据：**同一语义角色必须同档**。若"页面主标题"在 A 屏是 20、在 B 屏是 16，那是漂移，要取齐；
 取齐到 16 还是 20 是**审美决定，归老大拍**，不许实施者自行定。把表与两个候选一起报告。
+
+**这条表里必须并进去的第二项（Task 12 审查实测，比别名迁移更大的一类）**：
+设计源 12 屏的 h1 除首页 `_2` 用 `headline-lg-mobile`(22) 外，**其余全是 `headline-sm`(16)**，
+而本仓 8 处页面标题现在落在 `FONT_HEADLINE_MD`(20)（`HomeView.ets:151-154`、`ExamListPage.ets:121-122`、
+`ExamSubjectView.ets:110` 等）⇒ **页面标题整体比源高一档**。
+这条不是任何单个任务的错（各任务的现值参照都是仓内先例，没人查过导出屏的 h1 档），
+但它是逐屏切任务必然漏掉的那类跨屏问题。核对方法：
+
+```bash
+for d in design/stitch/v2-final2/stitch_harmonyos_exam_client/_*/; do
+  printf "%s  " "$(basename $d)"; grep -ohE 'text-(headline|display)[a-z-]*' "$d/code.html" | head -1
+done
+```
+
+处置仍是**归老大拍**：整体降到 `HEADLINE_SM`(16) 与源一致，还是维持 20 认仓内节奏。
+两项合起来出一张表：站名 / 元素 / 源读数 / 现读数 / 候选。别分两次问。
+
+Task 12 审查还给了 19 站别名迁移的完整读数变化清单，一并进表核对：
+22→20 两处、18→20 一处、14→12 四处、14→11 三处、16→14 两处（错误文案，跨页同步、无方差）、
+16→12 一处（证书空态，Step 1b 已改判为由它占首句档）、其余为同值改名。
 
 - [ ] **Step 4: 全量构建 + 单测**
 
