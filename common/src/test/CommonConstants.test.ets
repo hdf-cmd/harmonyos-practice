@@ -82,13 +82,5 @@ export default function commonConstantsTest() {
       expect(CommonConstants.SPACE_L).assertEqual(24);
       expect(CommonConstants.SPACE_CARD_GAP).assertEqual(12);
     });
-
-    it('legacy_aliases_stay_until_task_13', 0, () => {
-      // 这四个是过渡期脚手架，Task 13 删除；此处断言它们的存在本身就是防误删
-      expect(CommonConstants.FONT_TITLE).assertEqual(22);
-      expect(CommonConstants.FONT_SUBTITLE).assertEqual(18);
-      expect(CommonConstants.FONT_BODY).assertEqual(16);
-      expect(CommonConstants.FONT_CAPTION).assertEqual(14);
-    });
   });
 }

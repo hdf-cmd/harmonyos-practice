@@ -52,8 +52,9 @@ export struct LoginPage {
             .objectFit(ImageFit.Cover)
 
           // 标题跟着 isReg 变：登录态"欢迎使用智题通"、注册态"注册智题通账号"
-          // FONT_HEADLINE_LG_MOBILE（22）是方案A 该屏 h1 的字阶，与旧别名 FONT_TITLE 同值，
-          // 换名不换渲染，只为把本文件从待废弃的四个旧别名里迁出去（见计划的全局门禁）。
+          // FONT_HEADLINE_LG_MOBILE（22）是方案A 该屏 h1 的字阶：导出屏 _2 的 h1 类名就是
+          // `text-headline-lg-mobile`，全 12 屏里唯一不用 headline-sm(16) 起标题的一屏。
+          // 旧字号别名已于换装收尾删除，本行的 22 直接取自 §3.3 档位表，不再经别名中转。
           // 字重按 spec §3.3 该档＝600（WEIGHT_SEMI），不再用系统枚举的 Bold(700)。
           // 行高按 controller 裁决"只给可能换行的文字配"：标题是整句文案，窄窗/折叠屏分屏下
           // 会折行，且父容器是自适应高度（不裁切），故配 LINE_HEADLINE_LG_MOBILE(30)。

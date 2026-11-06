@@ -35,10 +35,6 @@ export class CommonConstants {
   static readonly COLOR_BORDER_HAIRLINE: string = '#0A000000' // 卡片边框/分割线 rgba(0,0,0,.04)
   static readonly COLOR_BORDER_FOCUS: string = '#660A59F7'    // 输入框聚焦 rgba(10,89,247,.40)
 
-  // 渐变（提交按钮）——换装后已停用，待 Task 13 删除；勿新增引用
-  static readonly GRADIENT_START: string = '#70b8f8'
-  static readonly GRADIENT_END: string = '#416ff5'
-
   // ===== 字号：DESIGN.md 十二档基准 =====
   static readonly FONT_DISPLAY_SCORE: number = 48
   static readonly FONT_DISPLAY_SCORE_MOBILE: number = 36
@@ -100,10 +96,4 @@ export class CommonConstants {
   static readonly SHADOW_SHEET: ShadowOptions = {
     radius: 16, type: ShadowType.COLOR, color: '#14182431', offsetX: 0, offsetY: -8
   }
-
-  // 旧字号别名：换装过渡期保留，各屏改完（Task 13 Step 2）删除
-  static readonly FONT_TITLE: number = 22
-  static readonly FONT_SUBTITLE: number = 18
-  static readonly FONT_BODY: number = 16
-  static readonly FONT_CAPTION: number = 14
 }
