@@ -56,9 +56,10 @@ export struct CertificatePage {
           // design/stitch/v2-final2/stitch_harmonyos_exam_client/_10/code.html 里那张空态卡
           // （bg-surface-container-lowest / rounded-xl / p-space-lg / shadow-sm）⇒ 白卡 + SHADOW_CARD。
           // 【rounded-xl 不是 16】此屏内嵌 tailwind.config 的 borderRadius 覆写是 "xl": "0.75rem" = **12**
-          // （DEFAULT 4、lg 8），12 屏无一例外；RADIUS_CARD 取 16 的唯一出处是 DESIGN.md §Shapes 的 prose
+          // （DEFAULT 4、lg 8），12 屏无一例外；本仓 RADIUS_CARD 取 16 的出处是 DESIGN.md §Shapes 的 prose
           // "Cards & Primary Modules: 16px"，本仓按 prose 取 16。不要拿 rounded-xl 当 16 的佐证
-          // （同一屏里那句 prose 给 16 标的类名是 roundedness:2 尺度下的 rounded-lg，类名与数值不是一套）。
+          // （同一句 prose 给 16 标的类名是 roundedness:2 尺度下的 rounded-lg，类名与数值不是一套；
+          // 屏里真出现 16 的只有 _7 那 4 处 rounded-2xl，那是未覆写的 Tailwind 默认 1rem，另一档）。
           // 16 还是 12 归用户待拍，本轮只改注释、不动值；完整论证见考卷列表页空态块的同款注释。
           // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
           // 按 WCAG 相对亮度公式算出 **1.0089:1**，等于一张看不见的容器（Ruling T8-1 同一把尺）。
