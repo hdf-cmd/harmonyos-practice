@@ -1,4 +1,4 @@
-// 科目卡片组件：卡面走方案A 令牌（圆角 16 + Level 1 阴影 + 0.5 发丝描边），展示科目名与该科目试卷数
+// 科目卡片组件：卡面走方案A 令牌（白底 + 圆角 16 + Level 1 阴影，不给整周描边，见 spec §6.6），展示科目名与该科目试卷数
 //
 // 【分层说明】放在 features/exam/view/components/ 下：
 //   它是"考试"这个业务 feature 私有的展示型子组件，只被同 feature 的 ExamSubjectView 复用，

@@ -42,7 +42,16 @@
 
   然后分别读两个 `test_result.txt` 的尾行，**两个数字都要写进报告**。当前基线：entry 123 / common 32（Task 1 修复后 30，Task 3 后 entry 123）。
 - **别名迁移门禁（每个视图任务都要跑一次）**：`grep -rnE "CommonConstants\.FONT_(TITLE|SUBTITLE|BODY|CAPTION)\b" entry/src/main/ets` 的命中数必须**逐任务递减**，Task 13 时必须为 0。
-  这条不能省：四个旧别名与新档同值（`FONT_TITLE`=`FONT_HEADLINE_LG_MOBILE`=22、`FONT_SUBTITLE`=`FONT_BODY_SM`=18、`FONT_BODY`=`FONT_BODY_LG`=`FONT_HEADLINE_SM`=16、`FONT_CAPTION`=`FONT_BODY_MD`=`FONT_LABEL_MD`=14），漏改**渲染结果一模一样**，模拟器目检抓不出来，只有这条 grep 能抓。
+  这条不能省。⚠️ **但原稿那句"四个旧别名与新档同值"有一处是错的，Task 12 核出并已当场证实**：
+  前三个等式成立，第四个不成立——
+  - `FONT_TITLE`=22 = `FONT_HEADLINE_LG_MOBILE`=22 ✅ 同值
+  - `FONT_BODY`=16 = `FONT_BODY_LG`=16 = `FONT_HEADLINE_SM`=16 ✅ 同值
+  - `FONT_CAPTION`=14 = `FONT_BODY_MD`=14 = `FONT_LABEL_MD`=14 ✅ 同值
+  - `FONT_SUBTITLE`=18 = ~~`FONT_BODY_SM`~~ ❌ **`FONT_BODY_SM` 实为 12**（`CommonConstants.ets:51`），
+    而**新档位表里根本没有 18 这一档**（表里是 …16 / 14 / 12…，见 spec §3.3）
+  ⇒ 所以 `FONT_SUBTITLE` 的每一处迁移**都是渲染变化，不是同值替换**，"漏改渲染一模一样"这句对它不适用。
+  实测迁移落点分三种：`FONT_HEADLINE_MD`(20)、`FONT_BODY_LG`(16)、`FONT_BODY_MD`(14)，各屏自行择档。
+  这不是实施者越界（表里无 18，必须择档），但**跨屏一致性从未被核过**——Task 13 必须按 §6.7 逐站对一遍。
   ⚠️ 模式必须带词边界。写成 `FONT_BODY:` 这种形式实测只命中 53 行，词边界版命中 92 行——漏掉 39 处引用。
 
 - **简报沉默时该不该越出简报（Task 9 审查讲清，controller 升格为计划级判据，适用 Task 10-13 全部派单）**：
@@ -1477,6 +1486,22 @@ Expected: 空输出。非空则逐个处置，并把处置结果写进报告。
 注意 `LINE_*`/`WEIGHT_*` 按 Global Constraints 的采用范围裁决：`fontWeight` 每处必配，
 `lineHeight` 只配可能换行的文字。所以这两族允许有合理数量的零引用（单行标签档），
 但每个零引用都要在报告里点名说明为什么合理，不许笼统带过。
+
+- [ ] **Step 3c: `FONT_SUBTITLE`(18) 迁移落点一致性审**（spec §6.7 立的规则，Task 12 核出的真缺口）
+
+旧别名里 `FONT_TITLE`/`FONT_BODY`/`FONT_CAPTION` 确实与新档同值，迁移是无差异替换；
+但 `FONT_SUBTITLE`=18 在 §3.3 的档位表里**没有对应档**（上下邻是 20 与 16），
+实测落点分三种：`HEADLINE_MD`(20)、`BODY_LG`(16)、`BODY_MD`(14)。
+所以这批站点**不是机器可判的同值对齐**，必须人工审一遍。步骤：
+
+```bash
+git log -p -S"FONT_SUBTITLE" -- entry/src/main/ets | grep -E "^[-+].*FONT_" | sort | uniq -c | sort -rn
+```
+
+再逐站列表：屏 / 元素 / 现档，写进报告。
+
+判据：**同一语义角色必须同档**。若"页面主标题"在 A 屏是 20、在 B 屏是 16，那是漂移，要取齐；
+取齐到 16 还是 20 是**审美决定，归老大拍**，不许实施者自行定。把表与两个候选一起报告。
 
 - [ ] **Step 4: 全量构建 + 单测**
 
