@@ -185,7 +185,7 @@ export struct ExamListPage {
         //   本仓 RADIUS_CARD 取 16 的出处是 restrained_native_precision/DESIGN.md §Shapes 那句 prose
         //   "Cards & Primary Modules: 16px"——而且它给 16 标的类名是 roundedness:2 尺度下的 rounded-lg、
         //   给 20 标的才是 rounded-xl，跟屏里那套 Tailwind 类名根本不是一张表，按类名推数值必然推错。
-        //   （屏里唯一真有 16 的卡是 _7 那 4 处 rounded-2xl，那是没被覆写的 Tailwind 默认 1rem，另一档，
+        //   （屏层真有 16 的只有 5 处、全走未覆写的 2xl=1rem 这一档：_7 的 4 处 rounded-2xl（含 1 处 button）+ _11 抽屉的 rounded-t-2xl，另算一档，
         //   不是 rounded-xl。）取 16 还是 12 属终审交用户待拍项，本轮只把注释改准，不动 RADIUS_CARD 的值。
         // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
         // 按 WCAG 相对亮度公式算出 **1.0089:1**，加上无影无描边 ⇒ 隐形装饰（Ruling T8-1 同一把尺）。

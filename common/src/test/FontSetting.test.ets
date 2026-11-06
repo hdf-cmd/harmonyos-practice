@@ -54,12 +54,14 @@ export default function fontSettingTest() {
 
     // 终审 Important 1：档位表 Task 2 从 ±4 收到 ±2，旧版本存盘的 ±4 还在磁盘上。
     // 【这条用例证伪的实现】sizeOf 若仍用裸 this.fontSize 做加法（冒牌实现），灌入旧值会得：
-    //   +4 时 sizeOf(16)=20、sizeOf(11)=15；−4 时 sizeOf(16)=12、sizeOf(11)=**7fp**。
+    //   +4 时 sizeOf(16)=20、sizeOf(11)=15；−4 时 sizeOf(16)=12、sizeOf(11)=**7**（模型层算术回归面）。
     //   而同一状态下 levelIndex()/levelLabel() 已回落标准档、Select 显示「标准」
-    //   ⇒ 设置显示与渲染相反，且 7fp 正是 §6.2 把下限收到 ±2 要防的那个值。
+    //   ⇒ 设置显示与渲染相反。用户可见的那面在过 sizeOf 的点上（我的页字号行 12→8、答题页题干 16→12/20）；
+    //
+    //   caption-unit 现无 sizeOf 消费点，所以 7 是**模型层**要钉的值，也正是 §6.2 把下限收到 ±2 要防的那个。
     //   本例三条 sizeOf 断言在冒牌实现下都不成立（20≠16、7≠11、12≠16）；hypium 撞第一条即中止本例，
     //   实测红在第一条：`Error in legacy_offset_outside_levels_falls_back_in_size_of_too, expect 20 equals 16`。
-    //   末那"两条链一致"断言把根因钉死：生效链必须等于显示档位的偏移量加基准。
+    //   末那条"两条链一致"断言是**语义兜底**：若有人删了前置断言，它会红（冒牌下 12/20≠16），但正常首条已中止、跑不到它。
     // 旧值不写死 ±4 而从现表两端外推 2：现表下恰是 ±4，将来表若再变宽仍保证落在表外。
     it('legacy_offset_outside_levels_falls_back_in_size_of_too', 0, () => {
       const font: FontSetting = new FontSetting()
@@ -76,9 +78,9 @@ export default function fontSettingTest() {
       font.fontSize = legacyMin
       expect(font.levelIndex()).assertEqual(FontSetting.standardIndex())
       expect(font.levelLabel()).assertEqual(FONT_LEVELS[FontSetting.standardIndex()].label)
-      // caption-unit 的 7fp 回归面：表外旧值不得把 11 算成 7
+      // caption-unit 的模型层回归面：表外旧值不得把 11 算成 7（该档现无 sizeOf 消费点，钉的是算法不是现网症状）
       expect(font.sizeOf(11)).assertEqual(11 + standardOffset)
-      // 生效链与显示链共用同一份归一化（冒牌实现下 7 ≠ 11，此断言同样为红）
+      // 生效链与显示链共用同一份归一化（冒牌实现下得 12/20 ≠ 16；本条在实测里因首条中止而不执行，留作兜底）
       expect(font.sizeOf(16)).assertEqual(16 + FONT_LEVELS[font.levelIndex()].size)
     })
   })

@@ -19,7 +19,9 @@
 - 文本三档 `#182431` / `#525F70` / `#8A95A5`；禁用 `#BAC2CE`。
 - 语义色 成功 `#00B578` / 错误 `#E84026` / 警示 `#FA6400`。
 - 浅色底一律 `#AARRGGBB` 形式（ArkTS 不吃 CSS `rgba()` 字符串），alpha = round(a×255) 转十六进制。
-- 卡片圆角 16、按钮圆角 8、输入框圆角 10、复选框圆角 6、标签全圆胶囊。
+- 卡片圆角 16、按钮圆角 8、输入框圆角 10、标签全圆胶囊。
+  （~~复选框圆角 6~~ 终审批次删：源 `DESIGN.md:221` 确实给了 6px，但 ArkUI `Checkbox` 只暴露
+   `shape(CheckBoxShape)` 枚举、无半径旋钮 ⇒ **不可实现**，不是无出处。详见 spec §3.4。）
 - 按钮高 48；页面左右边距 16；卡片内边距 16（紧凑 12）；卡片纵向间距 12；分割线 0.5。
 - **不加**任何后端没有的区块：统计指标卡、搜索框、筛选器、排序、下载 PDF、认证徽章、哈希防伪话术、版本号、科目属性标签（推荐/必考/高频/强化/专精/全真）。
 - 页面文案保持现有中文，不得引入英文标题（HarmonyOS/ArkTS/Stage/UIAbility 等专有名词除外）。
@@ -132,7 +134,7 @@ export class CommonConstants {
   static readonly COLOR_ERROR_BG: string = '#14E84026'
   static readonly COLOR_WARN: string = '#FA6400'           // 存疑、倒计时
   static readonly COLOR_WARN_BG: string = '#14FA6400'
-  static readonly COLOR_DOUBT_DOT: string = '#FA6400'      // 答题卡存疑圆点
+  // COLOR_DOUBT_DOT 已于终审批次删除：与 COLOR_WARN 同值不同名、视图层 0 消费者，存疑圆点直接读 COLOR_WARN
 
   // ===== 色彩：描边 =====
   static readonly COLOR_BORDER_HAIRLINE: string = '#0A000000' // 卡片边框/分割线 rgba(0,0,0,.04)
@@ -182,7 +184,7 @@ export class CommonConstants {
   static readonly RADIUS_CARD: number = 16
   static readonly RADIUS_BUTTON: number = 8
   static readonly RADIUS_INPUT: number = 10
-  static readonly RADIUS_CHECKBOX: number = 6
+  // RADIUS_CHECKBOX 已于终审批次删除：0 消费者，且 ArkUI Checkbox 无半径旋钮（只有 shape 枚举）⇒ 不可实现
   static readonly RADIUS_TAG: number = 9999   // 全圆胶囊
   static readonly SPACE_M: number = 16
   static readonly SPACE_L: number = 24
@@ -307,7 +309,7 @@ export default function commonConstantsTest() {
       expect(CommonConstants.RADIUS_CARD).assertEqual(16);
       expect(CommonConstants.RADIUS_BUTTON).assertEqual(8);
       expect(CommonConstants.RADIUS_INPUT).assertEqual(10);
-      expect(CommonConstants.RADIUS_CHECKBOX).assertEqual(6);
+      // RADIUS_CHECKBOX 的断言已随定义一并删除（终审批次）
       expect(CommonConstants.SPACE_M).assertEqual(16);
       expect(CommonConstants.SPACE_L).assertEqual(24);
       expect(CommonConstants.SPACE_CARD_GAP).assertEqual(12);

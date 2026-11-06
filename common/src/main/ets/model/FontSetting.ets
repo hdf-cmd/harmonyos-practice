@@ -50,7 +50,13 @@ export class FontSetting {
   // 偏移量必须经 levelIndex() 取档位表里的值，不能用裸 this.fontSize——
   //   档位表在 Task 2 从 ±4 收到 ±2，而旧版本存盘的 ±4 还躺在磁盘上（PersistenceV2 不做迁移）。
   //   用裸值会让"生效链"和"显示链"分叉：levelLabel() 走 levelIndex 的回落显示「标准」，
-  //   渲染却按 ±4 走，FONT_CAPTION_UNIT 落 7fp——正是 §6.2 立 ±2 要防的那个值，用户自测得出。
+  //   渲染却按 ±4 走。用户**看得出来的**那面在过 sizeOf 的 6 个点上：我的页字号行 sizeOf(12)→8fp、
+  //
+  //   答题页题干/选项 16→20 或 12。caption-unit(11) 目前 8 个消费点全部裸用常量、不过 sizeOf，
+  //
+  //   所以"落到 7fp"只是本模型层的算术回归面（下面那条用例钉的就是它），不是现网可自测的症状。
+  //
+  //   §6.2 立 ±2 防的正是这个 7。
   //   两条链共用同一份归一化后，表外旧值在渲染侧同样回落标准档；用户任何一次加减档
   //   （stepTo 只写 FONT_LEVELS[index].size）都会把存盘值顺手带回表内，不需要额外的迁移。
   sizeOf(base: number): number {

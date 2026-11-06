@@ -80,7 +80,8 @@ export default function commonConstantsTest() {
       // 「复选框圆角」与「存疑圆点色」两枚死令牌已随源码删除（终审 Important 5）：
       //   前者零消费者且 Checkbox 只有 shape(CheckBoxShape) 枚举、任意半径落不了地；
       //   后者与 COLOR_WARN 同值不同名、视图层零消费者。
-      //   这里连同它们的 expect 一起删——it() 其余断言仍成立，故本用例保留、用例数不变。
+      //   断言已随定义一并删除（COLOR_DOUBT_DOT 本来就没有专属断言，只有 RADIUS_CHECKBOX 那 1 条）；
+      //   本用例其余断言仍成立，故用例保留、尾行用例数不变（尾行数的是用例块，不是断言条数）。
       expect(CommonConstants.SPACE_M).assertEqual(16);
       expect(CommonConstants.SPACE_L).assertEqual(24);
       expect(CommonConstants.SPACE_CARD_GAP).assertEqual(12);

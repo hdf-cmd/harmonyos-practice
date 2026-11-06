@@ -64,7 +64,7 @@ export struct AttemptHistoryPage {
           // ⇒ 导出屏的卡圆角实际是 **12**。本仓 RADIUS_CARD 取 16 的出处是 DESIGN.md §Shapes 的 prose
           // "Cards & Primary Modules: 16px"，而那句给 16 标的类名是 roundedness:2 尺度下的 rounded-lg、
           // 给 20 标的才是 rounded-xl——类名与数值两份资料不是一套，按类名推数值必错（考卷列表页同处注释有全文）。
-          // 屏里真有 16 的卡只有 _7 那 4 处 rounded-2xl（2xl 未覆写=Tailwind 默认 1rem），是另一档，不是 rounded-xl。
+          // 屏层真有 16 的只有 5 处、全走未覆写的 2xl=1rem：_7 的 4 处 rounded-2xl（含 1 处 button）+ _11 抽屉 rounded-t-2xl，另算一档，不是 rounded-xl。
           // 取 16 还是 12 属终审交用户待拍项，本轮只改注释，不动值。
           // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
           // 按 WCAG 相对亮度公式算出 **1.0089:1**，加上无影无描边 ⇒ 隐形装饰（Ruling T8-1 同一把尺）。

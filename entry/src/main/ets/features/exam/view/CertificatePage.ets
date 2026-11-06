@@ -59,7 +59,9 @@ export struct CertificatePage {
           // （DEFAULT 4、lg 8），12 屏无一例外；本仓 RADIUS_CARD 取 16 的出处是 DESIGN.md §Shapes 的 prose
           // "Cards & Primary Modules: 16px"，本仓按 prose 取 16。不要拿 rounded-xl 当 16 的佐证
           // （同一句 prose 给 16 标的类名是 roundedness:2 尺度下的 rounded-lg，类名与数值不是一套；
-          // 屏里真出现 16 的只有 _7 那 4 处 rounded-2xl，那是未覆写的 Tailwind 默认 1rem，另一档）。
+          // 屏层确有 16，但只有 5 处、且都走未覆写的 2xl=1rem 这一档：_7 的 4 处 rounded-2xl（其中 1 处是 button）
+          //   与 _11 抽屉容器那处 rounded-t-2xl——后者与本仓 bindSheet 上两角用 RADIUS_CARD=16 恰好同值，
+          //   是 16 的一手屏层佐证，只是来源不是 rounded-xl）。
           // 16 还是 12 归用户待拍，本轮只改注释、不动值；完整论证见考卷列表页空态块的同款注释。
           // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
           // 按 WCAG 相对亮度公式算出 **1.0089:1**，等于一张看不见的容器（Ruling T8-1 同一把尺）。
