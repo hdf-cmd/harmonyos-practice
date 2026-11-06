@@ -18,6 +18,11 @@ import { HomeView } from '../features/home/view/HomeView'
 import { ExamSubjectView } from '../features/exam/view/ExamSubjectView'
 import { MineView } from '../features/mine/view/MineView'
 
+// 底部导航条高度：设计稿的 h-16 = 64vp（原 52）。
+//   Tabs 的 barHeight 和自定义 tabBar 项的高度是两个 API，必须同值，所以收敛成一个常量，
+//   避免以后改一处忘另一处——项高了但 bar 没高，文字就会被裁。
+const TAB_BAR_HEIGHT: number = 64
+
 // 注意这里是 @ComponentV2 + export，没有 @Entry——
 // @Entry 只能有一个（在 AppNavigation 上），本组件是被 RootRouter 装配进来的路由页。
 @ComponentV2
@@ -26,24 +31,32 @@ export struct MainPage {
   // @Local：V2 的组件内部状态，值一变，引用它的 UI 自动刷新
   @Local currentIndex: number = 0
 
-  // 自定义 TabBar：文字 + 选中变色
+  // 自定义 TabBar：纯文字标签 + 选中变色（设计稿的 Material 图标字体 ArkUI 没有，按裁决不引素材管道）
   // @Builder：轻量 UI 片段函数（不是独立组件），用于复用一段布局。
   // 三个导航按钮长得一样、只有文字不同，抽成 Builder 传 title/index 复用，避免写三遍。
   @Builder
   tabBarBuilder(title: string, index: number) {
     Column() {
       Text(title)
-        .fontSize(CommonConstants.FONT_BODY)
-        // 选中态：加粗 + 主色；未选中态：常规字重 + 灰色——底部导航的经典视觉反馈
+        .fontSize(CommonConstants.FONT_LABEL_SM)
+        // 选中态：半粗 + 主色；未选中态：常规字重 + 灰色——底部导航的经典视觉反馈
+        // 字重取设计稿的 font-semibold(600)/常规(400)，不套 §3.3 档位表里 label-sm 配对的 500：
+        //   导航条要靠字重差表达"你在哪一格"，500/400 的落差在 12 号字上读不出来。
         // 依赖 this.currentIndex，所以 onChange 里更新状态后这里会自动重绘
-        .fontWeight(this.currentIndex === index ? FontWeight.Bold : FontWeight.Normal)
+        .fontWeight(this.currentIndex === index ? CommonConstants.WEIGHT_SEMI : CommonConstants.WEIGHT_REGULAR)
         .fontColor(this.currentIndex === index
           ? CommonConstants.COLOR_PRIMARY
           : CommonConstants.COLOR_TEXT_HINT)
     }
     .width('100%')
-    .height(52)
-    .justifyContent(FlexAlign.Center)  // 文字在这 52 高度内垂直居中
+    .height(TAB_BAR_HEIGHT)
+    .justifyContent(FlexAlign.Center)  // 文字在这 64 高度内垂直居中
+    // 导航条卡面：设计稿写的是"半透白底 + 背景模糊"，但 DESIGN.md 的 Zero Decorative Bloat 段
+    //   明令杜绝毛玻璃——设计源自相矛盾时以系统规则为准，落平面卡底 + Level 3 上沿阴影。
+    // 阴影挂在每个 tabBar 项上：ArkUI 没给自定义 tabBar 暴露"整条 bar"的容器节点，
+    //   三项横向铺满即是这条 bar；挂到 Tabs 或 NavDestination 上会投到屏幕顶边外，等于没挂。
+    .backgroundColor(CommonConstants.COLOR_CARD_BG)
+    .shadow(CommonConstants.SHADOW_BOTTOM_BAR)
   }
 
   build() {
@@ -72,6 +85,9 @@ export struct MainPage {
         .tabBar(this.tabBarBuilder('我的', 2))   // 第 2 个 Tab
       }
       .scrollable(false)
+      // barHeight：自定义 tabBar 时这一项决定 bar 占多高，必须与 tabBarBuilder 里容器高度同值，
+      //   否则项比 bar 高会被裁（所以两边都读 TAB_BAR_HEIGHT）
+      .barHeight(TAB_BAR_HEIGHT)
       // onChange：Tab 切换完成后回调，参数是新选中的下标。
       // 在这里同步 @Local 状态 → tabBarBuilder 里依赖 currentIndex 的选中样式随之刷新。
       .onChange((index: number) => {

@@ -68,22 +68,28 @@ export struct MineView {
   FontSettingRow() {
     Row() {
       Text('字号大小')
-        .fontSize(CommonConstants.FONT_BODY)
+        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontWeight(CommonConstants.WEIGHT_REGULAR)
         .fontColor(CommonConstants.COLOR_TEXT_MAIN)
       Blank()   // 弹性空隙：把 Select 推到行尾
       Select(this.fontOptions)
         .selected(this.font.levelIndex())
         .value(this.font.levelLabel())
-        .font({ size: CommonConstants.FONT_BODY })
-        .fontColor(CommonConstants.COLOR_TEXT_HINT)
+        // 档位偏移由 FONT_LEVELS 单源驱动，这里只把当前值文字收进正文档；
+        // weight 显式写 500 = SDK 给 Select 的默认字重（select.d.ts 的 font 默认值），声明不改观感
+        .font({ size: CommonConstants.FONT_BODY_MD, weight: CommonConstants.WEIGHT_MEDIUM })
+        .fontColor(CommonConstants.COLOR_TEXT_SUB)
         .onSelect((index: number) => {
           // View 不做判断：越界与"选了当前档"的去重都在 stepTo 里，改 @Trace 即刷新 + 自动落盘
           this.font.stepTo(index)
         })
     }
     .width('100%')
-    .height(52)   // 与 SettingItem 的固定行高对齐
+    .height(CommonConstants.BTN_HEIGHT)   // 与 SettingItem 的固定行高对齐（同为 48）
     .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+    // 这一行是同一组菜单的一员（顶替原"字体大小"那一格），所以和内嵌发丝线同轨，
+    //   否则它与相邻菜单项之间会凭空少一条分隔、读成同一行
+    .border({ width: { bottom: CommonConstants.DIVIDER_WIDTH }, color: CommonConstants.COLOR_BORDER_HAIRLINE })
   }
 
   build() {
@@ -101,12 +107,16 @@ export struct MineView {
           // 用户名 + 签名：右侧纵向排两行（字号走 sizeOf：基准常量 + 全局偏移，层级关系保留）
           Column() {
             Text(this.vm.userName)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_SUBTITLE))
-              .fontWeight(FontWeight.Bold)
+              .fontSize(this.font.sizeOf(CommonConstants.FONT_HEADLINE_SM))
+              // headline-sm 档配对字重 600（§3.3 档位表），不是原来的裸 Bold
+              .fontWeight(CommonConstants.WEIGHT_SEMI)
               .fontColor(CommonConstants.COLOR_TEXT_MAIN)
 
             Text(this.vm.signature)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_CAPTION))
+              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_SM))
+              .fontWeight(CommonConstants.WEIGHT_REGULAR)
+              // 签名是这页唯一长度不可控的文案（可折行），按全局裁决配配对行高；单行标签一律不配
+              .lineHeight(CommonConstants.LINE_BODY_SM)
               .fontColor(CommonConstants.COLOR_TEXT_HINT)
               .margin({ top: 4 })
           }
@@ -115,8 +125,9 @@ export struct MineView {
         }
         .width('100%')
         .padding(CommonConstants.SPACE_M)
-        .backgroundColor(Color.White)
-        .borderRadius(12)
+        .backgroundColor(CommonConstants.COLOR_CARD_BG)
+        .borderRadius(CommonConstants.RADIUS_CARD)
+        .shadow(CommonConstants.SHADOW_CARD)
 
         // 功能列表区：菜单标题由 VM 驱动，ForEach 渲染（顺序即 vm.menuItems 顺序）
         Column() {
@@ -136,14 +147,19 @@ export struct MineView {
           // ↑ 键值生成器：菜单标题唯一，用它当 key
         }
         .width('100%')
-        .backgroundColor(Color.White)
-        .borderRadius(12)
-        .margin({ top: CommonConstants.SPACE_M })
+        .backgroundColor(CommonConstants.COLOR_CARD_BG)
+        .borderRadius(CommonConstants.RADIUS_CARD)
+        // 卡内是贴边的整行（行宽 100%，发丝线画在行的左右满宽处），不像别的卡那样有 16 内边距挡着，
+        //   所以必须 clip：ArkUI 的容器圆角默认不裁剪子节点，末行的线会从圆角外头直着穿出去，
+        //   圆角等于没落地（同 F02 轮播卡加 clip 的理由）
+        .clip(true)
+        // 卡与卡的纵向节奏 12（§3.4），不是页面左右边距那个 16
+        .margin({ top: CommonConstants.SPACE_CARD_GAP })
 
         // 助教入口（通用问答）：只给标题，不带考试上下文——这里没有"当前这场考试"可带。
         //   设备不具备 AgentKit 或在模拟器上时，组件内部整体不渲染，页面其余部分不受影响。
         AssistantEntry({ title: 'AI 备考助教' })
-          .margin({ top: CommonConstants.SPACE_M })
+          .margin({ top: CommonConstants.SPACE_CARD_GAP })
 
         // 退出登录按钮：Blank() 把它推到页面底部
         Blank()
@@ -151,10 +167,11 @@ export struct MineView {
           .type(ButtonType.Normal)
           .width('80%')
           .height(CommonConstants.BTN_HEIGHT)
-          .fontSize(CommonConstants.FONT_BODY)
-          .backgroundColor(Color.White)
+          .fontSize(CommonConstants.FONT_BODY_LG)
+          .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // Button 默认字重即 500（SDK button.d.ts），声明不改观感
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
           .fontColor(CommonConstants.COLOR_ERROR)   // 危险操作用错误色提示
-          .borderRadius(8)
+          .borderRadius(CommonConstants.RADIUS_BUTTON)
           .margin({ top: CommonConstants.SPACE_L })
           .onClick(async () => {
             // View 不做判断，只转发事件、消费结果：
