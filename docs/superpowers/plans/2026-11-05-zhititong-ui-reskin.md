@@ -1557,7 +1557,7 @@ done
 
 Task 12 审查还给了 19 站别名迁移的完整读数变化清单，一并进表核对：
 22→20 两处、18→20 一处、14→12 四处、14→11 三处、16→14 两处（错误文案，跨页同步、无方差）、
-16→12 一处（证书空态，Step 1b 已改判为由它占首句档）、其余为同值改名。
+原报的“16→12 一处（证书空态）”已被 Ruling T12-5 撤销 —— 证书空态最终落 `HEADLINE_SM`=16、原值也是 16，
 
 - [ ] **Step 3d: 卡面属性链按 `padding` 再核一遍 + 纵向 24 的归属裁决**（spec §3.4 标尺映射表立的）
 
@@ -1566,19 +1566,27 @@ Task 12 审查还给了 19 站别名迁移的完整读数变化清单，一并�
 本轮起"卡面配方"的核对口径是**四件套**：`padding` / `borderRadius` / `backgroundColor` / `shadow`。
 
 ```bash
-grep -rn -B3 "borderRadius(CommonConstants.RADIUS_CARD)" entry/src/main/ets | grep -E "padding|backgroundColor|shadow|border\("
+grep -rn -B6 "borderRadius(CommonConstants.RADIUS_CARD)" entry/src/main/ets | grep -E "padding|backgroundColor|shadow|border\("
 ```
 
 期望：卡容器 `padding` 只有 `SPACE_M`(16) 或紧凑 `SPACE_CARD_GAP`(12)，出现 `SPACE_L` 即 Task 12 那种漏网；
 卡上出现整周 `.border(` 即违反 §6.6（四类合法对象除外：TextInput 静息描边、次级按钮轮廓、
 `width:{bottom}` 分割线、选项/格子条件态）。
 
-**纵向 24 归属，两个选项归老大拍，不许实施者自行定**：全仓仍有 8 处 `SPACE_L`(24) 用在容器之间的纵向间距
-（`HomeView.ets:72/:91/:147`、`LoginPage.ets:69/:216`、`ExamDetailPage.ets:450`、`MineView.ets:180`、
-`AnswerResultPage.ets:126`）。§3.4 说"只有一个模型、纵向节奏 12"，但表里没有"大区块之间"这一行，
-而 24 确实是源阶梯的合法值（`space-xl`）。
-(a) 按模型收紧到 12；或 (b) 在 §3.4 补一行"区块到区块 24"把它写进模型。
-**选 (b) 必须同步改掉"只有一个模型"那句**，否则下一个读者还会照原句去删这 8 处。
+**纵向 24 归属，两个选项归老大拍，不许实施者自行定**：全仓 `SPACE_L`(24) 现在只剩 9 处引用，
+按属性分两类（Task 12 复审指出我原报的"8 处间距"把 padding 混进来了，已按现树重数）：
+
+- **6 处是容器之间的纵向 margin** —— `AnswerResultPage` 「答题卡」分区标题的 `margin.top`、
+  `ExamDetailPage` 告警条下方那颗钮的 `margin.top`、`HomeView` 分区标题的 `margin.bottom`、
+  `LoginPage` 两处（副标题与底部辅助行）`margin.top`、`MineView` 退出登录的 `margin.top`。
+  §3.4 说"只有一个模型、纵向节奏 12"，但表里没有"大区块之间"这一行 ⇒ 按现模型读，这 6 处都偏大；
+  而 24 确实是源阶梯的合法值（`space-xl`）。
+- **2 处是状态块的 `padding({top,bottom})`**（`HomeView` 的加载与错误两块）—— 属块内留白，**不在本条管辖**；
+  另有 1 处是注释、1 处是上一条的属性，均非独立用点。
+
+两个选项：(a) 把那 6 处 margin 按模型收紧到 12；或 (b) 在 §3.4 补一行"区块到区块 24"把它写进模型。
+**选 (b) 必须同步改掉"只有一个模型"那句**，否则下一个读者还会照原句去删这 6 处。
+（行号会漂，所以上面按"哪个元素的哪个属性"点名而不是给号；核对命令见本步开头那条 `-B6` 四件套 grep。）
 
 - [ ] **Step 4: 全量构建 + 单测**
 

@@ -102,6 +102,13 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 上表每一行的字重与行高直接抄自设计源 `DESIGN.md` 的 typography token 块（如 `label-sm: 12px/500/16px`、
 `caption-unit: 11px/500/14px`），**采用该档即采用该字重**，写裸 `FontWeight` 或漏配字重都不算对齐。
 
+**这条配对规则的管辖对象是 `Text`，不是 `Button`**（Task 12 修复轮 2 补，防止被过度推广）。
+两张表在这里方向相反：§3.3 是**文字档位表**（`body-lg`=16/400），而设计源 §Components/Buttons 明文
+「Primary: … `font-weight: 500`」，且 ArkUI `Button` 的默认字重本身就是 500。
+⇒ **「16/500 是表里不存在的配对」这句只适用于文字标签位**；按钮上 `FONT_BODY_LG` + `WEIGHT_MEDIUM`
+是**同时满足两张表的正确写法**，全仓 7 处实心主按钮都这么写，**不是缺陷、不要改**。
+判据：先看承载元素是 `Text` 还是 `Button`，再决定用哪张表。次级/描边小按钮按 §3.3 走 `label-md`(14/500)。
+
 **哪些元素能用哪些档，设计源有明文许可**（此前 spec 漏抄，导致实施者各按口味选档，是 Task 9/10 分叉的根因）。
 `DESIGN.md` §Typography / Application Rules 第三条原文：
 > **Metadata and Badging:** Status pills, chapter identifiers, and time stamps employ **`label-sm` or `caption-unit`**
@@ -180,7 +187,7 @@ on mobile, expanding to `24px` (`space-xl`) on larger screens.」⇒ **手机版
 
 **尚待老大大拍的间距遗留（Task 13 Step 3d）**：全仓还有 8 处 `SPACE_L`(24) 用在**容器之间的纵向间距**
 （`HomeView.ets:72/:91/:147`、`LoginPage.ets:69/:216`、`ExamDetailPage.ets:450`、`MineView.ets:180`、
-`AnswerResultPage.ets:126`）。按"只有一个模型、纵向节奏 12"读，它们都偏大；
+`AnswerResultPage.ets` 「答题卡」分区标题的 `margin.top`）。按"只有一个模型、纵向节奏 12"读，它们都偏大；
 但 §3.4 表没有"大区块之间"这一行，且 24 是源阶梯里的合法值（`space-xl`）——**是收紧到 12 还是承认 24 为区块级停顿档，属审美决定**，
 所以只登记不自行改。若要承认 24，§3.4 需要补一行"区块到区块 24"把这个档位写进模型，否则下一个人还会按"只有一个模型"去删它。
 
