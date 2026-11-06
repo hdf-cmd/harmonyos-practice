@@ -975,7 +975,15 @@ Task 3 审查确认的刷新风险，本任务必须一并解决：`ExamDetailVi
 
 不要选 `@Computed`：本仓库零 `@Computed` 用例，为一个计数引入新模式不值；`@Trace` 是一词改动且与邻行一致。
 
-- [ ] **Step 1: 抽屉加手柄条与标题行**
+- [x] **Step 1: 抽屉加手柄条与标题行**（**已被 Task 8 修复轮作废**，见 ledger Ruling T8-1）
+
+> ⚠️ 本步的手绘手柄条已在 `79751a6` **整块删除**，改吃平台默认拖拽条
+> （`SheetOptions.dragBar` **`@default true`**，SDK `common.d.ts:11766-11775`；本仓 `grep dragBar` 零命中，
+> 即从没关过 ⇒ 手绘那条与系统条叠成两层，且其色合成后对比度仅 1.09:1 属隐形装饰）。
+> 标题行的"左标题**右关闭**"同期裁为不做：`showClose: true` 已给系统 X，同一抽屉不该有两个关闭入口。
+> **下轮 conform 巡检不要把这一条当缺口报**——缺口在 spec §4 F06 行，已同步改为"平台系统拖拽条"。
+
+原文（存档，勿实施）：
 
 `AnswerCardSheet` 顶部 `Column` 前插入手柄条，标题行改为左标题右关闭：
 
@@ -991,7 +999,9 @@ Column() {
 
 - [ ] **Step 2: 底部状态汇总行 + 双按钮**
 
-在 `Grid` 之后、`Column` 结束之前追加（这是 DESIGN.md F06 要求的、当前工程完全没有的一块）：
+在 `Grid` 之后、`Column` 结束之前追加（本步要求的出处是**本简报自己**——
+Task 8 审查核出 `DESIGN.md` 全文无逐屏章节、无 F06 标识、无已答计数要求，原句"DESIGN.md F06 要求的"是错引，已改；
+半模态形态的真实证据在导出的第 11 屏 HTML：`fixed bottom` + `rounded-t-2xl`）：
 
 ```ts
 Row() {
@@ -1169,7 +1179,11 @@ git commit -m "style: 答题结果页对齐方案A（主色大分值 + 胶囊徽
 
 - [ ] **Step 3: 卡头与答案对照行字阶**
 
-`第 N 题` + 题型标签 + `x / y 分` 用 `FONT_LABEL_MD`；题干 `FONT_BODY_LG` + `LINE_BODY_LG`；`我的答案 A`（`COLOR_WARN`）/ `正确答案 B`（`COLOR_SUCCESS`）用 `FONT_BODY_MD`；解析正文 `FONT_BODY_MD` + `COLOR_TEXT_SUB`。
+`第 N 题` + 题型标签 + `x / y 分` 用 **`FONT_LABEL_SM`**（12/500，见 spec §3.3 的 badging 许可条与设计源
+§Application Rules 原文"Status pills, chapter identifiers, and time stamps employ `label-sm` or `caption-unit`"——
+**原计划钉的 `FONT_LABEL_MD` 是计划相对设计源的错，Task 10 审查后由 Ruling T10-A 作废**；
+`label-md`(14) 只留给按钮文字）；题干 `FONT_BODY_LG` + `LINE_BODY_LG`；`我的答案 A`（`COLOR_WARN`）/
+`正确答案 B`（`COLOR_SUCCESS`）用 `FONT_BODY_MD`；解析正文 `FONT_BODY_MD` + `COLOR_TEXT_SUB`。
 
 - [ ] **Step 4: ReviewPage 摘要卡与开关行**
 
@@ -1250,7 +1264,11 @@ DESIGN.md 要求组内用内嵌细线而不是间距分隔。`SettingItem` 追�
 
 - [ ] **Step 3: 字号行保持 Select 形态**
 
-DESIGN.md F09 建议分段控制器，但现有 `Select` 已实现且 `FONT_LEVELS` 单源驱动。**不换控件**，只把行尾当前值文字改 `FONT_BODY_MD` + `COLOR_TEXT_SUB`。Task 2 改了档位偏移，这里要确认 Select 选项文案仍是极小/小/标准/大/极大（由 `FONT_LEVELS` 推导，无需改动）。
+~~DESIGN.md F09 建议分段控制器~~ —— 出处是虚构的（本计划第四次犯同一类错，见 ledger 的"虚构逐屏出处"条目）：
+`DESIGN.md` 无逐屏章节、无 F09 标识。Task 11 实测导出屏 `_7`：无 `<select>`、无 `role="tablist"`、无 `type="radio"`，
+字号那一行只有一个 `shrink-0` 的「标准」span ⇒ **设计源画的就是"设置行 + 行尾当前值"，不是分段控制器**。
+结论不变、理由换成实测：现有 `Select` 已实现且 `FONT_LEVELS` 单源驱动，**不换控件**，
+只把行尾当前值文字改 `FONT_BODY_MD` + `COLOR_TEXT_SUB`。Task 2 改了档位偏移，这里要确认 Select 选项文案仍是极小/小/标准/大/极大（由 `FONT_LEVELS` 推导，无需改动）。
 
 - [ ] **Step 4: 退出登录按钮**
 

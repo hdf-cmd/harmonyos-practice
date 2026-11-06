@@ -61,7 +61,7 @@ DESIGN.md 的浅色底用 CSS `rgba()` 写。ArkUI 侧统一转成 `#AARRGGBB`�
 | `COLOR_SUCCESS_BG` | `rgba(0,181,120,.08)` | `#1400B578` | 答对选项、已答网格 |
 | `COLOR_ERROR_BG` | `rgba(232,64,38,.08)` | `#14E84026` | 错选选项、未通过徽章 |
 | `COLOR_WARN_BG` | `rgba(250,100,0,.08)` | `#14FA6400` | 存疑态底 |
-| `COLOR_ANALYSIS_BG` | `surface-container-low` | `#F2F4F6` | 解析盒、未答网格 |
+| `COLOR_SUBTLE_BG` | `surface-container-low` | `#F2F4F6` | 解析盒、未答网格、静息胶囊底 |
 | `COLOR_BORDER_HAIRLINE` | `rgba(0,0,0,.04)` | `#0A000000` | 卡片描边、分割线 |
 | `COLOR_BORDER_FOCUS` | `rgba(10,89,247,.40)` | `#660A59F7` | 输入框聚焦 |
 | `COLOR_OVERLAY` | `rgba(24,36,49,.40)` | `#66182431` | 答题卡抽屉遮罩 |
@@ -85,11 +85,38 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 | `FONT_LABEL_SM` | 12 | 500 | 16 |
 | `FONT_CAPTION_UNIT` | 11 | 500 | 14 |
 
-**字号设置不受影响**：`FontSetting` 存的是偏移量（`common/src/main/ets/model/FontSetting.ets:24`，五档 ±4/±2/0），实际字号 = 基准 + 偏移。换基准值不动这套机制，五档照常工作。
+**字号设置不受影响**：`FontSetting` 存的是偏移量（`common/src/main/ets/model/FontSetting.ets:26-32`），
+实际字号 = 基准 + 偏移。换基准值不动这套机制，五档照常工作。
+⚠️ 偏移量本表原写"±4/±2/0"，Task 2 采纳 §6.2 的 (a) 后实际是 **±2/±1/0**（极小 -2、小 -1、标准 0、大 +1、极大 +2），
+本行已按代码现值更正；极小档 `FONT_CAPTION_UNIT` 现为 **9fp** 而非 7fp。
 
-真正要处理的是可读性下限：`FONT_CAPTION_UNIT` 基准 11，极小档算出 7fp。ArkUI 上 7fp 的中文辅助文字基本看不清。处置见 §6.2。
+**档位的"字重/行高"是档位定义的一部分，不是可选项**（Task 10 审查后补，Ruling T10-A）：
+上表每一行的字重与行高直接抄自设计源 `DESIGN.md` 的 typography token 块（如 `label-sm: 12px/500/16px`、
+`caption-unit: 11px/500/14px`），**采用该档即采用该字重**，写裸 `FontWeight` 或漏配字重都不算对齐。
 
-`letterSpacing` 在 DESIGN.md 是 em（`-0.02em`），ArkUI 的 `.letterSpacing()` 收的是维度值，要按字号换算（36fp 下 ≈ -0.7fp）。只在大数字档做，正文档不动。
+**哪些元素能用哪些档，设计源有明文许可**（此前 spec 漏抄，导致实施者各按口味选档，是 Task 9/10 分叉的根因）。
+`DESIGN.md` §Typography / Application Rules 第三条原文：
+> **Metadata and Badging:** Status pills, chapter identifiers, and time stamps employ **`label-sm` or `caption-unit`**
+> to keep visual prominence focused strictly on task execution.
+
+⇒ **状态胶囊、题型/章节标识、时间戳这类 badging/metadata 元素只许 `label-sm`(12/500) 或
+`caption-unit`(11/500)；`label-md`(14) 不在许可档位内。** 按钮文字不受此条管（CTA 用 `body-lg`，次级按钮用 `label-md`）。
+同一字段跨屏出现时（如题型标签同时出现在答题页、首页卡、回顾卡头），必须同档——
+按本条它们**一律 `label-sm`**。
+
+**`letterSpacing`：设计源给 5 个档定义了它，本仓一处都没做，且本计划裁为不在换装窗口内补**（Task 10 审查后补，Ruling T10-E）。
+设计源原文逐档：`display-score -0.02em`、`display-score-mobile -0.02em`、`headline-lg -0.01em`、
+`headline-lg-mobile -0.01em`、`caption-unit +0.04em`（其余档无）。
+本计划此前只抄了"大数字档做负字距"，**漏了 `caption-unit` 那条正字距**——它是本仓唯一真正在用的辅助档（3 处引用）。
+
+换算：ArkUI `.letterSpacing()` 收维度值不是 em，`36fp × -0.02 ≈ -0.7fp`、`11fp × 0.04 ≈ 0.44fp`。
+裁为不补的理由（可反驳，但请把理由一起反驳）：
+① 0.44fp 的位移低于肉眼可辨阈值，而 ArkUI 的 letterSpacing **在首字符前也加间距**，
+  给胶囊/居中文字引入非对称前导空白，反而可能把"看起来居中"改坏；
+② 负字距那 4 档（-0.01/-0.02em）方向相反、且都在大数字档，一旦要做就得同时做，成本是 5 档 + 5 枚新令牌；
+③ 换装窗口内像素验收不可用（Task 13 才上机），用一个**可能的布局副作用**换一个**看不见的收益**不划算。
+⇒ 列入 Task 13 设备目检清单：上机后若大分值数字的排布观感与设计屏明显发松、或辅助单位可读性受损，再单开小任务补，
+   且必须先确认居中元素的 letterSpacing 副作用。
 
 ### 3.4 圆角 / 间距 / 阴影
 
@@ -135,10 +162,10 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 
 - **盾牌位图标不做。** 不是因为没有素材——`SymbolGlyph` + `sys.symbol.*` 是 ArkUI 内置能力，加图标零素材成本（这一点 Task 7 审查纠正过我原来的错判，见 §6.5）。不做是因为它属于**新增装饰元素**，超出已批准的"只移植设计语言"范围，且告警条缺图标不影响任何可读性。
 - **"系统按键已锁定"那一行不做。** 它断言的是一个**本应用没有实现的系统级行为**——本页 `onWillDisappear` 明确支持物理返回。写上去就是编造文案，违反"no invented copy"硬约束。三行结构剩下的两行（按钮行 + 提交按钮）已经是现状形态。
-| F06 答题卡 | 同上（`bindSheet`） | 抽屉圆角 16 + 手柄条；格子圆角 8，已答/存疑/未答换 §3.2 的 tint 底；存疑格加右上实心点；当前题 = 存疑底 + 主色描边复合态；底部左次右主（继续作答 40% / 提交试卷 60%） |
+| F06 答题卡 | 同上（`bindSheet`） | 抽屉圆角 16 + **平台系统拖拽条**（Task 8 修复轮换掉手绘条：`SheetOptions.dragBar` **`@default true`**，手绘那条 `#0A000000` 合成后对比度仅 1.09:1 属隐形装饰，见 ledger Ruling T8-1）；格子圆角 8，已答/存疑/未答换 §3.2 的 tint 底；存疑格加右上实心点；当前题 = 存疑底 + 主色描边复合态；底部左次右主（继续作答 40% / 提交试卷 60%） |
 | F07 答题结果 | `exam/view/AnswerResultPage.ets` | 大分值 48/36 主色，"分"用 `FONT_CAPTION_UNIT` 弱化；通过/未通过改全圆胶囊 + tint 底；迷你分布图换 tint 色 |
 | F08 逐题回顾 | `exam/view/ReviewPage.ets`、`ReviewQuestionCard.ets` | 左侧 4vp 状态轨保留，色换 `#00B578/#E84026`；选项 tint 底换 §3.2 值；解析盒 `#F2F4F6`；收编该文件 5 处硬编码 |
-| F09 我的 | `mine/view/MineView.ets`、`components/SettingItem.ets` | 分组菜单卡用内嵌发丝分割线（`#0A000000`）替代间距；字号选择器改分段控制器形态；**不加指标栏与认证徽章** |
+| F09 我的 | `mine/view/MineView.ets`、`components/SettingItem.ets` | 分组菜单卡用内嵌发丝分割线（`#0A000000`）替代间距；**字号行保持现有 `Select` 形态，只把行尾当前值换成 `body-md` + 次文本色**（Task 11 审查实测：导出屏里根本没有分段控制器——无 `<select>`/`role="tablist"`/`type="radio"`，只有一个 `shrink-0` 的「标准」span；原句"改分段控制器形态"是把结论安在了设计源没画过的控件上，本条已按实测纠正）；**不加指标栏与认证徽章** |
 | F10 考试记录 | `exam/view/AttemptHistoryPage.ets` | 行结构对齐 F02；通过/未通过胶囊化；**不加汇总卡** |
 | F11 我的证书 | `exam/view/CertificatePage.ets` | 证书卡网格排布编号/颁发/到期；有效绿胶囊、过期灰胶囊；**不加下载按钮与防伪话术** |
 | F12 状态补充 | 分散在各页错误/空态 | 空态、错误态、401 态统一按新令牌；401 文案与按钮沿用 `a3da388` 已入库的分流逻辑 |
@@ -194,6 +221,47 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
   裁决不变，但地基换成两条真的：① 当前 Tab 条是纯文字，加图标属于**新增 UI 元素**，超出本计划已批准的"只移植设计语言、不加新区块"范围；② Material 图标到鸿蒙 symbol 的映射（`menu_book` 对应哪个 `sys.symbol`）是审美决定，归用户，不该由执行链静默选定。
   若用户点头要图标，这是一条独立小任务，成本不高（`SymbolGlyph($r('sys.symbol.xxx'))` + 字号/颜色），不是素材工程。
 - 导航条用平面 `COLOR_CARD_BG` + Level 3 阴影（`SHADOW_BOTTOM_BAR`），不做毛玻璃——见 §6.4。
+
+### 6.6 卡面配方的全局裁决：白底 + 圆角 16 + Level 1 阴影，**不给整周描边**
+
+这是本计划第三次漂着的同一个洞（Task 9 审查记为张力、Task 10 审查点名"逐屏各缺一半"、Task 11 直接报"同屏两套卡面"）。
+按 §7 之后立的规矩——**漂三次的缺口必须在 spec 关账，不能留给终审目检**——现在关。
+
+判据不是新原则，是 §6.4 那条"取更克制的那一读"套到卡面上，而且这次**量得出数**：
+
+| 证据 | 内容 |
+|---|---|
+| `DESIGN.md` §Components / Cards | 「Pure white background, `16px` corner radius, `16-20px` internal padding. **Encased in a `1px` border using `rgba(0,0,0,0.04)`**. Divided internally with subtle inset horizontal lines…」 |
+| `DESIGN.md` §Elevation Levels | Level 1 命名为 **Standard Card**，即卡有阴影档 |
+| 导出的 12 屏 HTML 实测 | 卡级圆角容器（`rounded-xl/2xl/3xl/card`）串共 **63** 个：**带 border 0 个**，**带 shadow 51 个** |
+
+⇒ prose 的卡配方 = 描边 + 阴影两件套；实际导出屏 = **只有阴影，一条描边都没有**。
+按 §6.4 取更克制的一读：**卡面 = 白底 + `RADIUS_CARD` + `SHADOW_CARD`，不加整周 hairline。**
+这与 §6.4 已裁的"胶囊只做 tint 底、不加描边"同向，不是特例。
+
+**描边仍然合法的四类对象，不要在清扫时误删**（它们不是"卡面装饰"，各有出处）：
+
+- `TextInput` 的静息描边（§Input Fields / Option Selectors 明文）——`LoginPage.ets:84/104/127` 属此类，保留。
+- 次级/描边按钮的轮廓——`ExamDetailPage.ets:526`「答题卡」那颗，保留。
+- **组内 bottom 分割线** `width: { bottom: DIVIDER_WIDTH }`——`SettingItem.ets:35`、`MineView.ets:92`，
+  这是 prose「Divided internally with subtle inset horizontal lines」的落地，保留。
+- 选项行 / 答题卡格子 / 迷你分布图格子的**条件描边**（当前题=主色、非当前=hairline）与状态轨默认色——
+  `ExamDetailPage.ets:162/443`、`AnswerResultPage.ets:146`、`ReviewQuestionCard.ets:50`，属控件态，保留。
+
+**要动的三处**（同一配方给卡加了 prose-only 的第二层装饰）：
+`PaperCard.ets:91`、`ExamSubjectCard.ets:40`、`ExamListPage.ets:94` 的整周
+`.border({ width: DIVIDER_WIDTH, color: COLOR_BORDER_HAIRLINE })` 删除，`:92/:41/:95` 的 `.shadow(SHADOW_CARD)` 保留。
+
+**反向补齐**：凡 `§4` 逐屏行里出现"卡"而未点名装饰的屏，一律按本配方给 `SHADOW_CARD`——
+这翻掉 Ruling T9-C（结果页白卡当时裁"不补阴影"）与 Task 10 §4-e、Task 11 concern 3 的"半套卡面"。
+理由：本条把卡面从"逐屏点名的 extend"升格为**组件配方**，配方统一后 §4 不必逐屏重述，
+逐屏未点名不再构成"不加"的依据；而"只加阴影不加描边"仍是克制读法，未引入新元素。
+
+代价与可逆性：三处删除 + 若干屏补一行 `.shadow(...)`，合计 < 20 行；`COLOR_BORDER_HAIRLINE` 仍被上述四类消费，
+不会变成死令牌。4% alpha 的描边在屏幕上近乎不可见，删与不删的差别只能上机判 —— 已列设备目检项。
+
+留给终审的反面意见：若终审认为 prose 的 Cards 段应当赢（补回描边），那就同时得给 51/63 之外的 12 个无阴影卡
+也补齐 prose 的两件套，并翻 §6.4 已裁的胶囊那条——**原则只能整体翻，不能只翻一处。**
 
 ## 7. 风险
 
