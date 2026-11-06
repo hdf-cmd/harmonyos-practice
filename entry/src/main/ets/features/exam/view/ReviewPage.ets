@@ -3,7 +3,8 @@
 // 【路由】注册在根栈（RouteConstants.REVIEW），由结果页"查看逐题解析"push 进入，
 //   onReady 从路由参数取 attemptId → vm.loadReview。
 // 【分层】数据与派生全在 ReviewViewModel（@Trace review + showWrongOnly），本页只渲染。
-import { CommonConstants } from '@zhititong/common'
+import { CommonConstants, FontSetting, StateKeys } from '@zhititong/common'
+import { PersistenceV2 } from '@kit.ArkUI'
 import { ReviewViewModel } from '../viewmodel/ReviewViewModel'
 import { ReviewQuestionDetail } from '../service/ExamService'
 import { ReviewQuestionCard } from './ReviewQuestionCard'
@@ -14,6 +15,11 @@ import { AssistantEntry } from '../../assistant/AssistantEntry'
 export struct ReviewPage {
   @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
   @Local vm: ReviewViewModel = new ReviewViewModel()
+  // 字号档位：本页连一次，逐题传给 ReviewQuestionCard（卡片是 List 里多实例，不在每张卡里各连一遍）。
+  //   与答题页 :30 同一写法、同一个 StateKeys.FONT_SETTING——落盘由 PersistenceV2 接管，
+  //   在「我的」页改档位，这里和答题页一起刷新。
+  @Local font: FontSetting = PersistenceV2.connect(FontSetting, StateKeys.FONT_SETTING,
+    () => new FontSetting())!
 
   build() {
     NavDestination() {
@@ -105,7 +111,11 @@ export struct ReviewPage {
             List({ space: CommonConstants.SPACE_CARD_GAP }) {
               ForEach(this.vm.visibleQuestions, (q: ReviewQuestionDetail) => {
                 ListItem() {
-                  ReviewQuestionCard({ question: q, index: this.vm.questionNoById(q.questionId) })
+                  ReviewQuestionCard({
+                    question: q,
+                    index: this.vm.questionNoById(q.questionId),
+                    font: this.font
+                  })
                 }
               }, (q: ReviewQuestionDetail) => q.questionId)
             }

@@ -3,7 +3,7 @@
 // 【高亮规则】同一项既是我选的又是正确答案时显示绿色（对优先于错）：
 //   我的答案橙色、正确答案绿色、双中绿色。多选题按字母串包含判断，不能整串相等。
 // 【左边框色带】绿对红错——一条 4vp 的左边框，扫一眼就能看出这题对没对。
-import { CommonConstants, questionTypeLabel } from '@zhititong/common'
+import { CommonConstants, FontSetting, questionTypeLabel } from '@zhititong/common'
 import { OptionItem } from '@zhititong/common'
 import { ReviewQuestionDetail } from '../service/ExamService'
 
@@ -12,6 +12,10 @@ export struct ReviewQuestionCard {
   @Param @Require question: ReviewQuestionDetail
   // 原卷题号（只看错题时也保持原始序号，不跟着过滤后的下标走）
   @Param @Require index: number
+  // 字号档位：由 ReviewPage 连好一次再传进来，不在本卡里 connect——
+  //   这卡是 List 里逐题渲染的（一份卷 30 题就是 30 个实例），每实例各连一次是白花的开销。
+  //   sizeOf 读的是 FontSetting 上的 @Trace 字段，V2 在渲染期建立依赖，档位一变全部卡片自动重绘。
+  @Param @Require font: FontSetting
 
   private myAnswer(): string {
     const u: string | null = this.question.userAnswer
@@ -88,28 +92,34 @@ export struct ReviewQuestionCard {
       .width('100%')
 
       // 题干：卡片里唯一长度完全不可控的正文，窄屏/分屏/极大档都会折行 → 按 §3.3 配 body-lg 行高
+      // 字号与行高都过 sizeOf：与答题页题干同一机制（那边 :392/:396 就是 sizeOf 成对出现）。
+      //   只放大字不动行高，五档下越挤越近；只动字不动行高则是本卡改之前的状态——
+      //   同一道题在答题页会跟随档位、在回顾页纹丝不动，两屏自相矛盾。
       Text(this.question.content)
-        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
-        .lineHeight(CommonConstants.LINE_BODY_LG)
+        .lineHeight(this.font.sizeOf(CommonConstants.LINE_BODY_LG))
         .fontColor(CommonConstants.COLOR_TEXT_MAIN)
         .margin({ top: CommonConstants.SPACE_M })
         .width('100%')
 
       // 选项：正确项成功浅底、我的错选警示浅底、两者皆中成功浅底（对优先于错）
-      // 与答题页选项行只对齐"容器形态"两处：padding 12/10 与圆角 RADIUS_INPUT（见本块下方那两个属性，
-      //   对 ExamDetailPage 里同名的那两个属性——不写行号，本文件插入注释会让号漂）。
-      //   字档刻意不统一——本卡用 body-md（14/400/22），答题页选项用 body-lg 的字号 16 配一个
-      //   写死的 24（那边是 sizeOf(24)，不是 LINE_BODY_LG=26，两屏行高本就不同源）。
-      //   设计源里没有回顾屏选项的逐档字号记载，对齐需要依据，没有就不编；
-      //   此处 body-md 与本卡解析正文同档，属卡内自洽的选择，不是"形态分叉"的疏忽。
+      // 与答题页选项行对齐的三处：padding 12/10、圆角 RADIUS_INPUT、**字档 body-lg**
+      //   （见本块下方那两个属性，对 ExamDetailPage 里同名的那两个属性——不写行号，本文件插入注释会让号漂）。
+      // 【档位这条并过的来龙去脉，别当成又一次翻烧饼】
+      //   原先这里刻意留 body-md(14)，理由是"设计源没有回顾屏选项的逐档字号记载，对齐需要依据，没有就不编"。
+      //   那条理由本身没错，但它挡住的代价是：**同一条选项正文在答题页 16、在回顾页 14**，
+      //   用户回顾自己刚答过的题时，看到的是一道被缩小过的同一句话——这是跨屏不一致，不是风格差异。
+      //   2026-11-06 由用户明确拍板"并"，所以按"两屏同内容同档"这条更上位的规矩统一到 body-lg。
+      //   行高仍按**本卡自己的档位配对**取 LINE_BODY_LG(26)，不抄答题页那个写死的 24：
+      //   两屏行高本就不同源（那边是 sizeOf(24)），本卡题干也是 BODY_LG/LINE_BODY_LG，卡内配对优先。
       Column({ space: CommonConstants.SPACE_CARD_GAP }) {
         ForEach(this.question.options, (option: OptionItem) => {
           Text(`${option.label}. ${option.content}`)
-            .fontSize(CommonConstants.FONT_BODY_MD)
+            .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_LG))
             .fontWeight(CommonConstants.WEIGHT_REGULAR)
-            // 选项正文与题干同类：内容随题目变，会折行 → 配行高（body-md 与本卡的解析正文同档）
-            .lineHeight(CommonConstants.LINE_BODY_MD)
+            // 选项正文与题干同类：内容随题目变，会折行 → 配行高，且与字号走同一个偏移量，理由同题干。
+            .lineHeight(this.font.sizeOf(CommonConstants.LINE_BODY_LG))
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .width('100%')
             .padding({ left: 12, right: 12, top: 10, bottom: 10 })
@@ -145,10 +155,11 @@ export struct ReviewQuestionCard {
 
       // 解析区：空串给占位，样式降一级（静息浅底 + 次文本色，占位再降一档到提示色）
       // 解析正文按题不同、几百字也常见，可换行 → 配 body-md 行高
+      // 与题干、选项同批过 sizeOf：三处都是"随档位变的正文"，只补两处等于把缺陷留在原地
       Text(this.question.analysis === '' ? '暂无解析' : this.question.analysis)
-        .fontSize(CommonConstants.FONT_BODY_MD)
+        .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_MD))
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
-        .lineHeight(CommonConstants.LINE_BODY_MD)
+        .lineHeight(this.font.sizeOf(CommonConstants.LINE_BODY_MD))
         .fontColor(this.question.analysis === ''
           ? CommonConstants.COLOR_TEXT_HINT : CommonConstants.COLOR_TEXT_SUB)
         .width('100%')
