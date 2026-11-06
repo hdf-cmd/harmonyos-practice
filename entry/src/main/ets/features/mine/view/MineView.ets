@@ -9,6 +9,7 @@
 // 【MVVM】用户信息与退出登录业务全在 MineViewModel（@Trace），本页只渲染与转发事件；
 //   菜单项由 vm.menuItems 驱动，点击行为（菜单跳转）后续阶段接。
 import { CommonConstants, FONT_LEVELS, FontLevel, FontSetting, RouteConstants, StateKeys } from '@zhititong/common'
+import { PageHeader } from '../../shell/PageHeader'
 import { PersistenceV2 } from '@kit.ArkUI'
 import { SettingItem } from './components/SettingItem'
 import { MineViewModel } from '../viewmodel/MineViewModel'
@@ -20,8 +21,8 @@ import { AssistantEntry } from '../../assistant/AssistantEntry'
 export struct MineView {
   // 三级导航：Mine 域自持子栈（预留，后续"考试记录""我的证书"等子页挂这里）
   @Provider('mineStack') mineStack: NavPathStack = new NavPathStack()
-  // 登出要操作根栈
-  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
+  // 根栈字段已删除（2026-11-06）：登出不再操作根栈，只调 vm.logout()——
+  //   SessionManager.logout() 把 loggedIn 置假，AppNavigation 的内容区自己换成登录页。
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；字段都是 @Trace，VM 加载完成后页面自动刷新
   @Local vm: MineViewModel = new MineViewModel()
@@ -96,103 +97,109 @@ export struct MineView {
     // Navigation：Mine 域的子栈容器（当前无域内子页，先立架子）
     Navigation(this.mineStack) {
       Column() {
-        // 用户信息区：头像 + 名字签名，横排（Row 套 Column 的经典组合）
-        Row() {
-          // 头像：正方形图片 + borderRadius 一半边长 = 正圆
-          Image($r('app.media.ic_app'))
-            .width(60)
-            .height(60)
-            .borderRadius(30)
-
-          // 用户名 + 签名：右侧纵向排两行（字号走 sizeOf：基准常量 + 全局偏移，层级关系保留）
-          Column() {
-            Text(this.vm.userName)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_HEADLINE_SM))
-              // headline-sm 档配对字重 600（§3.3 档位表），不是原来的裸 Bold
-              .fontWeight(CommonConstants.WEIGHT_SEMI)
-              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-
-            Text(this.vm.signature)
-              .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_SM))
-              .fontWeight(CommonConstants.WEIGHT_REGULAR)
-              // 签名是这页唯一长度不可控的文案（可折行），按全局裁决配配对行高；单行标签一律不配
-              .lineHeight(CommonConstants.LINE_BODY_SM)
-              .fontColor(CommonConstants.COLOR_TEXT_HINT)
-              .margin({ top: 4 })
-          }
-          .alignItems(HorizontalAlign.Start)
-          .margin({ left: CommonConstants.SPACE_M })
-        }
-        .width('100%')
-        .padding(CommonConstants.SPACE_M)
-        .backgroundColor(CommonConstants.COLOR_CARD_BG)
-        .borderRadius(CommonConstants.RADIUS_CARD)
-        .shadow(CommonConstants.SHADOW_CARD)
-
-        // 功能列表区：菜单标题由 VM 驱动，ForEach 渲染（顺序即 vm.menuItems 顺序）
+        PageHeader({ title: '我的' })
         Column() {
-          ForEach(this.vm.menuItems, (title: string, index: number) => {
-            SettingItem({
-              title: title,
-              onTap: () => {
-                this.onMenuClick(index)
-              }
-            })
-            // 字号档位行插在"我的证书"之后：它顶替的是原"字体大小"那一格——
-            //   菜单少一项、这里补一行，页面总行数与顺序都和改造前一致
-            if (index === 1) {
-              this.FontSettingRow()
-            }
-          }, (title: string) => title)
-          // ↑ 键值生成器：菜单标题唯一，用它当 key
-        }
-        .width('100%')
-        .backgroundColor(CommonConstants.COLOR_CARD_BG)
-        .borderRadius(CommonConstants.RADIUS_CARD)
-        // 卡面配方（§6.6）：白底 + 圆角 16 + Level 1 阴影，与同页用户卡同档。
-        //   之前这半套缺阴影，是"同屏两套卡面"被 Task 11 审查点名后补上的。
-        //   clip 与 shadow 不冲突——SDK 把 clip 的语义写死了：裁的是**超出本组件边界的子组件**
-        //   （common.d.ts:21150），不涉及节点自身投影，全文件也没有 clip 与 shadow 并举的条款。
-        .shadow(CommonConstants.SHADOW_CARD)
-        // 卡内是贴边的整行（行宽 100%，发丝线画在行的左右满宽处），不像别的卡那样有 16 内边距挡着，
-        //   所以必须 clip：ArkUI 的容器圆角默认不裁剪子节点，末行的线会从圆角外头直着穿出去，
-        //   圆角等于没落地（同 F02 轮播卡加 clip 的理由）
-        .clip(true)
-        // 卡与卡的纵向节奏 12（§3.4），不是页面左右边距那个 16
-        .margin({ top: CommonConstants.SPACE_CARD_GAP })
+          // 用户信息区：头像 + 名字签名，横排（Row 套 Column 的经典组合）
+          Row() {
+            // 头像：正方形图片 + borderRadius 一半边长 = 正圆
+            Image($r('app.media.ic_app'))
+              .width(60)
+              .height(60)
+              .borderRadius(30)
 
-        // 助教入口（通用问答）：只给标题，不带考试上下文——这里没有"当前这场考试"可带。
-        //   设备不具备 AgentKit 或在模拟器上时，组件内部整体不渲染，页面其余部分不受影响。
-        AssistantEntry({ title: 'AI 备考助教' })
+            // 用户名 + 签名：右侧纵向排两行（字号走 sizeOf：基准常量 + 全局偏移，层级关系保留）
+            Column() {
+              Text(this.vm.userName)
+                .fontSize(this.font.sizeOf(CommonConstants.FONT_HEADLINE_SM))
+                // headline-sm 档配对字重 600（§3.3 档位表），不是原来的裸 Bold
+                .fontWeight(CommonConstants.WEIGHT_SEMI)
+                .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+
+              Text(this.vm.signature)
+                .fontSize(this.font.sizeOf(CommonConstants.FONT_BODY_SM))
+                .fontWeight(CommonConstants.WEIGHT_REGULAR)
+                // 签名是这页唯一长度不可控的文案（可折行），按全局裁决配配对行高；单行标签一律不配
+                .lineHeight(CommonConstants.LINE_BODY_SM)
+                .fontColor(CommonConstants.COLOR_TEXT_HINT)
+                .margin({ top: 4 })
+            }
+            .alignItems(HorizontalAlign.Start)
+            .margin({ left: CommonConstants.SPACE_M })
+          }
+          .width('100%')
+          .padding(CommonConstants.SPACE_M)
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
+          .borderRadius(CommonConstants.RADIUS_CARD)
+          .shadow(CommonConstants.SHADOW_CARD)
+
+          // 功能列表区：菜单标题由 VM 驱动，ForEach 渲染（顺序即 vm.menuItems 顺序）
+          Column() {
+            ForEach(this.vm.menuItems, (title: string, index: number) => {
+              SettingItem({
+                title: title,
+                onTap: () => {
+                  this.onMenuClick(index)
+                }
+              })
+              // 字号档位行插在"我的证书"之后：它顶替的是原"字体大小"那一格——
+              //   菜单少一项、这里补一行，页面总行数与顺序都和改造前一致
+              if (index === 1) {
+                this.FontSettingRow()
+              }
+            }, (title: string) => title)
+            // ↑ 键值生成器：菜单标题唯一，用它当 key
+          }
+          .width('100%')
+          .backgroundColor(CommonConstants.COLOR_CARD_BG)
+          .borderRadius(CommonConstants.RADIUS_CARD)
+          // 卡面配方（§6.6）：白底 + 圆角 16 + Level 1 阴影，与同页用户卡同档。
+          //   之前这半套缺阴影，是"同屏两套卡面"被 Task 11 审查点名后补上的。
+          //   clip 与 shadow 不冲突——SDK 把 clip 的语义写死了：裁的是**超出本组件边界的子组件**
+          //   （common.d.ts:21150），不涉及节点自身投影，全文件也没有 clip 与 shadow 并举的条款。
+          .shadow(CommonConstants.SHADOW_CARD)
+          // 卡内是贴边的整行（行宽 100%，发丝线画在行的左右满宽处），不像别的卡那样有 16 内边距挡着，
+          //   所以必须 clip：ArkUI 的容器圆角默认不裁剪子节点，末行的线会从圆角外头直着穿出去，
+          //   圆角等于没落地（同 F02 轮播卡加 clip 的理由）
+          .clip(true)
+          // 卡与卡的纵向节奏 12（§3.4），不是页面左右边距那个 16
           .margin({ top: CommonConstants.SPACE_CARD_GAP })
 
-        // 退出登录按钮：Blank() 把它推到页面底部
-        Blank()
-        Button('退出登录')
-          .type(ButtonType.Normal)
-          .width('80%')
-          .height(CommonConstants.BTN_HEIGHT)
-          .fontSize(CommonConstants.FONT_BODY_LG)
-          .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // Button 默认字重即 500（SDK button.d.ts），声明不改观感
-          .backgroundColor(CommonConstants.COLOR_CARD_BG)
-          .fontColor(CommonConstants.COLOR_ERROR)   // 危险操作用错误色提示
-          .borderRadius(CommonConstants.RADIUS_BUTTON)
-          .margin({ top: CommonConstants.SPACE_L })
-          .onClick(async () => {
-            // View 不做判断，只转发事件、消费结果：
-            // 登出业务（清 session 等）在 VM 里，成功才清根栈
-            const res = await this.vm.logout()
-            if (res.ok) {
-              // 清空根栈：栈空后 Navigation 回落到内容区，也就是登录页——登出闭环。
-              // 注意清的是根栈而不是 mineStack：要退出的是整个应用，不只是"我的"域
-              this.pageStack.clear()
-            }
-          })
+          // 助教入口（通用问答）：只给标题，不带考试上下文——这里没有"当前这场考试"可带。
+          //   设备不具备 AgentKit 或在模拟器上时，组件内部整体不渲染，页面其余部分不受影响。
+          AssistantEntry({ title: 'AI 备考助教' })
+            .margin({ top: CommonConstants.SPACE_CARD_GAP })
+
+          // 退出登录按钮：Blank() 把它推到页面底部
+          Blank()
+          Button('退出登录')
+            .type(ButtonType.Normal)
+            .width('80%')
+            .height(CommonConstants.BTN_HEIGHT)
+            .fontSize(CommonConstants.FONT_BODY_LG)
+            .fontWeight(CommonConstants.WEIGHT_MEDIUM)   // Button 默认字重即 500（SDK button.d.ts），声明不改观感
+            .backgroundColor(CommonConstants.COLOR_CARD_BG)
+            .fontColor(CommonConstants.COLOR_ERROR)   // 危险操作用错误色提示
+            .borderRadius(CommonConstants.RADIUS_BUTTON)
+            .margin({ top: CommonConstants.SPACE_L })
+            .onClick(() => {
+              // View 只转发事件：登出业务（清内存 token、清运行态用户、异步清盘）全收在 VM 里。
+              //   旧写法是 `const res = await this.vm.logout(); if (res.ok) this.pageStack.clear()`，
+              //   那句 clear 属于"主页是根栈栈项"的时代——靠清空栈让 Navigation 回落到登录页内容区。
+              //   现在 AppNavigation 按 loggedIn 选内容，SessionManager.logout() 一置假界面就换，
+              //   根栈上本来就没有主页，clear() 成了空操作；留着会让下一位以为登出的机制是清栈。
+              this.vm.logout()
+            })
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .backgroundColor(CommonConstants.COLOR_BG_PAGE)
+        .padding(CommonConstants.SPACE_M)
       }
       .width('100%')
       .height('100%')
+      // 大底由外层 Column 承担：顶栏与内容区同色，不会在顶栏下沿露出一道色差。
+      //   内层 Column 仍保留原来的四边 16（顶栏之下的那 16 是页面自己的留白，不是顶栏的一部分）
       .backgroundColor(CommonConstants.COLOR_BG_PAGE)
-      .padding(CommonConstants.SPACE_M)
     }
     .navDestination(this.MineRouter)   // 域内路由表（本章为空）
     .hideTitleBar(true)                // 不要系统标题栏：Tab 页有自己的排版

@@ -11,8 +11,9 @@
 //   内容高度超过一屏时即可竖向滚动浏览（试卷列表长了以后整页往下滑）。
 // 【知识点 3.2.3 Swiper 轮播组件】顶部 banner 用 Swiper 自动轮播。
 // 【知识点 3.2.1 List 列表组件】推荐试卷区用 List + ListItem + ForEach 驱动。
-// 三者嵌套关系：Navigation > Scroll(外层滚动) > Swiper(轮播) / List(列表)。
-import { CommonConstants, PaperInfo, RouteConstants } from '@zhititong/common'
+// 三者嵌套关系：Navigation > Column(顶栏+滚动区) > PageHeader / Scroll(外层滚动) > Swiper(轮播) / List(列表)。
+import { CommonConstants, PaperInfo } from '@zhititong/common'
+import { PageHeader } from '../../shell/PageHeader'
 import { PaperCard } from './components/PaperCard'
 import { HomeViewModel } from '../viewmodel/HomeViewModel'
 
@@ -22,8 +23,8 @@ import { HomeViewModel } from '../viewmodel/HomeViewModel'
 export struct HomeView {
   // 三级导航：Home 域自持子栈（本章 Home 域详情走根栈，子栈与路由先预留空架子）
   @Provider('homeStack') homeStack: NavPathStack = new NavPathStack()
-  // 会话失效要跳登录页——登录页注册在根栈，这里跨层级取根栈（与 PaperCard 同一套口径）
-  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
+  // 根栈字段已删除（2026-11-06）：会话失效不再"跳登录页"，而是 clearExpiredSession()
+  //   把 loggedIn 置假，由 AppNavigation 按登录态把内容区换成登录页。见下面那颗按钮的注释。
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；papers 是 @Trace 字段，VM 加载完成后列表自动刷新
   @Local vm: HomeViewModel = new HomeViewModel()
@@ -74,12 +75,11 @@ export struct HomeView {
         .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
         .margin({ top: CommonConstants.SPACE_M })
         .onClick(() => {
-          if (this.vm.authExpired) {
-            this.vm.clearExpiredSession()
-            this.pageStack.replacePathByName(RouteConstants.LOGIN, null)
-          } else {
-            this.vm.loadRecommendedPapers()
-          }
+          // View 只转发点击，不判分支：会话过期就清凭证、否则重试加载，两条都在 VM 里
+          //   （BaseViewModel.handleErrorAction）。旧写法在这里写 `if (this.vm.authExpired)`，
+          //   等于把 VM 内部已有的守卫在 View 里又抄一遍——违反"View 零业务判断"。
+          // 清完会话不做任何路由：loggedIn 置假后 AppNavigation 的内容区自己换成登录页。
+          this.vm.handleErrorAction()
         })
     }
     .width('100%')
@@ -116,97 +116,109 @@ export struct HomeView {
     // Navigation：三级导航里"域"这一层的容器。每个 Tab 的根页面自持一个 Navigation + 子栈，
     // 这样域内的 push/pop 只在域内发生，不会把底部 Tab 顶掉。
     Navigation(this.homeStack) {
-      // ===== Scroll（3.2.7）=====
-      // Scroll 是"单子组件滚动容器"，规则：
-      //   1) 有且只能有一个直接子组件——所以惯例在里面套一个 Column 把全部内容装一起
-      //   2) 滚动方向由内容与容器的尺寸差决定：内容更高 → 竖向滚动（本页情形）
-      //   3) 子组件要 .width('100%')，否则 Scroll 默认让子组件自适应窗口宽
-      Scroll() {
-        Column() {
-          // ===== Swiper 轮播区（3.2.3）=====
-          // Swiper：滑动切换容器，子组件按顺序一屏一张。
-          //   autoPlay(true)   —— 自动播放
-          //   interval(3000)   —— 每 3000ms 切一张
-          //   indicator(true)  —— 显示小圆点指示器
-          //   loop 默认 true   —— 播到最后一张自动回到第一张
-          // 六个 Image 就是六页轮播内容，逐张铺满同一块 160 高的区域
-          Swiper() {
-            Image($r('app.media.banner1'))
-              .width('100%')
-              .height(160)
-            Image($r('app.media.banner2'))
-              .width('100%')
-              .height(160)
-            Image($r('app.media.banner3'))
-              .width('100%')
-              .height(160)
-            Image($r('app.media.banner4'))
-              .width('100%')
-              .height(160)
-            Image($r('app.media.banner5'))
-              .width('100%')
-              .height(160)
-            Image($r('app.media.banner6'))
-              .width('100%')
-              .height(160)
-          }
-          .autoPlay(true)
-          .interval(3000)
-          .indicator(true)
-          .height(160)
-          .borderRadius(CommonConstants.RADIUS_CARD)
-          // clip(true) 是圆角真正生效的前提：ArkUI 容器默认不裁剪子节点，
-          // 而六个 Image 是 100% 宽 × 160 高的满铺内容——不裁剪就是"方图盖在圆框上"，
-          // 圆角轮播等于没落地（spec §4 F02）。视觉只装机可验，这里只保证属性链成立。
-          .clip(true)
-          .margin({ bottom: CommonConstants.SPACE_L })
-
-          // 推荐试卷标题（分区标题档 20/600 + 配对行高）
-          // 归"会换行"一类：极小窗/分屏下四字标题也可能折行，且父 Column 高度自适应，行高 28 不裁切
-          Text('推荐试卷')
-            .fontSize(CommonConstants.FONT_HEADLINE_MD)
-            .fontWeight(CommonConstants.WEIGHT_SEMI)
-            .lineHeight(CommonConstants.LINE_HEADLINE_MD)
-            .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-            .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
-
-          // ===== List 列表区（3.2.1）=====
-          // List：列表容器，子项必须包在 ListItem 里。要点：
-          //   1) 按需渲染 + 自带滚动，子项多时比"ForEach 塞进 Column"更流畅，是长列表首选
-          //   2) 默认竖向排列（Axis.Vertical），.listDirection(Axis.Horizontal) 可改横向列表
-          //   3) 构造参数 { space: N } 统一设子项间距——换装后卡片纵向间距取令牌 12（方案A §3.4），
-          //      原先加在 ListItem 上的 margin(SPACE_M=16) 一并撤掉，否则与 space 叠加成 28
-          // 三态顺序：加载中 → 加载失败 → 正常列表。错误优先于"空列表"判：
-          // 真·零张卷（池子空）和"没拉到"是两回事，后者必须说清楚
-          if (this.vm.loading && this.vm.papers.length === 0) {
-            this.Loading()
-          } else if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
-            this.LoadFailed()
-          } else {
-            List({ space: CommonConstants.SPACE_CARD_GAP }) {
-              // ForEach：数据驱动渲染。三个参数：
-              //   1) 数据源 this.papers
-              //   2) itemGenerator：每条数据生成一个 ListItem（数据变 → UI 自动跟着变）
-              //   3) keyGenerator：键值生成器（见下方注释）
-              ForEach(this.vm.papers, (paper: PaperInfo) => {
-                ListItem() {
-                  // 点击跳转由 PaperCard 自己处理（它用 @Consumer 取根栈 push EXAM_DETAIL），
-                  // 容器这里只管排版——"卡片管自己的交互"比在列表里堆 onClick 更好维护
-                  PaperCard({ paper: paper })
-                }
-              }, (paper: PaperInfo) => paper.id)
-              // ↑ 键值生成器：用试卷唯一 id 当 key。
-              // 数据增删/顺序变化时，框架按 key 判断哪些项要重建、哪些可复用；
-              // 用稳定 id 可避免列表项复用错位（比如图片、角标串位）——这是 List 的必配项。
+      // 顶栏 + 滚动区。顶栏必须放在 Scroll **外面**：设计稿的 header 是 `fixed top-0`，
+      //   跟着内容滚走的页头不是它要的东西。而 Scroll 只收一个直接子组件，
+      //   所以这里由外层 Column 承担"容器"，Scroll 用 layoutWeight(1) 吃掉顶栏剩下的全部高度
+      //   （原来是 .height('100%')——那是在没有兄弟节点时等于铺满，现在有了顶栏就会溢出屏幕）。
+      Column() {
+        PageHeader({ title: '首页' })
+        // ===== Scroll（3.2.7）=====
+        // Scroll 是"单子组件滚动容器"，规则：
+        //   1) 有且只能有一个直接子组件——所以惯例在里面套一个 Column 把全部内容装一起
+        //   2) 滚动方向由内容与容器的尺寸差决定：内容更高 → 竖向滚动（本页情形）
+        //   3) 子组件要 .width('100%')，否则 Scroll 默认让子组件自适应窗口宽
+        Scroll() {
+          Column() {
+            // ===== Swiper 轮播区（3.2.3）=====
+            // Swiper：滑动切换容器，子组件按顺序一屏一张。
+            //   autoPlay(true)   —— 自动播放
+            //   interval(3000)   —— 每 3000ms 切一张
+            //   indicator(true)  —— 显示小圆点指示器
+            //   loop 默认 true   —— 播到最后一张自动回到第一张
+            // 六个 Image 就是六页轮播内容，逐张铺满同一块 160 高的区域
+            Swiper() {
+              Image($r('app.media.banner1'))
+                .width('100%')
+                .height(160)
+              Image($r('app.media.banner2'))
+                .width('100%')
+                .height(160)
+              Image($r('app.media.banner3'))
+                .width('100%')
+                .height(160)
+              Image($r('app.media.banner4'))
+                .width('100%')
+                .height(160)
+              Image($r('app.media.banner5'))
+                .width('100%')
+                .height(160)
+              Image($r('app.media.banner6'))
+                .width('100%')
+                .height(160)
             }
-            .width('100%')
+            .autoPlay(true)
+            .interval(3000)
+            .indicator(true)
+            .height(160)
+            .borderRadius(CommonConstants.RADIUS_CARD)
+            // clip(true) 是圆角真正生效的前提：ArkUI 容器默认不裁剪子节点，
+            // 而六个 Image 是 100% 宽 × 160 高的满铺内容——不裁剪就是"方图盖在圆框上"，
+            // 圆角轮播等于没落地（spec §4 F02）。视觉只装机可验，这里只保证属性链成立。
+            .clip(true)
+            .margin({ bottom: CommonConstants.SPACE_L })
+
+            // 推荐试卷标题（分区标题档 20/600 + 配对行高）
+            // 归"会换行"一类：极小窗/分屏下四字标题也可能折行，且父 Column 高度自适应，行高 28 不裁切
+            Text('推荐试卷')
+              .fontSize(CommonConstants.FONT_HEADLINE_MD)
+              .fontWeight(CommonConstants.WEIGHT_SEMI)
+              .lineHeight(CommonConstants.LINE_HEADLINE_MD)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+              .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
+
+            // ===== List 列表区（3.2.1）=====
+            // List：列表容器，子项必须包在 ListItem 里。要点：
+            //   1) 按需渲染 + 自带滚动，子项多时比"ForEach 塞进 Column"更流畅，是长列表首选
+            //   2) 默认竖向排列（Axis.Vertical），.listDirection(Axis.Horizontal) 可改横向列表
+            //   3) 构造参数 { space: N } 统一设子项间距——换装后卡片纵向间距取令牌 12（方案A §3.4），
+            //      原先加在 ListItem 上的 margin(SPACE_M=16) 一并撤掉，否则与 space 叠加成 28
+            // 三态顺序：加载中 → 加载失败 → 正常列表。错误优先于"空列表"判：
+            // 真·零张卷（池子空）和"没拉到"是两回事，后者必须说清楚
+            if (this.vm.loading && this.vm.papers.length === 0) {
+              this.Loading()
+            } else if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
+              this.LoadFailed()
+            } else {
+              List({ space: CommonConstants.SPACE_CARD_GAP }) {
+                // ForEach：数据驱动渲染。三个参数：
+                //   1) 数据源 this.papers
+                //   2) itemGenerator：每条数据生成一个 ListItem（数据变 → UI 自动跟着变）
+                //   3) keyGenerator：键值生成器（见下方注释）
+                ForEach(this.vm.papers, (paper: PaperInfo) => {
+                  ListItem() {
+                    // 点击跳转由 PaperCard 自己处理（它用 @Consumer 取根栈 push EXAM_DETAIL），
+                    // 容器这里只管排版——"卡片管自己的交互"比在列表里堆 onClick 更好维护
+                    PaperCard({ paper: paper })
+                  }
+                }, (paper: PaperInfo) => paper.id)
+                // ↑ 键值生成器：用试卷唯一 id 当 key。
+                // 数据增删/顺序变化时，框架按 key 判断哪些项要重建、哪些可复用；
+                // 用稳定 id 可避免列表项复用错位（比如图片、角标串位）——这是 List 的必配项。
+              }
+              .width('100%')
+            }
           }
+          .width('100%')
+          .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
         }
         .width('100%')
-        .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+        .layoutWeight(1)
+        .backgroundColor(CommonConstants.COLOR_BG_PAGE)
       }
       .width('100%')
       .height('100%')
+      // 大底由外层 Column 承担：顶栏与滚动区同色，视觉上才是一条连续的页面底，
+      //   不会在 56 顶栏的下沿露出一道色差
       .backgroundColor(CommonConstants.COLOR_BG_PAGE)
     }
     .navDestination(this.HomeRouter)   // 域内路由表（本章为空）

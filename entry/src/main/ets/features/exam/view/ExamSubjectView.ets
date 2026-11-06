@@ -11,6 +11,7 @@
 // 与 List 的分工：List 是一维流式列表（一列/一行）；Grid 天生管"多列对齐"的布局，
 // 典型场景：九宫格、相册、分类入口（本页）。
 import { CommonConstants, RouteConstants, CategoryGroup } from '@zhititong/common'
+import { PageHeader } from '../../shell/PageHeader'
 import { ExamSubjectViewModel } from '../viewmodel/ExamSubjectViewModel'
 import { ExamSubjectCard } from './components/ExamSubjectCard'
 import { ExamListPage } from './ExamListPage'
@@ -19,8 +20,8 @@ import { ExamListPage } from './ExamListPage'
 export struct ExamSubjectView {
   // 三级导航：Exam 域自持子栈
   @Provider('examStack') examStack: NavPathStack = new NavPathStack()
-  // 会话失效要跳登录页——登录页注册在根栈，这里跨层级取根栈（与首页同一套口径）
-  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
+  // 根栈字段已删除（2026-11-06）：会话失效不再"跳登录页"，而是由 VM 清会话、
+  //   AppNavigation 按 loggedIn 把内容区换成登录页。见下面那颗按钮的注释。
   // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
   // @Local 持有 VM 实例；groups 是 @Trace 字段，VM 加载完成后 Grid 自动刷新
   @Local vm: ExamSubjectViewModel = new ExamSubjectViewModel()
@@ -60,12 +61,10 @@ export struct ExamSubjectView {
         .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
         .margin({ top: CommonConstants.SPACE_M })
         .onClick(() => {
-          if (this.vm.authExpired) {
-            this.vm.clearExpiredSession()
-            this.pageStack.replacePathByName(RouteConstants.LOGIN, null)
-          } else {
-            this.vm.loadSubjectGroups()
-          }
+          // 与首页那颗按钮同一口径：View 只转发，分支在 VM（BaseViewModel.handleErrorAction）。
+          //   旧写法在这里 `if (this.vm.authExpired)` 再各调一句——那是把 VM 的守卫抄进 View，
+          //   而且清完会话还跟一句 replacePathByName(LOGIN)，与新的"按登录态选内容"是两套模型。
+          this.vm.handleErrorAction()
         })
     }
     .width('100%')
@@ -103,55 +102,62 @@ export struct ExamSubjectView {
     // Navigation：Exam 域的子栈容器，域内页面在这里层层压栈，不会影响根栈和底部 Tab
     Navigation(this.examStack) {
       Column() {
-        // 页面标题：与首页分区标题同一档（20/600 + 配对行高，Task 5 对四字页面级标题判"可换行"）
-        // 分区标题到下方内容的间距定死 12（spec §3.4），与首页"推荐试卷"同轨——原来这里是 16，
-        // 同域两屏不对称会被装机目检抓出来
-        Text('考试科目')
-          .fontSize(CommonConstants.FONT_HEADLINE_MD)
-          .fontWeight(CommonConstants.WEIGHT_SEMI)
-          .lineHeight(CommonConstants.LINE_HEADLINE_MD)
-          .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
+        PageHeader({ title: '刷题' })
+        Column() {
+          // 页面标题：与首页分区标题同一档（20/600 + 配对行高，Task 5 对四字页面级标题判"可换行"）
+          // 分区标题到下方内容的间距定死 12（spec §3.4），与首页"推荐试卷"同轨——原来这里是 16，
+          // 同域两屏不对称会被装机目检抓出来
+          Text('考试科目')
+            .fontSize(CommonConstants.FONT_HEADLINE_MD)
+            .fontWeight(CommonConstants.WEIGHT_SEMI)
+            .lineHeight(CommonConstants.LINE_HEADLINE_MD)
+            .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+            .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
 
-        // ===== Grid 网格（3.2.2）=====
-        // 关键属性逐一说明：
-        //   columnsTemplate('1fr 1fr') —— 定义 2 列，每列宽度均分。
-        //     "fr" 是份数单位，1fr:1fr 即对半分；3 列写 '1fr 1fr 1fr'；
-        //     也可以混写如 '2fr 1fr'（第一列占 2/3）。不写 columnsTemplate 时 Grid 会按行排（需配 rowsTemplate）。
-        //   columnsGap / rowsGap —— 横向沟 16（SPACE_M）、纵向节奏 12（SPACE_CARD_GAP）。
-        //     spec §3.4 的间距模型只有这一套，横纵两轴对网格同样成立，不是列表专属。
-        //   layoutWeight(1) —— 在外层 Column 里吃掉剩余高度；内容超出高度时 Grid 自带滚动能力。
-        // 注意：Grid 的子项必须包在 GridItem 里，直接放组件会不参与网格布局。
-        // 三态顺序：加载中 → 加载失败 → 正常网格。错误优先于"空网格"判：
-        // 拉到了但真没科目，和根本没拉到，界面要说的是两句话。
-        if (this.vm.loading && this.vm.groups.length === 0) {
-          this.Loading()
-        } else if (this.vm.errorMessage !== '' && this.vm.groups.length === 0) {
-          this.LoadFailed()
-        } else {
-          Grid() {
-            ForEach(this.vm.groups, (group: CategoryGroup) => {
-              GridItem() {
-                // 点击跳转由 ExamSubjectCard 自己处理（取 examStack push 域内路由）
-                ExamSubjectCard({ group: group })
-              }
-            }, (group: CategoryGroup) => group.categoryName)
-            // ↑ 键值生成器：科目名在本页数据里唯一，用它当 key 保证聚合结果变化时正确复用
+          // ===== Grid 网格（3.2.2）=====
+          // 关键属性逐一说明：
+          //   columnsTemplate('1fr 1fr') —— 定义 2 列，每列宽度均分。
+          //     "fr" 是份数单位，1fr:1fr 即对半分；3 列写 '1fr 1fr 1fr'；
+          //     也可以混写如 '2fr 1fr'（第一列占 2/3）。不写 columnsTemplate 时 Grid 会按行排（需配 rowsTemplate）。
+          //   columnsGap / rowsGap —— 横向沟 16（SPACE_M）、纵向节奏 12（SPACE_CARD_GAP）。
+          //     spec §3.4 的间距模型只有这一套，横纵两轴对网格同样成立，不是列表专属。
+          //   layoutWeight(1) —— 在外层 Column 里吃掉剩余高度；内容超出高度时 Grid 自带滚动能力。
+          // 注意：Grid 的子项必须包在 GridItem 里，直接放组件会不参与网格布局。
+          // 三态顺序：加载中 → 加载失败 → 正常网格。错误优先于"空网格"判：
+          // 拉到了但真没科目，和根本没拉到，界面要说的是两句话。
+          if (this.vm.loading && this.vm.groups.length === 0) {
+            this.Loading()
+          } else if (this.vm.errorMessage !== '' && this.vm.groups.length === 0) {
+            this.LoadFailed()
+          } else {
+            Grid() {
+              ForEach(this.vm.groups, (group: CategoryGroup) => {
+                GridItem() {
+                  // 点击跳转由 ExamSubjectCard 自己处理（取 examStack push 域内路由）
+                  ExamSubjectCard({ group: group })
+                }
+              }, (group: CategoryGroup) => group.categoryName)
+              // ↑ 键值生成器：科目名在本页数据里唯一，用它当 key 保证聚合结果变化时正确复用
+            }
+            .columnsTemplate('1fr 1fr')
+            .columnsGap(CommonConstants.SPACE_M)          // 16 横向沟
+            .rowsGap(CommonConstants.SPACE_CARD_GAP)      // 12 纵向节奏，与列表同轨
+            .width('100%')
+            .layoutWeight(1)
           }
-          .columnsTemplate('1fr 1fr')
-          .columnsGap(CommonConstants.SPACE_M)          // 16 横向沟
-          .rowsGap(CommonConstants.SPACE_CARD_GAP)      // 12 纵向节奏，与列表同轨
-          .width('100%')
-          .layoutWeight(1)
         }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({
+          left: CommonConstants.SPACE_M,
+          right: CommonConstants.SPACE_M,
+          top: CommonConstants.SPACE_M
+        })
+        .backgroundColor(CommonConstants.COLOR_BG_PAGE)
       }
       .width('100%')
       .height('100%')
-      .padding({
-        left: CommonConstants.SPACE_M,
-        right: CommonConstants.SPACE_M,
-        top: CommonConstants.SPACE_M
-      })
+      // 大底由外层 Column 承担：顶栏与内容区同色，不会在顶栏下沿露出一道色差
       .backgroundColor(CommonConstants.COLOR_BG_PAGE)
     }
     .navDestination(this.ExamRouter)   // 域内路由表：EXAM_LIST → 考卷列表页（ExamListPage）

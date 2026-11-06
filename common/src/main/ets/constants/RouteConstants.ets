@@ -5,9 +5,11 @@
 //   编译器不做校验——写错一个字母编译期不报错、运行时才白屏/静默失败。
 //   收敛成常量后，"哪条路由、在哪个域"一目了然，且写错名字编译期就报错。
 export class RouteConstants {
-  // 应用级路由（根栈 RootDomain）
-  static readonly LOGIN: string = 'app.Login'
-  static readonly MAIN: string = 'app.Main'
+  // 【应用级路由 MAIN / LOGIN 已于 2026-11-06 删除】
+  //   它们不再是路由，而是 AppNavigation 内容区按 session.loggedIn 二选一选出来的组件。
+  //   留着常量就是死令牌：以后有人照着名字 push 一次，会把"主页盖在登录页上"那个
+  //   返回键死锁重新引进来——删掉才是这道改动的护栏。
+  //   全仓引用面已核：grep -rn "RouteConstants.MAIN\|RouteConstants.LOGIN" 命中 0 处（只剩注释）。
 
   // 沉浸式详情页：统一注册到根栈（push 后盖住底部 Tab）
   static readonly EXAM_DETAIL: string = 'ExamDetail'

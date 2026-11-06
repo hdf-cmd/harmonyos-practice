@@ -50,11 +50,40 @@ export abstract class BaseViewModel {
 
   /**
    * 清掉已失效的本地会话（仅当确实是 401）。
-   * 只清凭证不导航——跳不跳登录页由 View 决定，ViewModel 零 UI。
+   *
+   * 【2026-11-06 更正这句旧注释】原先写的是"只清凭证不导航——跳不跳登录页由 View 决定"。
+   *   前半句仍然对，后半句已经作废：登录页不再是 View 跳过去的栈项，而是 AppNavigation
+   *   按 loggedIn 选出来的内容区。所以"导航"这件事既不在 VM 也不在 View，
+   *   它是会话状态的自然结果。VM 零 UI 这条铁律不变，而且比原来更干净——
+   *   View 连"要不要跳"都不用判断了。
    */
   clearExpiredSession(): void {
     if (this.authExpired) {
       SessionManager.logout()
     }
+  }
+
+  /**
+   * 错误区那颗按钮的统一入口——**决策在这里，不在 View**。
+   *
+   * 为什么要有这个方法：View 原先写的是
+   *   `if (this.vm.authExpired) { this.vm.clearExpiredSession() } else { this.vm.loadXxx() }`
+   * 那个 if 是把 VM 内部已有的判断（clearExpiredSession 自己就守着 authExpired）
+   * 在 View 里又抄了一遍——违反"View 零业务判断"，而且两处一旦改一处就会分叉。
+   * 现在 View 只转发点击事件，分支收在这一处。
+   *
+   * 子类要参与的部分只有"重试加载做什么"，覆盖 retryLoad 即可；
+   * 基类给空实现，所以现有 10 个子类不覆盖也照常编译、行为不变。
+   */
+  handleErrorAction(): void {
+    if (this.authExpired) {
+      this.clearExpiredSession()
+      return
+    }
+    this.retryLoad()
+  }
+
+  /** 非 401 的失败点"重试"时要做的加载——子类覆盖成自己那一条加载。 */
+  protected retryLoad(): void {
   }
 }

@@ -49,4 +49,12 @@ export class HomeViewModel extends BaseViewModel {
       this.setLoading(false)
     }
   }
+
+  /**
+   * 基类 handleErrorAction 的非 401 分支：本域的重试就是重新拉推荐试卷。
+   * 返回的 Result 不接——失败态由 @Trace errorMessage 承载，View 只渲染它（与 aboutToAppear 同一口径）。
+   */
+  protected retryLoad(): void {
+    this.loadRecommendedPapers()
+  }
 }

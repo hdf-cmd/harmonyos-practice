@@ -1,45 +1,29 @@
 // 登录/注册页（View 层）：零业务逻辑，全部委托 LoginViewModel
 //
 // 【分层说明】本文件位于 features/login/view/：它是"登录"feature 的页面，
-//   注册在**根栈**（RootDomain）的 RootRouter 上（路由名 RouteConstants.LOGIN），
-//   首屏由 pages/AppNavigation.ets 的 Navigation 内容区承载，页面根节点是 NavDestination。
+//   由 pages/AppNavigation.ets 的 Navigation **内容区**按登录态承载（未登录时才是它），
+//   页面根节点是 NavDestination。
+// 【本页不再做任何跳转——2026-11-06 结构性改动】
+//   旧写法在这里挂了 aboutToAppear + @Monitor('session.loggedIn') 两个出口去 replacePathByName(MAIN)。
+//   那套是"边沿触发"：一旦本页是被返回键**露出来**的（组件没重建、loggedIn 也一直是 true），
+//   两个出口同时失效，就出现"点了登录、hilog 打登录成功、界面卡在登录页"的死锁。
+//   现在改由 AppNavigation 按 loggedIn **选内容**（电平触发）：登录成功 = 会话状态变了 = 内容区换成主页，
+//   本页既不需要知道自己会"被替换"，也不需要持有根栈。
+//   顺带删掉 pageStack / session 两个字段与 RouteConstants / AppStorageV2 / SessionUser / StateKeys 四个 import——
+//   它们只服务于那段跳转代码，留着就是死引用。
 // 【本实训的核心变化】页面从"自己管状态、自己写判断"变成**纯粹的渲染器**：
 //   - 输入框 onChange 只做一件事：把值塞给 viewModel 的 @Trace 字段
-//   - 按钮 onClick 只做一件事：调 viewModel.submit()，按 res.ok 决定跳不跳转
+//   - 按钮 onClick 只做一件事：调 viewModel.submit()，错误提示跟着 res 自动变
 //   - 确认密码框、错误提示、按钮文案，全是"跟着 viewModel 状态自动变"的条件渲染
 //   通读一遍你会发现：View 里找不到一个业务判断（没有 if 校验、没有 if 网络结果），
 //   这就是 4.2.9 说的单一职责——业务归 ViewModel，渲染归 View。
-import { CommonConstants, RouteConstants, SessionUser, StateKeys } from '@zhititong/common'
-import { AppStorageV2 } from '@kit.ArkUI'
+import { CommonConstants } from '@zhititong/common'
 import { LoginViewModel } from '../viewmodel/LoginViewModel'
 
 @ComponentV2
 export struct LoginPage {
-  @Consumer('pageStack') pageStack: NavPathStack = new NavPathStack()
-
   // 持有 ViewModel 实例：页面所有状态都在它身上（@Local 保证它变了页面会重绘）
   @Local viewModel: LoginViewModel = new LoginViewModel()
-
-  // 全局会话运行态：loggedIn 是免登录分流的信号灯
-  @Local session: SessionUser = AppStorageV2.connect(SessionUser, StateKeys.SESSION_USER,
-    () => new SessionUser())!
-
-  aboutToAppear(): void {
-    // 时序 A：磁盘恢复先于页面出现（灯已亮，不会再变化，Monitor 等不到）
-    this.tryEnterMain()
-  }
-
-  @Monitor('session.loggedIn')
-  onLoggedInChanged(): void {
-    // 时序 B：页面已出现，恢复才完成（灯这时才亮）；手动登录成功也走这里
-    this.tryEnterMain()
-  }
-
-  private tryEnterMain(): void {
-    if (this.session.loggedIn) {
-      this.pageStack.replacePathByName(RouteConstants.MAIN, null)
-    }
-  }
 
   build() {
     NavDestination() {
