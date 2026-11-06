@@ -78,7 +78,9 @@ export struct AnswerResultPage {
             .margin({ top: CommonConstants.SPACE_M })
         }
         .width('100%')
-        .padding(CommonConstants.SPACE_L)
+        .padding(CommonConstants.SPACE_M)   // 16：§3.4「卡片内边距 16」。这里曾是 24——我照设计源类名
+        //   p-space-lg 直觉当成了 20/24，实际该屏 tailwind 配的是 space-lg=1rem=16（见 spec §3.4 标尺映射表），
+        //   Task 9 审查也没 grep padding，所以带错通过了两轮
         .borderRadius(CommonConstants.RADIUS_CARD)
         .backgroundColor(CommonConstants.COLOR_CARD_BG)
         .shadow(CommonConstants.SHADOW_CARD)   // §6.6 卡面配方：白底 + RADIUS_CARD + SHADOW_CARD，不加整周描边（旧 Ruling T9-C"不补阴影"已被翻掉）

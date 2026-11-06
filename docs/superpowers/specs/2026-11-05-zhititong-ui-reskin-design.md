@@ -158,6 +158,32 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 
 **间距模型只有一个：横向 gutter 16、纵向节奏 12。** 适用对象是**容器与容器之间的间距**——列表行距、网格两轴、分区标题到其下方内容。Task 6 审查发现原简报把 `rowsGap` 也写成 16，那是简报读错，不是"网格例外"。
 
+**设计源 spacing 标尺的真实映射（Task 12 修复轮补，我当时读错过一次）**：
+导出屏用的是 tailwind 语义名，**不能按名字直觉推数值**。`_10/code.html` 内嵌配置实测：
+
+| 源名 | 真值 | 本仓对应令牌 |
+|---|---|---|
+| `space-xs` | 0.25rem = 4 | —（未建） |
+| `space-sm` | 0.5rem = 8 | —（组件内部偏移，逐屏简报管） |
+| `space-md` | **0.75rem = 12** | `SPACE_CARD_GAP`（纵向节奏） |
+| `space-lg` | **1rem = 16** | `SPACE_M`（卡片内边距、页面左右边距、横向 gutter） |
+| `space-xl` | 1.5rem = 24 | `SPACE_L` |
+| `space-2xl` | 2rem = 32 | —（未建） |
+
+`DESIGN.md` §Density & Rhythms 与上表一致，原文：「Card internal padding is fixed at **`16px` (`space-lg`)**
+on mobile, expanding to `24px` (`space-xl`) on larger screens.」⇒ **手机版卡内边距就是 16**。
+
+⚠️ 我此前两次把 `space-lg` 当成 20 或 24（§3.4 原表那行「卡片内边距 16」是对的，错在我后来读类名时把源值说成 24），
+后果是**四处卡 `padding(SPACE_L)`=24 潜伏了两轮**：`AnswerResultPage.ets:81`（Task 9 通过、Task 10 复审也通过，
+因为没人 grep padding）与三处新空态卡。已在 `84c34a4` 之后由 controller 全部改回 `SPACE_M`(16)。
+**教训进 Task 13 门禁**：卡面属性链要连 `padding` 一起核，不是只核圆角与阴影。
+
+**尚待老大大拍的间距遗留（Task 13 Step 3d）**：全仓还有 8 处 `SPACE_L`(24) 用在**容器之间的纵向间距**
+（`HomeView.ets:72/:91/:147`、`LoginPage.ets:69/:216`、`ExamDetailPage.ets:450`、`MineView.ets:180`、
+`AnswerResultPage.ets:126`）。按"只有一个模型、纵向节奏 12"读，它们都偏大；
+但 §3.4 表没有"大区块之间"这一行，且 24 是源阶梯里的合法值（`space-xl`）——**是收紧到 12 还是承认 24 为区块级停顿档，属审美决定**，
+所以只登记不自行改。若要承认 24，§3.4 需要补一行"区块到区块 24"把这个档位写进模型，否则下一个人还会按"只有一个模型"去删它。
+
 **边界（Task 6 复审要求补的，防止这条被过度推广）**：不适用于元素内部的排版偏移——胶囊自身的 `margin({top: 6})`、卡片内标题到副行的 `margin({top: 8})` 这类是组件内部构造，由各自简报逐字规定，不受这条模型约束。
 
 分区标题间距本轮定死为 12：首页（`HomeView.ets:156`）已是 12，刷题页（`ExamSubjectView.ets:107`）留 16 会让同域两屏可见不对称。归 Task 12 落地（它已认领 `ExamSubjectView.ets`）。

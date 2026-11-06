@@ -173,7 +173,7 @@ export struct ExamListPage {
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .textAlign(TextAlign.Center)
             .width('100%')
-            .padding(CommonConstants.SPACE_L)
+            .padding(CommonConstants.SPACE_M)   // 16：§3.4 「卡片内边距 16」；设计源空态屏写 p-space-lg，而其 tailwind 配置 space-lg=1rem=16（不是 24，见 spec §3.4 标尺映射表）
             .borderRadius(CommonConstants.RADIUS_CARD)
             .backgroundColor(CommonConstants.COLOR_CARD_BG)
             .shadow(CommonConstants.SHADOW_CARD)

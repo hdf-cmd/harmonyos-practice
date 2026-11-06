@@ -1362,9 +1362,12 @@ F12 不是一屏，是三种跨页状态。逐处按下面三条链改，改完 
 >    `<p class="text-body-sm font-body-sm text-secondary">通过考试即可获得证书</p>`
 >    ⇒ `FONT_BODY_SM` + `WEIGHT_REGULAR` + **`COLOR_TEXT_SUB`**（secondary `#525F70`），且按 Ruling T10-A 补上字重。
 >
-> 另外两条源实测结论，免得下轮再猜：`p-space-lg` = **24 是源给的**，不在 §3.4 的"卡内边距 16/紧凑 12"阶梯里但属本源配方，
-> 按"源点名优先"保留 `SPACE_L`；源在这个空态里还画了一个 `folder_off` 图标圆座
-> （`w-16 h-16 rounded-full bg-surface-container`）——**不做**，依据 §6.5 已裁的"加图标＝加当前没有的元素，超出已批准范围"。
+> 另外两条源实测结论，免得下轮再猜：`p-space-lg` **不是 24**——该屏内嵌 tailwind 配置写 `"space-lg": "1rem"` = **16**
+> （`space-xl` 才是 1.5rem=24），`DESIGN.md` §Density & Rhythms 原文也是「Card internal padding is fixed at
+> `16px` (`space-lg`) on mobile」，与 §3.4 表那行「卡片内边距 16」对得上。
+> ⚠️ **controller 在此处一度写反过（"24 是源给的"），被 Task 12 实施者顶回并当场证伪**，映射表见 spec §3.4。
+> 源在这个空态里还画了一个 `folder_off` 图标圆座（`w-16 h-16 rounded-full bg-surface-container`）——**不做**，
+> 依据 §6.5 已裁的"加图标＝加当前没有的元素，超出已批准范围"。
 
 ```ts
 Column({ space: CommonConstants.SPACE_CARD_GAP }) {
@@ -1379,7 +1382,7 @@ Column({ space: CommonConstants.SPACE_CARD_GAP }) {
     .lineHeight(CommonConstants.LINE_BODY_SM)
 }
 .width('100%')
-.padding(CommonConstants.SPACE_L)          // 24：源值 p-space-lg，非阶梯值，见上方实测结论
+.padding(CommonConstants.SPACE_M)            // 16：§3.4 卡片内边距；源的 p-space-lg 经 tailwind 配置实测 =16
 .borderRadius(CommonConstants.RADIUS_CARD)
 .backgroundColor(CommonConstants.COLOR_CARD_BG)
 .shadow(CommonConstants.SHADOW_CARD)
@@ -1556,6 +1559,27 @@ Task 12 审查还给了 19 站别名迁移的完整读数变化清单，一并�
 22→20 两处、18→20 一处、14→12 四处、14→11 三处、16→14 两处（错误文案，跨页同步、无方差）、
 16→12 一处（证书空态，Step 1b 已改判为由它占首句档）、其余为同值改名。
 
+- [ ] **Step 3d: 卡面属性链按 `padding` 再核一遍 + 纵向 24 的归属裁决**（spec §3.4 标尺映射表立的）
+
+**为什么要有这一步**：`AnswerResultPage` 那张卡的 `padding(SPACE_L)`=24 连着通过了两轮审查，
+因为审查只核圆角与阴影、**没人 grep 过 padding**，而 §3.4 表第一列就写着「卡片内边距 16（紧凑 12）」。
+本轮起"卡面配方"的核对口径是**四件套**：`padding` / `borderRadius` / `backgroundColor` / `shadow`。
+
+```bash
+grep -rn -B3 "borderRadius(CommonConstants.RADIUS_CARD)" entry/src/main/ets | grep -E "padding|backgroundColor|shadow|border\("
+```
+
+期望：卡容器 `padding` 只有 `SPACE_M`(16) 或紧凑 `SPACE_CARD_GAP`(12)，出现 `SPACE_L` 即 Task 12 那种漏网；
+卡上出现整周 `.border(` 即违反 §6.6（四类合法对象除外：TextInput 静息描边、次级按钮轮廓、
+`width:{bottom}` 分割线、选项/格子条件态）。
+
+**纵向 24 归属，两个选项归老大拍，不许实施者自行定**：全仓仍有 8 处 `SPACE_L`(24) 用在容器之间的纵向间距
+（`HomeView.ets:72/:91/:147`、`LoginPage.ets:69/:216`、`ExamDetailPage.ets:450`、`MineView.ets:180`、
+`AnswerResultPage.ets:126`）。§3.4 说"只有一个模型、纵向节奏 12"，但表里没有"大区块之间"这一行，
+而 24 确实是源阶梯的合法值（`space-xl`）。
+(a) 按模型收紧到 12；或 (b) 在 §3.4 补一行"区块到区块 24"把它写进模型。
+**选 (b) 必须同步改掉"只有一个模型"那句**，否则下一个读者还会照原句去删这 8 处。
+
 - [ ] **Step 4: 全量构建 + 单测**
 
 Run: `devecocli build 2>&1 | grep -c ERROR` → `0`
@@ -1564,7 +1588,14 @@ Expected: entry 尾行 Tests run: 123；common 尾行 Tests run: 32（两个模�
 
 - [ ] **Step 5: 模拟器逐屏目检**
 
-Run: `devecocli run --module entry --device "Pura 90"`（构建成功后 App 冷启动回登录页，坐标需重新 dump）
+⚠️ **不要用 `devecocli run --device`**：它会按 AVD `config.ini` 的 `sdkPath=D:/DevEco Studio/sdk` +
+`imageSubPath=system-image/…` 拼出一个不存在的目录，报"系统镜像找不到"（镜像其实完整在 `D:/system-image/`，见 spec §8.4）。
+正解两条：建目录联接 `mklink /J "D:\DevEco Studio\sdk\system-image" "D:\system-image"`，
+或直启 `D:\DevEco Studio\tools\emulator\Emulator.exe -start "Pura 90"`（约 55 s 起，11-03 的
+`docs/emulator_audit_report.md` 就是这条链路的现成 runbook：起机 → `hdc tconn 127.0.0.1:5555` →
+`hdc install -r` → `snapshot_display` 截图 → `uitest uiInput` 点击）。
+**起之前先量 free 内存并写进报告**（本机多次实测只剩 1.0 GB，起 4 核模拟器会拖垮并行会话）。
+⚠️ 那份 runbook 里的包名 `com.xyr.zhititong` 是旧的，现行包名是 **`com.hdf.zhititong`**（AGENTS.md 定稿，别再改回）。
 
 逐屏截图，与 `design/stitch/v2-final2/stitch_harmonyos_exam_client/_<n>/screen.png` 对比。检查清单：
 
