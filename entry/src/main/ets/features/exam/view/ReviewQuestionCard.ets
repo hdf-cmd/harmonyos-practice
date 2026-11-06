@@ -52,17 +52,20 @@ export struct ReviewQuestionCard {
 
   build() {
     Column() {
-      // 卡头：题号 + 题型 + 本题得分，三件同档（label-md 14），靠字色而非字号分主次
+      // 卡头：题号 + 题型 + 本题得分，三件同档（label-sm 12），靠字色而非字号分主次
+      // 三件都是 metadata/badging：设计源 DESIGN.md §Application Rules 第三条只许可 label-sm 或
+      //   caption-unit，label-md(14) 不在许可档位内 ⇒ 一律降到 label-sm（字重 500 不变，两档同重）
       Row() {
         Text(`第 ${this.index + 1} 题`)
-          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontSize(CommonConstants.FONT_LABEL_SM)
           .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
         // 题型标签：浅主色底 + 同色相饱和字的全圆胶囊，**无描边**（§6.4 裁决：胶囊只做 tint 底）。
-        //   字号取卡头统一档（简报钉 FONT_LABEL_MD），其余属性链与答题页/试卷卡的题型胶囊同款。
+        //   字号取 badging 许可档（DESIGN.md §Application Rules：status pill 用 label-sm/caption-unit，
+        //     故此处为 FONT_LABEL_SM，与答题页/试卷卡的题型胶囊同档），其余属性链与那两屏同款。
         // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
         Text(questionTypeLabel(this.question.type))
-          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontSize(CommonConstants.FONT_LABEL_SM)
           .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(CommonConstants.COLOR_PRIMARY)
           .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
@@ -71,7 +74,7 @@ export struct ReviewQuestionCard {
           .margin({ left: 8 })
         Blank()
         Text(`${this.question.earnedScore} / ${this.question.maxScore} 分`)
-          .fontSize(CommonConstants.FONT_LABEL_MD)
+          .fontSize(CommonConstants.FONT_LABEL_SM)
           .fontWeight(CommonConstants.WEIGHT_MEDIUM)
           .fontColor(this.question.isCorrect ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
       }

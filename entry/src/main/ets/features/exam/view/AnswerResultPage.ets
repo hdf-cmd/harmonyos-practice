@@ -40,7 +40,7 @@ export struct AnswerResultPage {
               .fontColor(this.vm.result.passed ? CommonConstants.COLOR_PRIMARY : CommonConstants.COLOR_ERROR)
             Span(' 分')
               .fontSize(CommonConstants.FONT_CAPTION_UNIT)
-              .fontWeight(CommonConstants.WEIGHT_REGULAR)
+              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
               .fontColor(CommonConstants.COLOR_TEXT_SUB)
           }
 
@@ -48,7 +48,7 @@ export struct AnswerResultPage {
           // 三元表达式根据 passed 切换文字、字色、底色，一处数据驱动两套视觉
           // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
           Text(this.vm.result.passed ? '通过' : '未通过')
-            .fontSize(CommonConstants.FONT_LABEL_MD)
+            .fontSize(CommonConstants.FONT_LABEL_SM)
             .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS : CommonConstants.COLOR_ERROR)
             .backgroundColor(this.vm.result.passed ? CommonConstants.COLOR_SUCCESS_BG : CommonConstants.COLOR_ERROR_BG)
@@ -87,9 +87,10 @@ export struct AnswerResultPage {
         // ===== 证书提示条：仅通过后展示（成功色 tint 底的静态占位条） =====
         // 条件渲染：passed 为 false 时整块从布局中移除（不是隐藏占位）
         // 文案固定十来个字，通栏也到不了换行阈值——单行判定，不配行高
+        // 带 tint 底 + 圆角，属 badging 管辖 ⇒ 走许可档 label-sm（设计源 §Application Rules 第三条）
         if (this.vm.result.passed) {
           Text('📜已生成电子证书，可在个人中心查看')
-            .fontSize(CommonConstants.FONT_LABEL_MD)
+            .fontSize(CommonConstants.FONT_LABEL_SM)
             .fontWeight(CommonConstants.WEIGHT_MEDIUM)
             .fontColor(CommonConstants.COLOR_SUCCESS)
             .backgroundColor(CommonConstants.COLOR_SUCCESS_BG)
