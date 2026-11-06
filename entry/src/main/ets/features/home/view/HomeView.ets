@@ -42,9 +42,10 @@ export struct HomeView {
     Column() {
       // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，按 §3.3 配对行高（父 Column 自适应高度，不裁切）
       // 档位收口：这里曾是 body-lg(16/400)，注释挂着"是否降到正文中档留给三态统一"的号；
-      // 本轮三态统一定的就是 body-md——全仓 5 处 errorMessage 文案站点里 4 处已是 body-md
-      //（刷题域、考卷列表、考试记录、我的证书），设计源给状态句的档也是 text-body-md
-      //（导出屏 _10 的「登录已过期，请重新登录」那一行），此处补齐，不再留单点
+      // 本轮三态统一定的就是 body-md——**三态家族 5 站（刷题域、考卷列表、考试记录、我的证书、首页）
+      // 现已全部 body-md**（我上一版写"5 处里 4 处已是"是本改动完成前的旧读数）；
+      // 登录页那颗 viewModel.errorMessage 是字段级内联提示（body-sm），不属三态家族、不计入此数。
+      // 设计源给状态句的档也是 text-body-md（导出屏 _10 的「登录已过期，请重新登录」那一行）
       Text(this.vm.errorMessage)
         .fontSize(CommonConstants.FONT_BODY_MD)
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
@@ -54,10 +55,15 @@ export struct HomeView {
 
       // 错误态按钮走次级形态：静息浅蓝底 + 主色字，高 36、圆角 8
       // 圆角必须配 ButtonType.Normal——Capsule 由组件自定端头，borderRadius 会被吞掉
-      // 字档取 §3.3 给次级按钮的 label-md(14/500)，与刷题域失败区那颗同写法；
-      // 这里曾是 body-lg + weight-medium，而 §3.3 的字号表里 16 只有 600(HEADLINE_SM) 与 400(BODY_LG) 两档
-      // 注意不要把这条推广到主按钮：§3.3 明文"CTA 用 body-lg、次级按钮用 label-md"，
-      // 全仓那些实心主钮（登录、交卷、抽屉提交、结果页两颗）的 16 加 Button 默认字重是许可形态，不属本条
+      // 字档取 spec §3.3 给次级按钮的 label-md(14/500)，与刷题域失败区那颗同写法；
+      // 这里曾是 body-lg + weight-medium，而 §3.3 的**文字**档位表里 16 只有 600 与 400 两档
+      // ⚠️ 不要把那条推广到按钮：§3.3 的配对规则只管 Text，Button 的字重由设计源 §Components/Buttons
+      //   （Primary 500）与 ArkUI 默认字重共同定，所以主操作行那 7 颗 body-lg + 默认字重是许可形态。
+      //   但"CTA 用 body-lg"是**本仓 spec 的自定规**，设计源从未规定按钮字号（它只给了字重 500；
+      //   导出屏那颗整宽重新登录钮用的还是 text-label-md）。而且按钮字号没有干净的推导判据：
+      //   同为 48 高，答题页的上一题/下一题/标记/答题卡是 body-md；「答题卡」与「查看回顾」形态完全相同
+      //   （48 高 + 白底 + 1vp 主色描边）却分别落 14 与 16 ⇒ 高度与形态都不是判据，
+      //   现存唯一描述是"主操作行 16、次级/导航行 14"。详见 spec §3.3 的按钮字号表，勿据此自动改档。
       Button(this.vm.authExpired ? '重新登录' : '重试')
         .type(ButtonType.Normal)
         .height(CommonConstants.BTN_HEIGHT_SECONDARY)

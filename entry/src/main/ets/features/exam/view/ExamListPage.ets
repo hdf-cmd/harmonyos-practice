@@ -134,7 +134,8 @@ export struct ExamListPage {
       //   二、错误先于"空"：loadPapersByCategory 的 catch 只调 setError(errorMsg)，papers 保持空数组 ⇒
       //     只看 papers.length === 0 会把断网/5xx 说成"该科目暂无考卷"，
       //     而本轮把它升成白卡 + 阴影的正式形态后，这句假陈述更像一个官方状态。
-      // 三处判定条件都与首页 HomeView 的同名分支同构（同为列表页，那是全仓四态齐家的对照）。
+      // 加载支与错误支照仓内既有页的同名分支写；**空态支没有同名对照**——HomeView 只有 加载/错误/列表
+      // 三支、无空态分支，所以"四态齐家"的参照是考试记录页与证书页，不是首页（我原句写错了指向）。
       if (this.vm.loading && this.vm.papers.length === 0) {
         // 加载态：档位与文案都照仓内既有四处的家写法，不自造——
         //   HomeView 的 Loading 区、ExamSubjectView 的 Loading 区、考试记录页与证书页的加载分支
