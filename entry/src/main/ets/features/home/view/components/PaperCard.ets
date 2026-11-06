@@ -88,7 +88,8 @@ export struct PaperCard {
     .padding(CommonConstants.SPACE_M)
     .borderRadius(CommonConstants.RADIUS_CARD)
     .backgroundColor(CommonConstants.COLOR_CARD_BG)
-    .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+    // 卡面不给整周描边（spec §6.6）：导出的 12 屏里 63 个卡级容器 0 个带 border、51 个带 shadow，
+    //   prose 的「描边 + 阴影」两件套按 §6.4 取克制一读 ⇒ 只留 Level 1 阴影。
     .shadow(CommonConstants.SHADOW_CARD)
     .onClick(() => {
       // 沉浸式详情：push 到**根栈**，答题页会盖住底部 Tab（对比"刷题"Tab 里的域内跳转，

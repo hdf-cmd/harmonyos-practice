@@ -149,6 +149,11 @@ export struct MineView {
         .width('100%')
         .backgroundColor(CommonConstants.COLOR_CARD_BG)
         .borderRadius(CommonConstants.RADIUS_CARD)
+        // 卡面配方（§6.6）：白底 + 圆角 16 + Level 1 阴影，与同页用户卡同档。
+        //   之前这半套缺阴影，是"同屏两套卡面"被 Task 11 审查点名后补上的。
+        //   clip 与 shadow 不冲突——SDK 把 clip 的语义写死了：裁的是**超出本组件边界的子组件**
+        //   （common.d.ts:21150），不涉及节点自身投影，全文件也没有 clip 与 shadow 并举的条款。
+        .shadow(CommonConstants.SHADOW_CARD)
         // 卡内是贴边的整行（行宽 100%，发丝线画在行的左右满宽处），不像别的卡那样有 16 内边距挡着，
         //   所以必须 clip：ArkUI 的容器圆角默认不裁剪子节点，末行的线会从圆角外头直着穿出去，
         //   圆角等于没落地（同 F02 轮播卡加 clip 的理由）

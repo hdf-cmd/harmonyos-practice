@@ -277,6 +277,16 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 理由：本条把卡面从"逐屏点名的 extend"升格为**组件配方**，配方统一后 §4 不必逐屏重述，
 逐屏未点名不再构成"不加"的依据；而"只加阴影不加描边"仍是克制读法，未引入新元素。
 
+**不由本条管辖的两类容器**（Task 10 复审把它们当作 §6.6 缺口报上来，核后判为不同档，不改）：
+
+- **吸底操作栏**（`ExamDetailPage.ets:575-577`：`width 100%` + `CARD_BG` + padding，无圆角无阴影）。
+  §3.4 给它的是 **Level 3**（radius 8 / offsetY -2），不是 Level 1 卡档；§4 F05 行也没点名它。
+  给它补阴影属 extend，本轮不做。若终审主张"吸底栏就该有 Level 3 投影"，那是**一条独立的 §6.6 姊妹裁决**，
+  要连着设计源 §Elevation Level 3 那句「top-edge hairline border `rgba(0,0,0,0.06)`」一起决定，别只翻一半。
+- **底部 Tab 条**（`MainPage.ets:58-59`）已经吃了 `SHADOW_BOTTOM_BAR`（值与 §3.4 Level 3 逐字对上：radius 8 /
+  `#08000000` / offsetY -2），但**挂在三个 tabBar 项上而不是整条 bar**——ArkUI 未给自定义 tabBar 暴露整条容器节点。
+  这是平台限制下的合法替代，不是配方偏离；`SHADOW_BOTTOM_BAR` 因此不再是死令牌。
+
 代价与可逆性：三处删除 + 若干屏补一行 `.shadow(...)`，合计 < 20 行；`COLOR_BORDER_HAIRLINE` 仍被上述四类消费，
 不会变成死令牌。4% alpha 的描边在屏幕上近乎不可见，删与不删的差别只能上机判 —— 已列设备目检项。
 

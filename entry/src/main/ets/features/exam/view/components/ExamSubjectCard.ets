@@ -37,7 +37,8 @@ export struct ExamSubjectCard {
     .padding(CommonConstants.SPACE_M)
     .borderRadius(CommonConstants.RADIUS_CARD)
     .backgroundColor(CommonConstants.COLOR_CARD_BG)
-    .border({ width: CommonConstants.DIVIDER_WIDTH, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+    // 卡面不给整周描边（spec §6.6）：导出的 12 屏里 63 个卡级容器 0 个带 border、51 个带 shadow，
+    //   prose 的「描边 + 阴影」两件套按 §6.4 取克制一读 ⇒ 只留 Level 1 阴影。
     .shadow(CommonConstants.SHADOW_CARD)
     .alignItems(HorizontalAlign.Start)
     .onClick(() => {

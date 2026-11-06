@@ -90,9 +90,12 @@ export struct ReviewQuestionCard {
         .width('100%')
 
       // 选项：正确项成功浅底、我的错选警示浅底、两者皆中成功浅底（对优先于错）
-      // 与答题页选项行只对齐"容器形态"两处：padding 12/10、圆角 RADIUS_INPUT（:103/:105 对 ExamDetailPage 选项行）。
-      //   字档刻意不统一——本卡用 body-md(14/22)，答题页选项用 body-lg(16/24)：设计源里没有回顾屏选项的逐档字号记载，
-      //   对齐需要依据，没有就不编；此处 body-md 与本卡解析正文同档，属卡内自洽的选择，不是"形态分叉"的疏忽。
+      // 与答题页选项行只对齐"容器形态"两处：padding 12/10 与圆角 RADIUS_INPUT（见本块下方那两个属性，
+      //   对 ExamDetailPage 里同名的那两个属性——不写行号，本文件插入注释会让号漂）。
+      //   字档刻意不统一——本卡用 body-md（14/400/22），答题页选项用 body-lg 的字号 16 配一个
+      //   写死的 24（那边是 sizeOf(24)，不是 LINE_BODY_LG=26，两屏行高本就不同源）。
+      //   设计源里没有回顾屏选项的逐档字号记载，对齐需要依据，没有就不编；
+      //   此处 body-md 与本卡解析正文同档，属卡内自洽的选择，不是"形态分叉"的疏忽。
       Column({ space: CommonConstants.SPACE_CARD_GAP }) {
         ForEach(this.question.options, (option: OptionItem) => {
           Text(`${option.label}. ${option.content}`)
