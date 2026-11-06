@@ -319,15 +319,61 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 
 留给终审的反面意见：Task 5 审查认为按 Task 11 判例应当 prose 赢、补描边。两条裁决方向相反是**有意的**，判据是克制程度而非文档层级。若终审不认同这条原则，需要同时翻掉毛玻璃与描边两处，不能只翻一处。
 
-### 6.5 底部 Tab 条：改高度与字阶，不加图标
+### 6.5 底部 Tab 条：改高度、字阶，**并补图标**（2026-11-06 装机目检后改判）
 
 `MainPage.ets` 原不在任何任务的认领范围内（Task 5 实施时发现），现归 Task 11 Step 0。
 
 - 高度 52 → 64，对齐导出稿的 `h-16`；标签走 `FONT_LABEL_SM` + 选中态 `WEIGHT_SEMI`。
-- **不加图标。** ⚠️ 这条理由**修正过一次**：我原本写"稿子的图标是 Material Symbols 连字，ArkUI 没有这套字体，加图标等于引一条图标素材管道"——Task 7 审查指出该论证不成立，我随后在 SDK 里核实：`SymbolGlyph` 是 ArkUI 内置组件（`component/symbolglyph.d.ts`），`sys.symbol.*` 系统图库存在，**加图标并不需要外部素材**。
-  裁决不变，但地基换成两条真的：① 当前 Tab 条是纯文字，加图标属于**新增 UI 元素**，超出本计划已批准的"只移植设计语言、不加新区块"范围；② Material 图标到鸿蒙 symbol 的映射（`menu_book` 对应哪个 `sys.symbol`）是审美决定，归用户，不该由执行链静默选定。
-  若用户点头要图标，这是一条独立小任务，成本不高（`SymbolGlyph($r('sys.symbol.xxx'))` + 字号/颜色），不是素材工程。
 - 导航条用平面 `COLOR_CARD_BG` + Level 3 阴影（`SHADOW_BOTTOM_BAR`），不做毛玻璃——见 §6.4。
+- **图标：补。** 这条裁决翻过一次，翻它的不是新意见，是**导出屏本身**：
+
+  本条原本写"不加图标"，地基是两句——① "Tab 条本来没有图标，加图标属于新增 UI 元素，超出'只移植设计语言、不加新区块'范围"；② "Material→鸿蒙 symbol 的映射是审美决定，归用户"。
+  ② 成立并已执行（映射由用户拍板）。① **不成立**：装机目检时回查 `_7`/`_8`/`_9` 三屏，底部导航**每一格都画了图标**——`flex-col` 里 24px 的 `dashboard` / `menu_book` / `account_circle` 压在 label-sm 文字上方，`data-active-classes` 只改色与字重。图标不是"当前没有的东西"，是设计源本来有、上一轮没搬。所以它落在"移植设计语言"里，不在"加新区块"里。
+  更早还有一句已作废的错判留档：曾写"稿子的图标是 Material Symbols 连字，ArkUI 没有这套字体"——`SymbolGlyph` 是 ArkUI 内置组件（`component/symbolglyph.d.ts`），加图标零素材成本。
+
+- **映射依据（不是猜的）**：系统符号表取自 SDK `toolchains/id_defined.json`（`type: "symbol"` 共 **4042** 条，去重后仍 4042）。其中**没有** `dashboard` / `menu_book` / `account_circle` 这三个名字，按语义就近：首页→`sys.symbol.house`、刷题→`sys.symbol.book`、我的→`sys.symbol.person`。三格都只用 outline 版，选中不换 fill——导出屏两态用同一字形，差异只有颜色与字重。
+- **一处 ArkTS 硬约束**：`$r()` 只收编译期字面量，`$r('sys.symbol.' + name)` 编译不过，所以三格各写各的字面量，不做通用映射表。
+
+### 6.5b 顶栏页面标题（2026-11-06 补，本轮新立的口径）
+
+导出屏 `_7`/`_8`/`_9` 各有一条 `fixed top-0` 的 `h-14` 顶栏，内容是「logo + `/` + 页面名（`headline-sm` 16/600）」。原计划 13 个任务**没有一个认领过它**——和 `MainPage` 一样是共享壳漏口，只是这次漏的是每屏都有的那一层。
+
+- 落地范围（用户拍板）：**只补页面名，不补 logo**。logo 要图片资源，且属于品牌资产决定，不在换装里代拍。
+- 新增 `entry/src/main/ets/features/shell/PageHeader.ets`：56vp 高、左右 16（稿子 `px-gutter`）、`FONT_HEADLINE_SM` + `WEIGHT_SEMI` 左对齐、超长截断。
+  放 `features/shell` 而不是 common HAR：HAR 的对外口径写死是"base / constants / model / mock / utils / log"，**零 UI**，今天没有一个 ArkUI 组件从那里导出；跨 feature 的 UI 组件本仓先例是 `features/assistant/AssistantEntry.ets`。
+- 底色取 `COLOR_BG_PAGE`、不加描边与阴影：稿子是 `bg-surface/85 backdrop-blur-xl`，而导出屏 token 表里 `surface` 与 `background` **同为 #f8f9fb**——这条顶栏在稿子里本来就和页面同色、只靠毛玻璃区分。毛玻璃按 §6.4 已裁决不做，剩下的就是一个同色页头，所以连阴影也不补，免得把"没有毛玻璃"换成"多一条分割线"。
+- 结构代价：顶栏必须待在滚动容器**外面**（稿子 `fixed top-0`）。`HomeView` 的根是 `Navigation { Scroll }`，`ExamSubjectView`/`MineView` 的根是带 16 四边内边距的 `Column`，三屏都要包一层 Column 承接顶栏、原内容列改用 `layoutWeight(1)`。内层原有的四边 16 一律不动，免得顺手改掉页面留白节奏。
+
+### 6.5c 字号档位的覆盖范围（2026-11-06 装机实测后补）
+
+`sizeOf` 原只挂在 6 处：`ExamDetailPage:392/396/429/434`（题干与选项的字+行高）+ `MineView:110/116`（昵称与签名）。装机切到「极大」实测：首页全部文本边界、科目网格、试卷列表、结果页、回顾页**逐条不变**——设置项名字叫"字号大小"，实际只管两个半屏。
+
+本轮补的是回顾页三处正文（题干、选项、解析），让它与答题页同步。
+**档位差保留不动**：本卡选项仍是 `FONT_BODY_MD`(14)，答题页选项是 `FONT_BODY_LG`(16)。合并它需要依据，而设计源没有回顾屏选项的逐档记载——"没有就不编"这条裁决不因本轮改动而作废。要合就得先补设计源，属于另一个决定。
+
+其余屏（首页/科目/列表/结果/记录/证书/TabBar）仍不响应，**这是已知未闭合项，不是遗漏**：铺全要逐屏重测溢出与裁切，工作量与风险都超出本轮批准范围。
+
+### 6.5d 选项行的三条几何规矩（2026-11-06 装机连续撞出三条，一次写全）
+
+`ExamDetailPage` 的选项行是 `Row { Radio|Checkbox ; Text }`，形态简单但三条都踩过，每条都有实测数：
+
+1. **正文必须给宽度约束**（`.layoutWeight(1)`）。Row 子节点按固有尺寸排布，不给约束时 Text 拿到的可用宽
+   **不含 Row 的 12vp 右内边距**，于是按更宽的界线折行、行尾画出框外。实测高级卷第 2 题
+   （正文含 `ohos.permission.APP_TRACKING_CONSENT` 这种无空格长 token）：Row 右沿 1208、内容区右界应 1166，
+   而 B/D 两行 Text 右沿 = **1208** ⇒ 溢出 42px = 整 12vp，尾字符被裁。短文案时该缺陷完全隐形。
+   ⛔ 别用 `width('100%')` 替代——在 Row 里那会去抢标记的位置；`width('100%')` 只在 Column 里才是对的。
+2. **必须显式 `.alignItems(VerticalAlign.Top)`**。ArkUI Row 默认是 Center，标记对齐的是**整块多行文字**的中心。
+   实测第 11 题：4 行文字的选项 radio 比首行中心低 **124px（35.5vp）**，2 行的也低 **40px**——
+   即"任何多行选项都不对齐"，不是长文本专属。设计源 `_5` 写的就是 `flex items-start`。
+3. **标记要下推 2vp**（`OPTION_MARKER_NUDGE_VP`）。只写 Top 会让标记中心比首行中心**高 2vp**
+   （标记盒 20vp vs 首行盒 24vp），肉眼仍偏上。源里标记自带 `mt-0.5`，本仓按 `gap-0.5 → 2vp` 的同一口径读作 2vp。
+   标记与正文的横向间距源里是 `gap-space-md` = **12vp**（`OPTION_MARKER_TEXT_GAP_VP`），本仓原先写的是 8vp。
+
+**量具**：`.superpowers/sdd/2026-11-05-zhititong-ui-reskin/option-overflow-gate.cjs` 从 `uitest dumpLayout`
+读真实节点 bounds，断言上面第 1、2 条。⚠️ 两条使用约束：
+① 第 3 条（横向间距）**只打印不断言**——Radio 节点框自带约 4vp 内部留白，"节点实测间距"恒比 margin 大 4vp，
+拿绝对值当判据必然假红，正确的判据是"改动量等于 margin 差"（实测 42px → 56px = +4vp = 8→12 ✓）。
+② 只覆盖**当前可见**的选项行；被滚出视口的行不进 dumpLayout 节点树，闸会如实报"选项行数=3"而不是 4。
 
 ### 6.6 卡面配方的全局裁决：白底 + 圆角 16 + Level 1 阴影，**不给整周描边**
 
@@ -405,6 +451,53 @@ Task 12 实施者核出、controller 当场验证：计划写的「四个旧别�
 列成表（屏 / 元素 / 现档）；同一语义角色若落在不同档，就按 §3.3 的角色取齐。
 唯一不能本地定的是"取齐到 16 还是 20"这个审美选择，它归老大，不归实施者。
 
+### 6.8 根导航改成"按登录态选内容"（2026-11-06，装机撞出的死锁，超出换装范围但记在这本账上）
+
+**症状**：主页按系统返回键 → 露出登录页 → 再点登录，hilog 连打三次「登录成功：student」，界面哪儿也不去。
+
+**根因（结构，不是某个回调写错）**：旧模型是 `Navigation(pageStack) { LoginPage() }` 把登录页当**内容区**，
+登录成功后 `replacePathByName(MAIN)` 把主页作为**栈项**压在它上面。于是：
+
+1. 主页永远是"盖在登录页之上的栈项"，返回键弹空栈就必然露出底下那张登录页；
+2. 而 `session.loggedIn` 不会因为弹栈而复位，仍是 true；
+3. 登录页的两个出口于是同时失效——`aboutToAppear` 只在组件**创建**时跑（本页没被销毁重建），
+   `@Monitor('session.loggedIn')` 等的是 false→true 的**边沿**（值没变）。死锁。
+
+**第一发补丁被实测证伪（已撤回，不留假修复）**：给登录页加 `.onShown(() => tryEnterMain())`。
+装机复现结果：按返回后仍停在登录页，再点登录仍是"登录成功但不跳"。
+原因是 `onShown` 的语义讲的是**栈顶** NavDestination（SDK `nav_destination.d.ts`），
+而登录页是内容区那一层，不触发。
+
+**最终改法（电平触发取代边沿触发）**：`AppNavigation` 的内容区按状态二选一——
+
+```
+Navigation(this.pageStack) {
+  if (this.session.loggedIn) { MainPage() } else { LoginPage() }
+}
+```
+
+登录 / 401 / 登出三条链路从此**只改 `session.loggedIn`，不做任何路由操作**。
+"已登录却露出登录页"这个不一致状态在结构上不可表示；返回键回到的是"退出应用"而不是登录页。
+
+**顺带清掉的三处**：`RouteConstants.MAIN` / `LOGIN` 两个常量删除（零引用后留着就是死令牌，
+且有人照名字 push 一次就能把死锁请回来）；`MainPage` 与 `LoginPage` 头部那两句
+"根栈里的路由页 / 跳不跳登录页由 View 决定"的注释改写；`MineView` 登出的 `pageStack.clear()` 删除
+（新模型下根栈本来就不放主页，那是空操作，留着会误导下一位）。
+
+**MVVM 归位（老大当场点出的两处偏移，一并修）**：
+① shell 里手搓 `AppStorageV2.connect(SessionUser, ...)` 改成 `SessionManager.getUser()`——
+那行 connect 的唯一归属地就是它，复制一份到 shell 等于把会话入口变成两处。
+② 401 的分支判断从 View 收回 VM：新增 `BaseViewModel.handleErrorAction()` +
+可覆盖的空实现 `retryLoad()`，View 的 onClick 只剩一行转发。
+原先 View 里那句 `if (this.vm.authExpired)` 是把 VM 内部**已有的**守卫又抄了一遍，两处迟早分叉。
+
+**验收**：装机四条——有会话直落主页 ✓、主页按返回落到桌面（不再露出登录页）✓、
+登出回登录页 ✓、手动登录进主页 ✓。`handleErrorAction` 的分支互斥补了 4 条 hypium 用例
+（entry 123→127 全绿）。⚠️ 用例断言打在"子类记号"上而不是 `session.loggedIn` 上：
+LocalUnit 环境下测试侧 connect 到的与产品代码 connect 到的**不是同一个 AppStorageV2 实例**，
+读不到那次写——这是运行环境差异，不是产品缺陷（真机登出可用已单独验过）。
+401 那条链路没有单独造桩复验：它的每一环都已被覆盖（`handleErrorAction` 走清会话＝新单测；
+`loggedIn=false → 内容换登录页`＝登出那条装机实测）。
 
 ## 7. 风险
 
