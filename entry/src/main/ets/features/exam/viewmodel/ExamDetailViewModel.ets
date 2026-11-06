@@ -51,9 +51,11 @@ export class ExamDetailViewModel extends BaseViewModel {
   @Trace checkboxSelected: Set<string> = new Set<string>()
 
   // 唯一事实源：questionId → 已选答案（字母拼接，如 'AC'）
-  // 必须 @Trace：答题卡抽屉的"已答 x / y"与逐格状态都靠它失效，
-  //   没有 @Trace 时答完一题抽屉数字不动，且不会报错——是最难发现的一类缺陷。
-  //   形态与本类既有的 @Trace checkboxSelected: Set<string> 一致：V2 支持观察集合的内部变更。
+  // 交互前提：答题卡抽屉是模态的——bindSheet 的 enableOutsideInteractive 默认 false，
+  //   遮罩吃掉抽屉以外的所有触点，所以"答题"与"看抽屉"互斥，不存在"开着抽屉答下一题"这条路径。
+  //   汇总行的"已答 x / y"与网格里逐格态都在抽屉重建时按本表现值计算。
+  // 写入一律整体替换（见 persistAnswer 与 startExam 的续考回填），与本类 flaggedIds、
+  //   checkboxSelected 既有的失效口径一致；@Trace 是本字段成为失效来源的前提。
   @Trace private answers: Map<string, string> = new Map<string, string>()
   // 防重复交卷闸门
   private submitting: boolean = false
@@ -92,15 +94,17 @@ export class ExamDetailViewModel extends BaseViewModel {
       this.remainingSeconds = info.remainingSeconds
       this.currentIndex = 0
 
-      // 断点续考：把后端回传的 myAnswer 灌进唯一事实源
-      this.answers.clear()
+      // 断点续考：把后端回传的 myAnswer 灌进唯一事实源。
+      //   整表新建再一次赋回——answers 字段"写入一律整体替换"的口径覆盖它的两个写入口：这里与 persistAnswer。
+      const restoredAnswers: Map<string, string> = new Map<string, string>()
       let restoredCount: number = 0
       for (const q of info.questions) {
         if (q.myAnswer !== undefined && q.myAnswer !== null && q.myAnswer !== '') {
-          this.answers.set(q.id, q.myAnswer)
+          restoredAnswers.set(q.id, q.myAnswer)
           restoredCount++
         }
       }
+      this.answers = restoredAnswers
       this.restored = restoredCount > 0
       // 断点续考：存疑标记同样由后端回填（6-4 透传先行的回报）
       const flagged: string[] = []
@@ -314,11 +318,18 @@ export class ExamDetailViewModel extends BaseViewModel {
 
   // 写唯一事实源并尽力实时保存（保存失败只记日志，不打断作答；交卷时以服务端记录为准）
   private persistAnswer(questionId: string, answer: string): void {
+    // 整体替换：复制旧表→增删这一题→赋回新表，与本类 flaggedIds / checkboxSelected 的写法同构；
+    //   原地 set/delete 不触发 V2 刷新。复制量上限是题量，代价可忽略。
+    const next: Map<string, string> = new Map<string, string>()
+    this.answers.forEach((value: string, key: string): void => {
+      next.set(key, value)
+    })
     if (answer === '') {
-      this.answers.delete(questionId)
+      next.delete(questionId)
     } else {
-      this.answers.set(questionId, answer)
+      next.set(questionId, answer)
     }
+    this.answers = next
     // 存疑标记以 flaggedIds 为唯一事实源：questions[].isFlagged 只是开考那一刻的快照，
     // 用它回传会把用户刚打的标记抹掉（后端缺该字段即按 false 覆盖写）。
     this.examService.saveAnswer(this.attemptId, questionId, answer, this.isQuestionFlagged(questionId))

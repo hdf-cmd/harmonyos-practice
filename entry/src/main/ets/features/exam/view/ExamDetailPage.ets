@@ -44,6 +44,11 @@ export struct ExamDetailPage {
   // 答题卡半模态开关
   @Local showAnswerCard: boolean = false
 
+  // 答题卡抽屉的顶档高度（vp）：换装前的 440 加上进度汇总行与双按钮行这两块新内容。
+  //   bindSheet 的 height 与 detents 首档必须是同一个值——字面量写两遍就会有人只改一处，
+  //   顶档吸附静默失效，所以收成页内常量（只有本页用，不进 CommonConstants）。
+  private static readonly SHEET_HEIGHT_FULL: number = 520
+
   // 切后台次数一变就记一笔待提示。monitoring 与 count>0 都要判：
   // 开考 start() 里 count 会从上一场的值归 0，那是一次"变更"但不是一次"切出"，不能弹。
   @Monitor('monitor.count')
@@ -112,28 +117,16 @@ export struct ExamDetailPage {
   // 答题卡面板：四种格子态——当前=主色描边、已答=成功浅底、存疑=告警浅底 + 右上实心点、未答=静息浅底。
   // 底色、描边、圆点是三层独立叠加，谁都不覆盖谁：第 7 题那种"存疑 + 当前"的复合态
   // 必须同时是告警浅底、主色 2vp 描边，并且带点（spec §4 F06 的复合态就靠叠放成立，不靠三元互斥）。
-  // 抽屉结构（F06）：手柄条 → 标题 → 图例 → 网格 → 进度汇总 → 左次右主双按钮。
+  // 抽屉内容自上而下：标题 → 图例 → 网格 → 进度汇总 → 左次右主双按钮。
+  // 顶部的拖拽把手用平台默认那条：SheetOptions.dragBar 的 @default 就是 true，本抽屉从没关过它，
+  //   再手绘一条就是"系统条 + 手绘条"两层，且手绘那条取细边框色落在白卡上几乎不可见——删。
+  //   spec §4 F06 行点名的"手柄条"改由平台默认拖拽条满足，不是把这条要求取消掉。
   @Builder
   AnswerCardSheet() {
-    // 根 Column 的 space 管的是"容器与容器之间"的纵向节奏（手柄块/标题/图例/网格/汇总/按钮行
-    // 是六个平级区块），正是 §3.4 两轴模型的纵向轴 → 12，与网格里 rowsGap 同源。
-    // 不受这条管的是元素内部排版偏移（边界条款）：下面手柄条自己那 12 的下边距、
-    // 以及抽屉 16 的内边距（横向 gutter / 卡内边距两轴），都按原值保留。
+    // 根 Column 的 space 管的是"容器与容器之间"的纵向节奏（标题/图例/网格/汇总/按钮行
+    // 是五个平级区块），正是 §3.4 两轴模型的纵向轴 → 12，与网格里 rowsGap 同源。
+    // 不受这条管的是元素内部排版偏移（边界条款）：抽屉 16 的内边距（横向 gutter / 卡内边距两轴）按原值保留。
     Column({ space: CommonConstants.SPACE_CARD_GAP }) {
-      // 手柄条（spec §4 F06「抽屉圆角 16 + 手柄条」）：外层 Column 只干一件事——把 36vp 的小条居中；
-      // 条自身那 12 下边距是它到标题的内部偏移，与根 Column 的 12 叠加后手柄与标题实际间距 24，
-      // 正是手柄要的"和标题拉开一点"。
-      Column() {
-        Column()
-          .width(36)
-          .height(4)
-          .borderRadius(2)
-          .backgroundColor(CommonConstants.COLOR_BORDER_HAIRLINE)
-          .margin({ bottom: CommonConstants.SPACE_COMPACT })
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Center)
-
       // 标题行：左标题；右侧"关闭"由半模态自带的关闭钮承担（Step 3 明确保持 showClose: true）。
       // 不再往内容里塞第二个关闭控件——同一张抽屉上两个关闭入口既重复，又会和系统 X 抢右上角。
       Text('答题卡')
@@ -196,13 +189,14 @@ export struct ExamDetailPage {
       .columnsGap(CommonConstants.SPACE_M)
       .layoutWeight(1)
 
-      // ===== 进度汇总行（DESIGN.md F06：抽屉底部要有"已答 x / y"与剩余时间）=====
-      // 数据通路：answeredCount() 读的是 VM 的 answers 表，该表已 @Trace（见 ExamDetailViewModel
-      //   同名字段的注释）——渲染依赖在 build 期建立，答案一变，这一行与网格里对应格子同批失效重绘。
-      //   没有 @Trace 时它只会"重开抽屉才更新"，是一类不报错的刷新缺陷。
-      // 注意本抽屉默认 enableOutsideInteractive=false（SDK common.d.ts 的 @default false），
-      //   抽屉开着时点不到底下的选项，所以这条失效链在现配置下不会"当场被看见"；
-      //   要让它可见，得把抽屉改成非模态——那是交互决定，不归换装，见 Task 8 报告。
+      // ===== 进度汇总行（Task 8 简报 Step 2：抽屉底部要有"已答 x / y"与剩余时间）=====
+      // 出处按能成立的那个引：spec §4 F06 行只到"底部左次右主 40%+60%"为止，没有计数与剩余时间；
+      //   DESIGN.md 不含逐屏章节、也没有 F06 标识，引不得。本行的要求出自简报 Step 2。
+      // 数据通路：answeredCount() 读 VM 的 answers 表——它 @Trace 且写入一律整体替换
+      //   （见 ExamDetailViewModel 的 answers 字段注释与 persistAnswer），本行与网格逐格态都是它的读取方。
+      // 取值时机：抽屉模态（bindSheet 的 enableOutsideInteractive 默认 false，遮罩吃掉抽屉外的触点），
+      //   答题与看抽屉互斥，所以这两处的现值都在"抽屉重建那一刻"算；要当场跳得先改非模态，
+      //   那是交互决定、不归换装。
       // 两处都是单行短标签、不参与换行，故不配 lineHeight（§3.3 只给可换行正文配行高）。
       Row() {
         Text('已答 ' + this.vm.answeredCount() + ' / ' + this.vm.questions.length)
@@ -534,10 +528,10 @@ export struct ExamDetailPage {
                   this.showAnswerCard = true
                 })
                 .bindSheet(this.showAnswerCard, this.AnswerCardSheet(), {
-                  // 520 = 原 440 + 汇总行 + 按钮行这两块新内容的高度；
-                  // detents 给两档吸附：520 全量（含按钮），300 只看网格（网格自带滚动，压缩后不裁切）。
-                  height: 520,
-                  detents: [520, 300],
+                  // 顶档高度与 detents 首档共用同一个常量（见 SHEET_HEIGHT_FULL 的注释）；
+                  // detents 的第二档 300 只用来快速看网格——网格自带滚动，压到这一档不裁切。
+                  height: ExamDetailPage.SHEET_HEIGHT_FULL,
+                  detents: [ExamDetailPage.SHEET_HEIGHT_FULL, 300],
                   showClose: true,
                   // 圆角 16 只给上方两角（§4 F06「抽屉圆角 16」）：半模态贴底弹出，下方两角在屏外，给了也看不见。
                   radius: { topLeft: CommonConstants.RADIUS_CARD, topRight: CommonConstants.RADIUS_CARD },
