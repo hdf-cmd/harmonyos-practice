@@ -17,6 +17,18 @@ import { AppStorageV2, PersistenceV2 } from '@kit.ArkUI'
 import { BusinessError } from '@kit.BasicServicesKit'
 import { ExamDetailViewModel } from '../viewmodel/ExamDetailViewModel'
 
+// 选项标记（Radio / Checkbox）的顶对齐下推量：设计源 `_5` 选项行是 `flex items-start`，
+//   标记自带 `mt-0.5`。ArkUI Row 默认 alignItems 是 Center，多行选项会把标记沉到第 2、3 行旁边
+//   （装机实测 4 行选项偏 124px、2 行选项偏 40px），所以本行改成 Top 对齐 + 这一记 2vp 下推。
+//   取值不是凑的：标记盒 20vp、首行盒 24vp，顶对齐时标记中心比首行中心高 2vp，正好由它补平。
+//   口径与 TabBar 那条 `gap-0.5 → 2vp` 一致（本仓把设计源的 tailwind 0.5 档统一读作 2vp）。
+const OPTION_MARKER_NUDGE_VP: number = 2
+// 选项标记与正文的横向间距：设计源 `_5` 选项行是 `flex items-start gap-space-md ...` ⇒ **12vp**。
+//   本行原先写 8vp（`gap-space-sm` 那一档），是横向偏差，与上面那条纵向缺陷同源不同因，本轮一并校准。
+//   注意别和仓库里另外两处 `margin({ left: 8 })` 混为一谈——那两处是"标题→胶囊标签"的偏移
+//   （ReviewQuestionCard 的题型胶囊、CertificatePage 的状态标签），设计源给的是另一条数。
+const OPTION_MARKER_TEXT_GAP_VP: number = 12
+
 @Preview
 @ComponentV2
 export struct ExamDetailPage {
@@ -408,6 +420,7 @@ export struct ExamDetailPage {
                         // select(条件)：受控模式——勾选态由 VM 的 Set 决定，而非组件自己记忆
                         Checkbox()
                           .select(this.vm.checkboxSelected.has(option.label))
+                          .margin({ top: OPTION_MARKER_NUDGE_VP })   // 下推量见本块末尾那段
                           .onChange((checked: boolean) => {
                             // 勾选/取消流转住在 VM：整体替换 Set，UI 与数据始终保持一致
                             this.vm.toggleMultiOption(option.label, checked)
@@ -417,6 +430,7 @@ export struct ExamDetailPage {
                         // 同一 group 的 Radio 天然互斥：选中一个，其余自动取消
                         Radio({ value: option.label, group: 'options' })
                           .checked(this.vm.radioSelected === option.label)
+                          .margin({ top: OPTION_MARKER_NUDGE_VP })   // 两条分支必须同值，否则单选/多选行错开
                           .onChange((checked: boolean) => {
                             // 只处理"被选中"分支：取消选中时不动状态（单选总有一个新选中项）
                             if (checked) {
@@ -432,10 +446,30 @@ export struct ExamDetailPage {
                         // 选项正文与题干同类：内容长度随题目变，窄窗/分屏/极大档下会折行 → 配行高，
                         // 且与字号走同一偏移（不写死值，否则放大档位下行距会被压回原尺寸）
                         .lineHeight(this.font.sizeOf(24))
-                        .margin({ left: 8 })
+                        .margin({ left: OPTION_MARKER_TEXT_GAP_VP })   // 12vp，见文件头那条常量注释
+                        // 【必须给宽度约束，否则长 token 会把文字画到选项框外】
+                        //   Row 的子节点按固有尺寸排布；不给约束时 Text 拿到的可用宽**不含 Row 的 12vp 右内边距**，
+                        //   于是它按"更宽"的界线折行，行尾压过内边距、贴到 Row 外沿。
+                        //   装机实测（高级卷第 2 题，正文是 `ohos.permission.APP_TRACKING_CONSENT` 这类无空格长 token）：
+                        //     选项框 Row 右沿 = 1208，内容区右界应 = 1208 − 12vp×3.5 = 1166
+                        //     B、D 两行 Text 右沿 = **1208** ⇒ 溢出 42px = 整整 12vp；A、C 单行 1164 未超。
+                        //   短文案时这缺陷完全隐形，所以它不是字号档位问题，是**缺约束**——
+                        //   任何一行只要后端给的选项里有一个超长 token 就会被触发。
+                        //   layoutWeight(1) 是本仓"Row 子里占满剩余宽度"的既有写法（见 AnswerResultPage 底部两按钮）。
+                        .layoutWeight(1)
                     }
                     .width('100%')
                     .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                    // 【标记必须贴首行，不是贴整块文字的中心】
+                    //   ArkUI Row 的 alignItems 默认是 VerticalAlign.Center——单行时看不出问题，
+                    //   选项一折行，radio/checkbox 就沉到第 2、3 行旁边。装机实测高级卷第 11 题：
+                    //     4 行的 A/C 行：radio 中心比首行中心低 **124px（35.5vp）**，落在第 3 行上；
+                    //     2 行的 B/D 行：也低 **40px（11.5vp）**——即"任何多行选项都不对齐"，不是长选项专属。
+                    //   依据是设计源 `_5` 的选项行 markup：`<div class="flex items-start ...">` 包
+                    //   `<span class="w-6 h-6 ... flex-shrink-0 mt-0.5">`——**items-start 顶对齐 + 标记自带 mt-0.5**。
+                    //   所以这里显式写 Top，再给标记 2vp 下推（mt-0.5 按本仓口径读作 2vp，与 gap-0.5→2 同一读法）：
+                    //   标记盒 20vp 高、首行盒 24vp 高，顶对齐时标记中心比首行中心高 2vp，正好由这个下推补平。
+                    .alignItems(VerticalAlign.Top)
                     .borderRadius(CommonConstants.RADIUS_INPUT)
                     .backgroundColor(this.isOptionActive(option) ? CommonConstants.COLOR_PRIMARY_BG : CommonConstants.COLOR_CARD_BG)
                     .border({
