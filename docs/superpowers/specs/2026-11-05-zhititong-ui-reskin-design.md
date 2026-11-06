@@ -496,8 +496,17 @@ Navigation(this.pageStack) {
 （entry 123→127 全绿）。⚠️ 用例断言打在"子类记号"上而不是 `session.loggedIn` 上：
 LocalUnit 环境下测试侧 connect 到的与产品代码 connect 到的**不是同一个 AppStorageV2 实例**，
 读不到那次写——这是运行环境差异，不是产品缺陷（真机登出可用已单独验过）。
-401 那条链路没有单独造桩复验：它的每一环都已被覆盖（`handleErrorAction` 走清会话＝新单测；
-`loggedIn=false → 内容换登录页`＝登出那条装机实测）。
+401 那条链路**已端到端实测**（2026-11-06 22:0x，不再是"结构上已覆盖"的推断）：
+起一个只监听 **8081** 的 Node 桩（`POST /api/auth/login` 照常回成功、其余一律回
+`401 {"code":401,"message":"登录已过期，请重新登录"}`），临时把 `AppConfig.BASE_URL` 指过去，
+装机观察到的顺序是——桩侧日志 `GET /api/exam/papers -> 401` → 主页错误区文案「登录已过期，请重新登录」
+→ 那颗按钮读的是**「重新登录」而不是「重试」**（证明 `authExpired` 分流正确）
+→ 点下去 → 登录页出现、TabBar 归零。
+⚠️ 两个必须知道的副作用：① 这轮验证**真的调用了 `SessionManager.logout()`**，设备上存的 token 被清掉，
+所以复原后首屏落在登录页是预期行为、不是回归；② `sed -i` 改这一个常量会把整个文件重写成 LF，
+而 git 按 `core.autocrlf` 期望工作区是 CRLF，于是留下"`git status` 报修改、`git diff` 却是空"的幻影——
+字节比对确认与 HEAD 完全一致后用 `git checkout -- <file>` 让 git 自己重新落地。
+**改法本身是临时实验，未进任何提交；验完已复原、重建、重新登录，设备回到正常态。**
 
 ## 7. 风险
 
