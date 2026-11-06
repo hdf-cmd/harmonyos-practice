@@ -116,12 +116,14 @@ export struct AnswerResultPage {
         }
 
         // ===== 答题卡区：六列格子，逐题标识 答对/答错/未答 =====
-        // 分区标题走 headline-md 档（与抽屉"答题卡"标题同档），单行标题不配行高
+        // 分区标题走 headline-md 档（与抽屉"答题卡"标题同档），单行标题不配行高。
+        // bottom 取 SPACE_CARD_GAP(12)：spec §3.4 把"分区标题→下方内容"定死 12，与首页/刷题页同轨；
+        // top 是"上一区块到本标题"的容器间距，阶梯上有现成的 SPACE_L，保留不动
         Text('答题卡')
           .fontSize(CommonConstants.FONT_HEADLINE_MD)
           .fontWeight(CommonConstants.WEIGHT_SEMI)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .margin({ top: CommonConstants.SPACE_L, bottom: CommonConstants.SPACE_M })
+          .margin({ top: CommonConstants.SPACE_L, bottom: CommonConstants.SPACE_CARD_GAP })
 
         // ===== Grid（3.2.2）=====
         // columnsTemplate 写 6 个 '1fr' → 精确 6 列等分（对照科目页的 2 列 '1fr 1fr'）
@@ -194,6 +196,13 @@ export struct AnswerResultPage {
             .fontColor(CommonConstants.COLOR_CARD_BG)
             // 换装后全项目杜绝渐变（§6.1）：原来的整块横向渐变填充删除，改纯色主色底
             .backgroundColor(CommonConstants.COLOR_PRIMARY)
+            // 按下态：与登录页/答题页那几颗实心主色钮同一机制（stateStyles 的 pressed 键，
+            // 纯声明式样式，不加页面状态、不改行为）。COLOR_PRIMARY_PRESSED 这枚令牌的唯一用途就是它
+            .stateStyles({
+              pressed: {
+                .backgroundColor(CommonConstants.COLOR_PRIMARY_PRESSED)
+              }
+            })
             .onClick(() => {
               // 弹出结果页，回到答题页重新作答（按记录跳转的完整逻辑项目 6 接入数据后实现）
               this.pageStack.pop()

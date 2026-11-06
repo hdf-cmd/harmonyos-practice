@@ -10,7 +10,7 @@
 import { CommonConstants, RouteConstants, PaperInfo } from '@zhititong/common'
 import { ExamListViewModel } from '../viewmodel/ExamListViewModel'
 
-// 考卷行组件：卡面走方案A 令牌（圆角 16 + Level 1 阴影 + 0.5 发丝描边，与首页 PaperCard 同构），
+// 考卷行组件：卡面走 §6.6 配方（白底 + 圆角 16 + Level 1 阴影，不给整周描边），与首页 PaperCard 同构，
 // 展示试卷名 / 等级胶囊 / 题量信息 / 已考次数 / 成绩角标
 // 独立成 @ComponentV2 子组件（而不是塞在页面的 ForEach 里），列表项逻辑才不糊成一团
 @ComponentV2
@@ -127,17 +127,25 @@ export struct ExamListPage {
     NavDestination() {
       // 条件渲染：有卷就列出来，没卷显示空态
       if (this.vm.papers.length === 0) {
-        // 空态：某个科目一张卷都没有时（当前 Mock 数据里不存在这种科目，逻辑先备好）
-        // 六字定文案居中于整页 Column，判"不换行"——不配行高
+        // 空态：某个科目一张卷都没有时（当前 Mock 数据里不存在这种科目，逻辑先备好）。
+        // 形态按 spec §4 F12 的空态配方：静息底 + RADIUS_CARD + SPACE_L 内边距的容器卡，
+        // 不再是一行裸文字。外层仍整屏居中，横向补 16 页边距——空态卡也不贴屏边（计划的全局约束）
         Column() {
-          Text('该科目暂无考卷')
-            .fontSize(CommonConstants.FONT_BODY_MD)
-            .fontWeight(CommonConstants.WEIGHT_REGULAR)
-            .fontColor(CommonConstants.COLOR_TEXT_HINT)
+          Column({ space: CommonConstants.SPACE_COMPACT }) {
+            Text('该科目暂无考卷')
+              .fontSize(CommonConstants.FONT_BODY_LG)
+              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+          }
+          .width('100%')
+          .padding(CommonConstants.SPACE_L)
+          .borderRadius(CommonConstants.RADIUS_CARD)
+          .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
         }
         .width('100%')
         .height('100%')
         .justifyContent(FlexAlign.Center)
+        .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
       } else {
         // ===== List 列表（3.2.1）=====
         // 考卷行用 List + ListItem + ForEach 驱动；考卷可能很多，List 的按需渲染正是为此

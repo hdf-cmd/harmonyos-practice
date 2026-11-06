@@ -31,28 +31,33 @@ export struct ExamSubjectView {
     this.vm.loadSubjectGroups()
   }
 
-  // 加载失败区：与首页同一套分流——会话失效跳登录，其它失败留在本页重拉
+  // 加载失败区：与首页同一套分流——会话失效跳登录，其它失败留在本页重拉。
+  // 形态按 spec §4 F12 的会话失效块统一（spec 说 F12 是跨页状态配方，不是某一屏的改动）：
+  // 文案 body-md + 错误色，按钮走次级形态——静息浅蓝底 + 主色字，高 36、圆角 8
   @Builder
   LoadFailed() {
     Column() {
-      // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，按 §3.3 配对行高
-      //（同首页 HomeView 的失败区口径；三态视觉的统一归口留给 Task 12）
+      // 错误文案来自后端/网络层，长度不可控→属"会换行"的文字，配对行高
+      //（401 时这行就是 BaseService 兜底的"登录已过期，请重新登录"，不在此处硬编码，
+      //  分流逻辑与 errorMessage 都不动，本步只改呈现）
       Text(this.vm.errorMessage)
-        .fontSize(CommonConstants.FONT_BODY_LG)
+        .fontSize(CommonConstants.FONT_BODY_MD)
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
-        .lineHeight(CommonConstants.LINE_BODY_LG)
+        .lineHeight(CommonConstants.LINE_BODY_MD)
         .fontColor(CommonConstants.COLOR_ERROR)
         .textAlign(TextAlign.Center)
 
-      // 按钮只做令牌同值迁移（旧别名 16 → 大正文档 16）：形态保持主色胶囊不变，
-      // 白色字取 COLOR_CARD_BG（常量表注明该令牌接管全部白色用法）；
-      // 文案 ≤4 字且按钮自定高度，属"不换行"类——不配行高，套上只会裁字
+      // 次级按钮：底色 COLOR_PRIMARY_BG、字色 COLOR_PRIMARY；圆角必须配 ButtonType.Normal，
+      // Capsule 由组件自定端头会吞掉 borderRadius；label-md(14/500) 是设计源给次级按钮的档位，
+      // 按钮文字不属 badging，不受 §3.3 许可条管辖
       Button(this.vm.authExpired ? '重新登录' : '重试')
-        .type(ButtonType.Capsule)
-        .fontSize(CommonConstants.FONT_BODY_LG)
+        .type(ButtonType.Normal)
+        .height(CommonConstants.BTN_HEIGHT_SECONDARY)
+        .borderRadius(CommonConstants.RADIUS_BUTTON)
+        .fontSize(CommonConstants.FONT_LABEL_MD)
         .fontWeight(CommonConstants.WEIGHT_MEDIUM)
-        .fontColor(CommonConstants.COLOR_CARD_BG)
-        .backgroundColor(CommonConstants.COLOR_PRIMARY)
+        .fontColor(CommonConstants.COLOR_PRIMARY)
+        .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
         .margin({ top: CommonConstants.SPACE_M })
         .onClick(() => {
           if (this.vm.authExpired) {
@@ -73,8 +78,8 @@ export struct ExamSubjectView {
   @Builder
   Loading() {
     Column() {
-      // 同首页加载提示的口径：整句提示在窄窗/分屏可折行，父 Column 自适应高度不裁切；
-      // 字阶同值迁移（旧别名 16 → 大正文档 16），降档统一留给 Task 12
+      // 加载提示不在 F12 的三种状态（空态/错误态/401 态）里，故保持首页与本域的既有档位
+      // body-lg(16/400)；整句提示在窄窗/分屏可折行，父 Column 自适应高度不裁切→配对行高
       Text('科目加载中…')
         .fontSize(CommonConstants.FONT_BODY_LG)
         .fontWeight(CommonConstants.WEIGHT_REGULAR)
@@ -99,12 +104,14 @@ export struct ExamSubjectView {
     Navigation(this.examStack) {
       Column() {
         // 页面标题：与首页分区标题同一档（20/600 + 配对行高，Task 5 对四字页面级标题判"可换行"）
+        // 分区标题到下方内容的间距定死 12（spec §3.4），与首页"推荐试卷"同轨——原来这里是 16，
+        // 同域两屏不对称会被装机目检抓出来
         Text('考试科目')
           .fontSize(CommonConstants.FONT_HEADLINE_MD)
           .fontWeight(CommonConstants.WEIGHT_SEMI)
           .lineHeight(CommonConstants.LINE_HEADLINE_MD)
           .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          .margin({ bottom: CommonConstants.SPACE_M })
+          .margin({ bottom: CommonConstants.SPACE_CARD_GAP })
 
         // ===== Grid 网格（3.2.2）=====
         // 关键属性逐一说明：
