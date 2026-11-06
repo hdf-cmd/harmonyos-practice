@@ -64,6 +64,12 @@ export struct ReviewQuestionCard {
         //   字号取 badging 许可档（DESIGN.md §Application Rules：status pill 用 label-sm/caption-unit，
         //     故此处为 FONT_LABEL_SM，与答题页/试卷卡的题型胶囊同档），其余属性链与那两屏同款。
         // RADIUS_TAG 是 9999，靠 ArkUI 把 borderRadius 钳到短边一半得到正胶囊
+        // 高度 24 与答题页那颗同款（那页也是字面量 .height(24)，不是令牌，这里照它的写法对齐、不自造常量）：
+        //   不设高的话这颗实高由 "12 号字 + 上下各 4 内边距" 得出约 20，既不在源许可的 {24, 28}
+        //   （DESIGN.md:237 「Height: 24px or 28px」）内，也不在本仓自己的胶囊配方里——
+        //   这是全仓 10 个状态胶囊中唯一一个"同元素跨屏两配方"（终审 Important 4）。
+        //   24 不会裁字：内容区 = 24 − 上下内边距 8 = 16，容得下 12fp 这一行；
+        //   题型胶囊的字档是 FONT_LABEL_SM(12) 且**不过 sizeOf**（与答题页那颗一致），字号档位变化不影响它。
         Text(questionTypeLabel(this.question.type))
           .fontSize(CommonConstants.FONT_LABEL_SM)
           .fontWeight(CommonConstants.WEIGHT_MEDIUM)
@@ -71,6 +77,7 @@ export struct ReviewQuestionCard {
           .backgroundColor(CommonConstants.COLOR_PRIMARY_BG)
           .borderRadius(CommonConstants.RADIUS_TAG)
           .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+          .height(24)
           .margin({ left: 8 })
         Blank()
         Text(`${this.question.earnedScore} / ${this.question.maxScore} 分`)
@@ -106,8 +113,16 @@ export struct ReviewQuestionCard {
             .fontColor(CommonConstants.COLOR_TEXT_MAIN)
             .width('100%')
             .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+            // 圆角写法与答题页选项行统一：圆角挂在 .borderRadius() 上，.border() 只给宽与色。
+            //   原先这里只把圆角写在 .border({ radius }) 里，两屏同形态两种写法。
+            //   本机 SDK 文案核到的是：component/common.d.ts:18179-18180「Sets the border. When neither color nor
+            //   radius is specified, set borderColor and borderRadius after border to ensure they take effect」
+            //   —— 只说 border 里不给 radius 时要用 borderRadius 兜，**没有任何一句说 border 的 radius 会不会
+            //   裁剪背景填充**；18238-18241 的 borderRadius 条目也只提"配 clip 时裁子节点"。
+            //   依据缺失 ⇒ 按零风险对齐走：改写成答题页那种（两屏同写法），浅底 tint 的圆角观感列入装机目检清单。
+            .borderRadius(CommonConstants.RADIUS_INPUT)
             .backgroundColor(this.optionBg(option.label))
-            .border({ width: 1, color: this.optionBorder(option.label), radius: CommonConstants.RADIUS_INPUT })
+            .border({ width: 1, color: this.optionBorder(option.label) })
         }, (option: OptionItem) => this.question.questionId + '_' + option.label)
       }
       .width('100%')

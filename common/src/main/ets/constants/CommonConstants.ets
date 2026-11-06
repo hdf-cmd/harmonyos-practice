@@ -27,9 +27,10 @@ export class CommonConstants {
   static readonly COLOR_SUCCESS_BG: string = '#1400B578'
   static readonly COLOR_ERROR: string = '#E84026'
   static readonly COLOR_ERROR_BG: string = '#14E84026'
-  static readonly COLOR_WARN: string = '#FA6400'           // 存疑、倒计时
+  static readonly COLOR_WARN: string = '#FA6400'           // 存疑、倒计时；答题卡存疑圆点也读这一枚
   static readonly COLOR_WARN_BG: string = '#14FA6400'
-  static readonly COLOR_DOUBT_DOT: string = '#FA6400'      // 答题卡存疑圆点
+  // 「存疑圆点」那枚同值令牌已删（终审 Important 5）：它与 COLOR_WARN 同值不同名、视图层零消费者，
+  //   存疑圆点的实际消费点读的就是 COLOR_WARN——留着等于给同一个色开两个名字。
 
   // ===== 色彩：描边 =====
   static readonly COLOR_BORDER_HAIRLINE: string = '#0A000000' // 卡片边框/分割线 rgba(0,0,0,.04)
@@ -75,7 +76,10 @@ export class CommonConstants {
   static readonly RADIUS_CARD: number = 16
   static readonly RADIUS_BUTTON: number = 8
   static readonly RADIUS_INPUT: number = 10
-  static readonly RADIUS_CHECKBOX: number = 6
+  // 「复选框圆角 6」那枚令牌已删（终审 Important 5）：视图层零消费者，而且这条**在 ArkUI 里根本落不了地**——
+  //   本机 SDK component/checkbox.d.ts 只暴露 shape(CheckBoxShape)（:248-276，取值 CIRCLE 等枚举），
+  //   全文件搜不到任何 radius 成员，任意半径无处可写。留着是一条"声称已实现但不可实现"的声明。
+  //   设计源 §Shapes 那句 "Checkboxes: 6px radius" 属 Material/Tailwind 口径，鸿蒙侧做不到，不再声称。
   // 全圆胶囊：9999 不是笔误，靠 ArkUI 把 borderRadius 钳制到"短边的一半"实现正圆/胶囊。
   // 内容尺寸自适应的 Text 在构建期拿不到宽高，没法写 Math.min(h,w)/2；改成普通小数值会失去全圆效果。
   static readonly RADIUS_TAG: number = 9999

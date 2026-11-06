@@ -58,6 +58,13 @@ export struct AttemptHistoryPage {
           // 空态容器卡：配方按导出屏 design/stitch/v2-final2/stitch_harmonyos_exam_client/
           // _10/code.html 里那张空态卡（class 含 bg-surface-container-lowest / rounded-xl /
           // p-space-lg / shadow-sm）= 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。
+          // 【rounded-xl 不是 16，别拿它当 RADIUS_CARD 的佐证】该屏内嵌 tailwind.config 的 borderRadius
+          // 覆写是 "xl": "0.75rem" = **12**（DEFAULT 0.25rem=4、lg 0.5rem=8），12 屏逐一核过无一例外，
+          // 卡级类分布 63×rounded-xl / 4×rounded-2xl（后者只在 _7，2xl 未覆写、落 Tailwind 默认 1rem=16）
+          // ⇒ 导出屏的卡圆角实际是 **12**。RADIUS_CARD 取 16 的唯一出处是 DESIGN.md §Shapes 的 prose
+          // "Cards & Primary Modules: 16px"，而那句给 16 标的类名是 roundedness:2 尺度下的 rounded-lg、
+          // 给 20 标的才是 rounded-xl——类名与数值两份资料不是一套，按类名推数值必错（考卷列表页同处注释有全文）。
+          // 取 16 还是 12 属终审交用户待拍项，本轮只改注释，不动值。
           // 本轮前用的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上：两档灰阶的 R/G/B **三通道各差 1**，
           // 按 WCAG 相对亮度公式算出 **1.0089:1**，加上无影无描边 ⇒ 隐形装饰（Ruling T8-1 同一把尺）。
           // ⚠️ "改成白卡"不等于"容器就读得出来"：白底对页面底的填充对比度也只有 **1.1124:1**，

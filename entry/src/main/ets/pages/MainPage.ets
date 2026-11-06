@@ -31,7 +31,13 @@ export struct MainPage {
   // @Local：V2 的组件内部状态，值一变，引用它的 UI 自动刷新
   @Local currentIndex: number = 0
 
-  // 自定义 TabBar：纯文字标签 + 选中变色（设计稿的 Material 图标字体 ArkUI 没有，按裁决不引素材管道）
+  // 自定义 TabBar：纯文字标签 + 选中变色。
+  // 【为什么不加图标——裁决不变（spec §6.5 / T7-R3），但理由换成现在这条】
+  //   旧注释写的"设计稿的 Material 图标字体 ArkUI 没有，所以不引素材管道"**已被推翻**：
+  //   本机 SDK component/symbolglyph.d.ts:29-43 就声明了内置 SymbolGlyph 组件，构造参数直接吃
+  //   $r('sys.symbol.*') 这类系统符号资源（例：:34 的 sys.symbol.ohos_wifi）——加图标是零素材成本的。
+  //   真正的不加理由：换装只重排既有元素，Tab 条本来没有图标，加图标＝加当前没有的东西；
+  //   而且选哪三个符号属用户审美，已列进待拍项，不由本轮代拍。
   // @Builder：轻量 UI 片段函数（不是独立组件），用于复用一段布局。
   // 三个导航按钮长得一样、只有文字不同，抽成 Builder 传 title/index 复用，避免写三遍。
   @Builder

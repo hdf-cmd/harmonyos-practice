@@ -4,6 +4,8 @@
  * 【为什么存偏移量】页面各处文字本来有自己的层级（标题 24 / 副标题 18 / 正文 16 / 辅助 14）。
  *   若存绝对字号，用户一改就把所有层级塌成同一个数，标题和说明文字一样大。
  *   存偏移量则每处保留自己的基准：实际字号 = 基准字号 + 偏移量，整体一起缩放、层级不变。
+ *   偏移量只认 FONT_LEVELS 里的那几个值：表外的存盘旧值由 levelIndex() 回落标准档，
+ *   显示链与生效链共用这一处归一化（详见 sizeOf 的注释）。
  * 【为什么档位是一个数组】五档的 label 与 size 只写在 FONT_LEVELS 这一处，
  *   加一档减一档只改这个数组，上下限、当前档位下标、下拉框选项全部由它推导，不留散落的魔法数。
  * 【label 为什么跟档位放在一起】Select 这类控件要显示档位名，若 label 另存一份，
@@ -45,12 +47,21 @@ export class FontSetting {
   }
 
   // 由基准字号算出实际字号：加偏移后不足 1 时兜到 1，避免基准很小的文字被算成 0 或负数
+  // 偏移量必须经 levelIndex() 取档位表里的值，不能用裸 this.fontSize——
+  //   档位表在 Task 2 从 ±4 收到 ±2，而旧版本存盘的 ±4 还躺在磁盘上（PersistenceV2 不做迁移）。
+  //   用裸值会让"生效链"和"显示链"分叉：levelLabel() 走 levelIndex 的回落显示「标准」，
+  //   渲染却按 ±4 走，FONT_CAPTION_UNIT 落 7fp——正是 §6.2 立 ±2 要防的那个值，用户自测得出。
+  //   两条链共用同一份归一化后，表外旧值在渲染侧同样回落标准档；用户任何一次加减档
+  //   （stepTo 只写 FONT_LEVELS[index].size）都会把存盘值顺手带回表内，不需要额外的迁移。
   sizeOf(base: number): number {
-    const size: number = base + this.fontSize
+    const offset: number = FONT_LEVELS[this.levelIndex()].size
+    const size: number = base + offset
     return size > 0 ? size : 1
   }
 
   // 当前档位下标。持久化值可能来自旧版本或手改，不在档位表里时回落到标准档
+  // 【这条回落是全仓唯一的归一化点】显示链（levelLabel）与生效链（sizeOf）都从这里取值，
+  //   新增"读 fontSize"的路径必须走它，否则又会出现设置显示与实际相反。
   levelIndex(): number {
     const index: number = FONT_LEVELS.findIndex((level: FontLevel): boolean => level.size === this.fontSize)
     return index >= 0 ? index : FontSetting.standardIndex()

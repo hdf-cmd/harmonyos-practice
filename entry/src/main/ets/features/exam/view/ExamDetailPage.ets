@@ -515,6 +515,15 @@ export struct ExamDetailPage {
                   this.vm.toggleFlagCurrent()
                 })
 
+              // 「答题卡」这颗是白底次级（描边）按钮：这条 1vp 描边是它唯一的可点边界——
+              //   按钮底是 COLOR_CARD_BG，所在的底部操作区（包住这四个按钮的那个 Column）
+              //   也是 COLOR_CARD_BG，两侧同色，描边一隐形就没有任何"这里可以点"的信号。
+              //   COLOR_BORDER_HAIRLINE 是 4% 黑，铺在白底合成 #F5F5F5，对白底按 WCAG 相对亮度公式
+              //   实测 **1.0902:1**（本机 node 复算）——正是 Ruling T8-1 判"隐形装饰、删掉"的那条线，
+              //   只是那次削的是纯装饰，这次削的是可点控件（终审 Important 2，本分支 ce99b5c 引入）。
+              // 【新规矩】hairline 只作分组线与不承载可点性的描边；凡"唯一可点边界"不得低于 COLOR_TEXT_HINT。
+              //   COLOR_TEXT_HINT #8A95A5 对本按钮的白底实测 **3.0334:1**，过 WCAG 1.4.11 非文本 3:1 线。
+              //   （spec §6.6 许可的"次级/描边按钮轮廓"四类之一按本条收窄，文档侧由 controller 同步。）
               Button('答题卡')
                 .type(ButtonType.Normal)
                 .height(CommonConstants.BTN_HEIGHT)
@@ -523,7 +532,7 @@ export struct ExamDetailPage {
                 .backgroundColor(CommonConstants.COLOR_CARD_BG)
                 .fontColor(CommonConstants.COLOR_TEXT_MAIN)
                 .borderRadius(CommonConstants.RADIUS_BUTTON)
-                .border({ width: 1, color: CommonConstants.COLOR_BORDER_HAIRLINE })
+                .border({ width: 1, color: CommonConstants.COLOR_TEXT_HINT })
                 .onClick(() => {
                   this.showAnswerCard = true
                 })

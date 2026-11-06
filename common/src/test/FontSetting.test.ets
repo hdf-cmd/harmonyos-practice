@@ -7,7 +7,7 @@
 // 【断言为什么引用 FONT_LEVELS 而不是写死 -4/0/4】档位表是唯一事实源，
 //   以后加一档减一档，这些用例应继续成立；写死数值会在改档位时假红或假绿。
 import { describe, it, expect } from '@ohos/hypium'
-import { FONT_LEVELS, FontSetting } from '../main/ets/model/FontSetting'
+import { FONT_LEVELS, FontLevel, FontSetting } from '../main/ets/model/FontSetting'
 
 export default function fontSettingTest() {
   describe('fontSettingSizeOfTest', () => {
@@ -50,6 +50,35 @@ export default function fontSettingTest() {
       const fs = new FontSetting()
       fs.stepTo(4)                       // 极大档
       expect(fs.sizeOf(11)).assertEqual(13)
+    })
+
+    // 终审 Important 1：档位表 Task 2 从 ±4 收到 ±2，旧版本存盘的 ±4 还在磁盘上。
+    // 【这条用例证伪的实现】sizeOf 若仍用裸 this.fontSize 做加法（冒牌实现），灌入旧值会得：
+    //   +4 时 sizeOf(16)=20、sizeOf(11)=15；−4 时 sizeOf(16)=12、sizeOf(11)=**7fp**。
+    //   而同一状态下 levelIndex()/levelLabel() 已回落标准档、Select 显示「标准」
+    //   ⇒ 设置显示与渲染相反，且 7fp 正是 §6.2 把下限收到 ±2 要防的那个值。
+    //   下面这四条 sizeOf 断言在冒牌实现下全部为红（16≠20、11≠15、11≠7、16≠12），
+    //   最后一"两条链一致"断言把根因钉死：生效链必须等于显示档位的偏移量加基准。
+    // 旧值不写死 ±4 而从现表两端外推 2：现表下恰是 ±4，将来表若再变宽仍保证落在表外。
+    it('legacy_offset_outside_levels_falls_back_in_size_of_too', 0, () => {
+      const font: FontSetting = new FontSetting()
+      const legacyMax: number = FONT_LEVELS[FONT_LEVELS.length - 1].size + 2
+      const legacyMin: number = FONT_LEVELS[0].size - 2
+      const standardOffset: number = FONT_LEVELS[FontSetting.standardIndex()].size
+      // 前置：这两个值确实不在档位表里（否则本例退化成一个普通的档位用例）
+      expect(FONT_LEVELS.findIndex((level: FontLevel): boolean => level.size === legacyMax)).assertEqual(-1)
+      expect(FONT_LEVELS.findIndex((level: FontLevel): boolean => level.size === legacyMin)).assertEqual(-1)
+
+      font.fontSize = legacyMax
+      expect(font.levelIndex()).assertEqual(FontSetting.standardIndex())
+      expect(font.sizeOf(16)).assertEqual(16 + standardOffset)
+      font.fontSize = legacyMin
+      expect(font.levelIndex()).assertEqual(FontSetting.standardIndex())
+      expect(font.levelLabel()).assertEqual(FONT_LEVELS[FontSetting.standardIndex()].label)
+      // caption-unit 的 7fp 回归面：表外旧值不得把 11 算成 7
+      expect(font.sizeOf(11)).assertEqual(11 + standardOffset)
+      // 生效链与显示链共用同一份归一化（冒牌实现下 7 ≠ 11，此断言同样为红）
+      expect(font.sizeOf(16)).assertEqual(16 + FONT_LEVELS[font.levelIndex()].size)
     })
   })
 
