@@ -81,17 +81,20 @@ export struct AnswerResultPage {
         .padding(CommonConstants.SPACE_L)
         .borderRadius(CommonConstants.RADIUS_CARD)
         .backgroundColor(CommonConstants.COLOR_CARD_BG)
+        .shadow(CommonConstants.SHADOW_CARD)   // §6.6 卡面配方：白底 + RADIUS_CARD + SHADOW_CARD，不加整周描边（旧 Ruling T9-C"不补阴影"已被翻掉）
         .alignItems(HorizontalAlign.Center)   // 结果卡内容整体居中
         // 不加 .clip(true)：卡内边距 24 大于圆角半径 16，内容永远碰不到圆角弧线（Task 7 同一论证）
 
-        // ===== 证书提示条：仅通过后展示（成功色 tint 底的静态占位条） =====
+        // ===== 证书提示条：仅通过后展示（成功色 tint 底的通栏句子） =====
         // 条件渲染：passed 为 false 时整块从布局中移除（不是隐藏占位）
-        // 文案固定十来个字，通栏也到不了换行阈值——单行判定，不配行高
-        // 带 tint 底 + 圆角，属 badging 管辖 ⇒ 走许可档 label-sm（设计源 §Application Rules 第三条）
+        // Ruling T10-F（§3.3）：判 badging 看语义角色不看外观——本条带 tint 底 + 圆角只是 banner 形态，
+        //   语义是"要人读一句通栏话"，属正文家族 ⇒ FONT_BODY_MD(14/400) + LINE_BODY_MD，不套许可档 label-sm。
+        //   许可条只管状态胶囊/章节题号标识/时间戳三类；label-sm(12) 在 §6.2 极小档会落到 10fp，跌破中文辅助可读线。
         if (this.vm.result.passed) {
           Text('📜已生成电子证书，可在个人中心查看')
-            .fontSize(CommonConstants.FONT_LABEL_SM)
-            .fontWeight(CommonConstants.WEIGHT_MEDIUM)
+            .fontSize(CommonConstants.FONT_BODY_MD)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            .lineHeight(CommonConstants.LINE_BODY_MD)
             .fontColor(CommonConstants.COLOR_SUCCESS)
             .backgroundColor(CommonConstants.COLOR_SUCCESS_BG)
             .borderRadius(CommonConstants.RADIUS_BUTTON)

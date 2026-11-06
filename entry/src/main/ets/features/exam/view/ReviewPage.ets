@@ -35,8 +35,9 @@ export struct ReviewPage {
       } else {
         Column() {
           // ===== 成绩摘要条 =====
-          // 不加 SHADOW_CARD：简报只给单题卡钉了阴影。"标准卡是否统一带阴影 + 发丝描边"
-          //   是跨屏一次性裁决（结果页同一开放项已登记），本屏不单方面补，避免同屏两套卡面。
+          // 卡面配方按 §6.6 全局裁决：白底 + RADIUS_CARD + SHADOW_CARD，不给整周 hairline 描边。
+          //   本条已翻掉旧的"本屏不单方面补阴影、避免同屏两套卡面"结论（那是 Ruling T9-C 时代口径），
+          //   判据是导出的 12 屏 63 个卡级容器实测 0 描边 / 51 阴影；单题卡、开关行、结果卡同配方。
           Column() {
             Text(this.vm.review.paperName)
               .fontSize(CommonConstants.FONT_HEADLINE_SM)
@@ -62,6 +63,9 @@ export struct ReviewPage {
                 .fontSize(CommonConstants.FONT_CAPTION_UNIT)
                 .fontWeight(CommonConstants.WEIGHT_MEDIUM)
                 .fontColor(CommonConstants.COLOR_TEXT_SUB)
+                // 与同屏卷名一致：摘要行按单行判定（得分 36fp + 单位 + Blank + 本项，极小屏/极大档
+                //   会挤），补 maxLines(1) 让"单行不配行高"这个前提被代码守住而非仅靠假设。
+                .maxLines(1)
             }
             .width('100%')
             .margin({ top: CommonConstants.SPACE_M })
@@ -70,6 +74,7 @@ export struct ReviewPage {
           .padding(CommonConstants.SPACE_M)
           .backgroundColor(CommonConstants.COLOR_CARD_BG)
           .borderRadius(CommonConstants.RADIUS_CARD)
+          .shadow(CommonConstants.SHADOW_CARD)
           // 不 .clip(true)：卡内边距 16 与圆角半径 16 相等，内容碰不到圆角弧线
 
           // ===== 只看错题 =====
@@ -91,6 +96,7 @@ export struct ReviewPage {
           .height(CommonConstants.BTN_HEIGHT)
           .backgroundColor(CommonConstants.COLOR_CARD_BG)
           .borderRadius(CommonConstants.RADIUS_CARD)
+          .shadow(CommonConstants.SHADOW_CARD)
           .margin({ top: CommonConstants.SPACE_CARD_GAP })
 
           // ===== 逐题精讲 + 右下角助教入口（Stack 叠放，入口不占列表布局） =====

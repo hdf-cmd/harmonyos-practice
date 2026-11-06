@@ -283,9 +283,9 @@ export struct ExamDetailPage {
           if (this.monitor.monitoring && this.monitor.count > 0) {
             Row({ space: 8 }) {
               Text('检测到切出应用，已记录 ' + this.monitor.count + ' 次，请专心作答')
-                .fontSize(CommonConstants.FONT_BODY_SM)
+                .fontSize(CommonConstants.FONT_BODY_MD)
                 .fontWeight(CommonConstants.WEIGHT_REGULAR)
-                .lineHeight(CommonConstants.LINE_BODY_SM)
+                .lineHeight(CommonConstants.LINE_BODY_MD)
                 .fontColor(CommonConstants.COLOR_ERROR)
                 .layoutWeight(1)
             }
