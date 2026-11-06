@@ -31,6 +31,10 @@
   - `lineHeight` **只在可能换行的文字上配**：题干、选项正文、解析正文、副文案行、签名。**单行短标签、胶囊、角标、数字配单位不配**——那些地方套行高只会造成裁切或撑高。既有先例见 `ExamDetailPage.ets:224`（题干配行高，注释写明"只放大字不动行高，五档下会越挤越近"）。
   - 若某屏按此规则套完仍有元素溢出，改布局不改规则，并把现象报给 controller。
 - **死令牌终检（Task 13 必跑）**：换装全部落地后，逐个统计 `CommonConstants` 里每个令牌在视图层的引用数，**引用数为 0 的必须给出结论**——要么补上它的消费点，要么从常量表删掉。留着不消费也不删的令牌，等于把"这块活没干"伪装成"设计系统很完整"。
+  ⚠️ **这项只能在最后一个任务跑一次，中途的计数一律不算数**：Task 13 实测 `SPACE_COMPACT` 在 Task 8 删手绘拖拽条后确实归零（当时判"死令牌"没错），
+  但 Task 12 的证书页又把它用作 `Column({space})` —— **死/活状态会跨任务移动**。
+  同理，派单里写"某令牌现在零引用"必须**当场重跑 grep 并把输出贴进派单**，不能引用上一轮的结论。
+  还有：别名类门禁的 pattern **必须带 `\b`**，`FONT_CAPTION` 不带边界会命中现役的 `FONT_CAPTION_UNIT`（实测 10 行），照抄永不归零。
 - **单测门禁必须跑两个模块**（Task 2 实测纠正，影响所有任务）：`-p module=entry@default` **完全不执行** `common` HAR 的 `src/test`。实测证据：entry 结果文件里 18 个 describe 全是 entry 模块的（`homeViewModelTest`、`examDetailViewModelTest` 等），`FontSettingTest`/`PaperUtilsTest` 零命中；common 的用例只出现在 `common/.test/default/intermediates/test/coverage_data/test_result.txt`。
   所以只跑 entry 一条命令，`common` 侧的改动（Task 1 的 8 个令牌断言、Task 2 的 2 个字号断言）在门禁里是**隐形的**。两条都要跑：
 
