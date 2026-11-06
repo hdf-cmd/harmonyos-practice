@@ -55,7 +55,9 @@ export struct HomeView {
       // 错误态按钮走次级形态：静息浅蓝底 + 主色字，高 36、圆角 8
       // 圆角必须配 ButtonType.Normal——Capsule 由组件自定端头，borderRadius 会被吞掉
       // 字档取 §3.3 给次级按钮的 label-md(14/500)，与刷题域失败区那颗同写法；
-      // 这里曾是 body-lg + weight-medium = 16/500，该配对在 §3.3 表里不存在（16 只有 600 与 400 两档）
+      // 这里曾是 body-lg + weight-medium，而 §3.3 的字号表里 16 只有 600(HEADLINE_SM) 与 400(BODY_LG) 两档
+      // 注意不要把这条推广到主按钮：§3.3 明文"CTA 用 body-lg、次级按钮用 label-md"，
+      // 全仓那些实心主钮（登录、交卷、抽屉提交、结果页两颗）的 16 加 Button 默认字重是许可形态，不属本条
       Button(this.vm.authExpired ? '重新登录' : '重试')
         .type(ButtonType.Normal)
         .height(CommonConstants.BTN_HEIGHT_SECONDARY)
