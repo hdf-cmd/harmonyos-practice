@@ -115,17 +115,20 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 |---|---|---|---|
 | `BTN_HEIGHT`(48) | `BODY_LG` 16 | 7 | 登录、重新刷题、提交试卷×2、继续作答、查看回顾、退出登录 |
 | `BTN_HEIGHT`(48) | `BODY_MD` 14 | 4 | `ExamDetailPage` 的上一题 / 下一题 / 标记 / 答题卡 |
-| `BTN_HEIGHT_SECONDARY`(40) | `LABEL_MD` 14 | 2 | `HomeView`、`ExamSubjectView` 的「重新登录」 |
+| `BTN_HEIGHT_SECONDARY`(36) | `LABEL_MD` 14 | 2 | `HomeView`、`ExamSubjectView` 的「重新登录」 |
 
 ⇒ 高度**不能**分开 16 与 14（48 档里两种都有）；填充形态也**不能**：`答题卡` 与 `查看回顾`
-同为「48 高 + `CARD_BG` + 1vp 主色描边」，却分别落 14 与 16。**目前唯一站得住的描述是**：
+同为「48 高 + `CARD_BG` + 1vp 描边」，却分别落 14 与 16。
+⚠️ 终审纠出：**两者轮廓色其实不同** ——「答题卡」用的是 `COLOR_BORDER_HAIRLINE`、「查看回顾」用主色，
+所以我原来那句「完全同形态」不成立，只能说同族（该描边已在终审批次 Fix 2 提到 `COLOR_TEXT_HINT`，
+因为 hairline 合成后只有 1.09:1，不该充当控件唯一的可点边界）。**目前唯一站得住的描述是**：
 14 出现在"一屏里的次级/导航行"、16 出现在"主操作行"，而这是**行内层级**判断，不是属性推导。
 所以：
 1. **不要把这条写成自动判据**，任何 conform 巡检都不许据此改按钮字号；
 2. 设计源对此**没有发言权**——`DESIGN.md` §Buttons 只给了字重 500，从未规定按钮字号；
    导出屏里那颗整宽「重新登录」钮用的还是 `text-label-md`（`_10/code.html:52`），
    所以"大按钮 = body-lg"是**仓内惯例**，不是源原文，别在文档里把它写成设计源要求；
-3. **同形态跨屏不同档**（`答题卡` 14 vs `查看回顾` 16）登记为已知方差，交终审/老大连 `ExamDetailPage`
+3. **同角色跨屏不同档**（`答题卡` 14 vs `查看回顾` 16）登记为已知方差，交终审/老大连 `ExamDetailPage`
    那 4 颗 14 一起裁，**不在换装窗口内单点改**。
 
 **哪些元素能用哪些档，设计源有明文许可**（此前 spec 漏抄，导致实施者各按口味选档，是 Task 9/10 分叉的根因）。
@@ -173,7 +176,7 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 | 卡片圆角 | 16 | 12 |
 | 按钮圆角 | 8 | — |
 | 输入框圆角 | 10 | — |
-| 复选框圆角 | 6 | — |
+| 复选框圆角 | ~~6~~ → **不可实现，令牌已删**（源 `DESIGN.md:221` 确实给了 6px，但 ArkUI `Checkbox` 只暴露 `shape(CheckBoxShape)` 枚举，任意半径落不了地） | — |
 | 标签圆角 | 全圆（pill） | 4 |
 | 按钮高度 | 48 | 50 |
 | 页面左右边距 | 16 | 16（不变） |
@@ -197,6 +200,24 @@ DESIGN.md 给 12 档。现有 4 档（24/18/16/14）+ 散落裸值（12/28/48）
 | `space-lg` | **1rem = 16** | `SPACE_M`（卡片内边距、页面左右边距、横向 gutter） |
 | `space-xl` | 1.5rem = 24 | `SPACE_L` |
 | `space-2xl` | 2rem = 32 | —（未建） |
+
+**同一条教训我在 `borderRadius` 上又犯了一次**（终审纠出，实测覆盖 12 屏而非只看 `_10`）：
+
+| 源名 | 真值 | 依据 |
+|---|---|---|
+| `rounded`(DEFAULT) / `md` / `lg` / `xl` | **4 / 6 / 8 / 12** | 12 屏统一在 `tailwind.config` 覆写：`DEFAULT=0.25rem`、`md=0.375rem`、`lg=0.5rem`、`xl=0.75rem` |
+| `rounded-2xl` | **16** | **未被覆写**，取 tailwind 默认 `1rem`；12 屏合计只出现 **4 次**，全在 `_7` |
+| `rounded-full` | 全圆 | 89 次 |
+| 屏层实测分布 | `lg` 95 / `xl` **63** / `full` 89 / `md` 6 / `2xl` 4 | node 扫 `_1.._12/code.html` |
+
+⇒ **屏层卡级容器的圆角实际是 `rounded-xl` = 12px，不是 16**。`RADIUS_CARD = 16` 的**主要**出处是
+`DESIGN.md` §Shapes 的 prose，屏层只有 `_7` 那 4 处构成次要支持（终审原话"16 的唯一出处是 prose"说过头了，
+实施者在 `7ace1b0` 纠回）。**本仓取 16 是一条显式设计决定，不是"照屏做"** ——
+之前三处代码注释拿 `rounded-xl` 当 16 的佐证，已在 `dcfe24b` 改准。
+**收 12 还是留 16 归老大拍**（收 12 = 一次全仓改 `RADIUS_CARD`，会连带影响"内边距 ≥ 半径则免 clip"那条几何论证：
+16 ≥ 12 仍成立，`MineView` 那类无 padding 靠 clip 的卡不受影响）。
+教训一句话：**凡"源里这个值是多少"，读该屏内嵌的 config 覆写，不要读类名。**
+
 
 `DESIGN.md` §Density & Rhythms 与上表一致，原文：「Card internal padding is fixed at **`16px` (`space-lg`)**
 on mobile, expanding to `24px` (`space-xl`) on larger screens.」⇒ **手机版卡内边距就是 16**。
@@ -253,7 +274,13 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 ## 5. 验证方案
 
 1. **构建门禁**：`devecocli build` 0 ERROR。`hvigorw test` 不编译视图，只跑单测等于没验视图。
-2. **单测门禁**：跑前删 `entry/.test/default/intermediates/test/coverage_data/test_result.txt`，只认尾行 `Tests run: N, Failure: 0, Error: 0`，且 N 与本轮 `it()` 数对得上。换装前基线 121 例，换装后必须仍是 121（用例数变了就是回归）。
+2. **单测门禁**：跑前删两个模块各自的 `test_result.txt`，只认尾行 `Tests run: N, Failure: 0, Error: 0`。
+   基线**随任务推进而变**，不要拿换装前的 121 当常量：现值 entry **123** / common **32**
+   （121→123 是 T1-C/T2-A 补的令牌与字号断言；31→32 是终审批次 Fix 1 新加的归一化用例）。
+   ⚠️ 三条读数纪律：① `-p module=entry@default` **不执行** common 的 `src/test`，必须分别跑分别读尾行；
+   ② `Tests run` 数的是 **`it()` 块数**，只删 `expect` 不会让数字下降（我预测过「删两枚令牌后 31 会继续降」，机制上就错）；
+   ③ `grep -c "Error in"` 与 naive `grep -c "it('"` 都不是判据 —— 前者对 hypium LocalUnit 恒 0，
+   后者实测数出 124 而尾行是 123（注释里的 `submit('MANUAL')` 之类会被混计）。
 3. **令牌一致性静态检查**：换装后 `grep -rn "'#[0-9A-Fa-f]\{6\}'" entry/src/main/ets/features/**/view` 必须只剩 0 处硬编码（现 10 处）。
 4. **模拟器目检**：这是硬要求，不能只靠单测。数值框、描边、圆角、阴影这类东西单测测不出来。逐屏截图对 `v2-final2/*/screen.png`，重点看五档字号下 `FONT_CAPTION_UNIT` 的可读性。
 5. **合并态复跑**：ff 合并后站在 master 再跑一次全量测试。
@@ -319,7 +346,14 @@ DESIGN.md 正文说按钮圆角是 `rounded-md`，但它的 token 表里 `md = 0
 按 §6.4 取更克制的一读：**卡面 = 白底 + `RADIUS_CARD` + `SHADOW_CARD`，不加整周 hairline。**
 这与 §6.4 已裁的"胶囊只做 tint 底、不加描边"同向，不是特例。
 
-**描边仍然合法的四类对象，不要在清扫时误删**（它们不是"卡面装饰"，各有出处）：
+**描边仍然合法的四类对象，不要在清扫时误删**（它们不是「卡面装饰」，各有出处）。
+⚠️ 但这套枚举**不完备**（终审实测）：它漏掉了写在 `borderRadius` **之后**的 4vp 语义色状态轨，
+也漏掉了轮廓色已降到 hairline 的按钮；而清点用的 `grep -B6` 只回看，结构上必然漏后向属性。
+⇒ **门禁口径改为先普查再归类**：`grep -rn "\.border(" entry/src/main/ets`（不带窗口），
+逐个归入下面四类或判违规。
+另加一条收窄（终审批次 Fix 2）：**hairline 只作分组线与不承载可点性的描边；凡「控件唯一的可点边界」
+不得低于 `COLOR_TEXT_HINT`（对白底实测 3.0334:1）** —— 我们曾用 1.09:1 判掉一条纯装饰的手柄条，
+同一把尺不能对一个可点控件放行。
 
 - `TextInput` 的静息描边（§Input Fields / Option Selectors 明文）——`LoginPage.ets:84/104/127` 属此类，保留。
 - 次级/描边按钮的轮廓——`ExamDetailPage.ets:526`「答题卡」那颗，保留。
@@ -390,6 +424,19 @@ Task 12 实施者核出、controller 当场验证：计划写的「四个旧别�
       需同步核 `lineHeight` 是否一起偏移，否则大字档会撑破卡；
   (c) 全仓统一走 `sizeOf()`。
   我倾向 (b)——它是"设置项能不能用"的问题，且改动面可控；但这是**加功能不是换装**，越出已批准范围，所以由你定。
+- **401 出口（终审纠了我报错的前提，请按这条拍，别按我原话）**：我此前报的是「`authExpired` 从未被写值、
+  真实成本 2 页 VM + 2 页视图」—— **前提错**。事实是 `BaseViewModel.handleFailure`（:44-49）确实写它、
+  `BaseService:44` 401 会抛 `AuthExpiredError`，`HomeView` 与 `ExamSubjectView` 两颗「重新登录」钮真能动作
+  （含 `clearExpiredSession()` + 根栈 `replacePath(LOGIN)`，且有单测钉住）。
+  真实缺口只是：考试记录 / 考卷列表 / 证书 / 回顾这几个 VM 走的是 `setError(...)` 而非 `handleFailure(...)`
+  ⇒ **成本是每个 VM 一行 + 视图那条分支已存在**，比我原报的小得多。要不要在本窗口修，归你拍。
+- **状态色在 8% tint 底上的对比度不够（终审算，本地可证）**：`COLOR_SUCCESS #00B578` on 自身 tint ≈ **2.48:1**、
+  on 白 ≈ 2.66:1；`COLOR_WARN` ≈ 2.80:1；未答格 `TEXT_HINT` on `SUBTLE` ≈ 2.75:1。
+  都低于我们自己在 T8-1 用的 3:1 线。设计源屏同位其实把状态字改深了（`#008A56` on `#E6F8F1` = 4.00:1）。
+  ⇒ 修它＝**离开 `#00B578` 这套官方色去换可读性**，是审美与可访问性之间的取舍，归你拍；不修则并入装机目检。
+- **卡圆角 16 vs 屏层 12（终审纠出我的第二次"读类名推数值"）**：见 §3.4 的 borderRadius 标尺表。
+  屏层卡实际是 `rounded-xl` = 12，本仓 16 取自 prose §Shapes，属**显式决定**。收到 12 是一次全仓改
+  `RADIUS_CARD`，且会连带影响「内边距 ≥ 半径则免 clip」那条几何论证（16 ≥ 12 仍成立，不用重开那笔账）。
 
 ## 8. 我纠正的先前说法（执行期回补，共五条）
 
