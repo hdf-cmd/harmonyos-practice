@@ -57,8 +57,9 @@ export default function fontSettingTest() {
     //   +4 时 sizeOf(16)=20、sizeOf(11)=15；−4 时 sizeOf(16)=12、sizeOf(11)=**7fp**。
     //   而同一状态下 levelIndex()/levelLabel() 已回落标准档、Select 显示「标准」
     //   ⇒ 设置显示与渲染相反，且 7fp 正是 §6.2 把下限收到 ±2 要防的那个值。
-    //   下面这四条 sizeOf 断言在冒牌实现下全部为红（16≠20、11≠15、11≠7、16≠12），
-    //   最后一"两条链一致"断言把根因钉死：生效链必须等于显示档位的偏移量加基准。
+    //   本例三条 sizeOf 断言在冒牌实现下都不成立（20≠16、7≠11、12≠16）；hypium 撞第一条即中止本例，
+    //   实测红在第一条：`Error in legacy_offset_outside_levels_falls_back_in_size_of_too, expect 20 equals 16`。
+    //   末那"两条链一致"断言把根因钉死：生效链必须等于显示档位的偏移量加基准。
     // 旧值不写死 ±4 而从现表两端外推 2：现表下恰是 ±4，将来表若再变宽仍保证落在表外。
     it('legacy_offset_outside_levels_falls_back_in_size_of_too', 0, () => {
       const font: FontSetting = new FontSetting()
