@@ -55,20 +55,30 @@ export struct AttemptHistoryPage {
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
         } else if (this.vm.records.length === 0) {
-          // 空态：按 spec §4 F12 的空态配方（静息底 + RADIUS_CARD + SPACE_L 内边距），
-          // 与考卷列表页/证书页的空态同一套，不再是一行裸文字。
-          // 外层仍吃掉剩余高度并居中；横向补 16 的页边距，空态卡不贴屏边（计划的全局约束）
+          // 空态容器卡：配方按导出屏 design/stitch/v2-final2/stitch_harmonyos_exam_client/
+          // _10/code.html 里那张空态卡（class 含 bg-surface-container-lowest / rounded-xl /
+          // p-space-lg / shadow-sm）= 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。
+          // 本轮前写的 COLOR_SUBTLE_BG 落在页面底 COLOR_BG_PAGE 上（两档灰阶只差 1 个 R 值）
+          // 对比度约 1.004:1，是无影无描边的隐形装饰（与 Ruling T8-1 判掉的手绘手柄条同一把尺）。
+          // 卡面不给整周描边（spec §6.6）。源那个 folder_off 图标圆座不做（spec §6.5）。
+          // 字档：本页空态只有一句 ⇒ 占配方里的首句档（源值 text-headline-sm text-on-surface
+          // ⇒ FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN）；
+          // §3.3 表里 16 只有 600(HEADLINE_SM) 与 400(BODY_LG) 两个合法配对，
+          // 本轮前那组 BODY_LG + WEIGHT_MEDIUM(16/500) 在表里不存在（Ruling T10-A）。
+          // 只有一个子节点时 Column 构造参数 space 无效果 ⇒ 去掉那层内嵌 Column，
+          // 卡片属性直接挂在这句 Text 上；textAlign(Center) 保持原「Column 默认居中对齐」的观感，
+          // 也与源里的 text-center 一致。外层仍吃掉剩余高度并居中，横向补 16 页边距不贴屏边。
           Column() {
-            Column({ space: CommonConstants.SPACE_COMPACT }) {
-              Text('暂无考试记录')
-                .fontSize(CommonConstants.FONT_BODY_LG)
-                .fontWeight(CommonConstants.WEIGHT_MEDIUM)
-                .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-            }
-            .width('100%')
-            .padding(CommonConstants.SPACE_L)
-            .borderRadius(CommonConstants.RADIUS_CARD)
-            .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+            Text('暂无考试记录')
+              .fontSize(CommonConstants.FONT_HEADLINE_SM)
+              .fontWeight(CommonConstants.WEIGHT_SEMI)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+              .textAlign(TextAlign.Center)
+              .width('100%')
+              .padding(CommonConstants.SPACE_L)
+              .borderRadius(CommonConstants.RADIUS_CARD)
+              .backgroundColor(CommonConstants.COLOR_CARD_BG)
+              .shadow(CommonConstants.SHADOW_CARD)
           }
           .width('100%')
           .layoutWeight(1)

@@ -1,4 +1,5 @@
-// 考卷列表页：用 List 渲染当前科目下的考卷（数据由 ExamListViewModel 按科目过滤 MOCK_PAPERS 提供）
+// 考卷列表页：用 List 渲染当前科目下的考卷（数据由 ExamListViewModel 调 PaperService
+// 拉 /api/exam/papers 后按 categoryName 过滤提供——本页没有 Mock 数据源）
 //
 // 【分层说明】本文件位于 features/exam/view/：
 //   它是 Exam 域的**域内路由页**——注册在 ExamSubjectView 的 ExamRouter 上
@@ -96,7 +97,7 @@ struct PaperRow {
     .shadow(CommonConstants.SHADOW_CARD)
     .onClick(() => {
       // 沉浸式跳转：push 到根栈，答题页全屏盖住底部 Tab
-      // 第二个参数传的是这张卷的 id（答题页后续按它取卷，当前 Mock 阶段答题页还没用上）
+      // 第二个参数传的是这张卷的 id：答题页 onReady 里把它 as string 后交 startExam(...) 开考
       this.pageStack.pushPathByName(RouteConstants.EXAM_DETAIL, this.paper.id)
     })
   }
@@ -106,7 +107,8 @@ struct PaperRow {
 export struct ExamListPage {
   // 上游传进来的科目名，onReady 里从路由参数读取
   @Local categoryName: string = ''
-  // MVVM：数据与业务归 ViewModel（Mock 三条铁律：Mock 只被 ViewModel 消费，view 不碰数据源）
+  // MVVM：数据与业务归 ViewModel——取数与按科目过滤都住在 ExamListViewModel，
+  // view 只渲染它的 @Trace papers / errorMessage，不碰 Service。
   // @Local 持有 VM 实例；papers 是 @Trace 字段，VM 加载完成后 List 自动刷新
   @Local vm: ExamListViewModel = new ExamListViewModel()
 
@@ -125,22 +127,56 @@ export struct ExamListPage {
 
   build() {
     NavDestination() {
-      // 条件渲染：有卷就列出来，没卷显示空态
-      if (this.vm.papers.length === 0) {
-        // 空态：某个科目一张卷都没有时（当前 Mock 数据里不存在这种科目，逻辑先备好）。
-        // 形态按 spec §4 F12 的空态配方：静息底 + RADIUS_CARD + SPACE_L 内边距的容器卡，
-        // 不再是一行裸文字。外层仍整屏居中，横向补 16 页边距——空态卡也不贴屏边（计划的全局约束）
+      // 条件渲染三态：拉取失败 → 空态 → 列表，**错误必须先于"空"判**。
+      // ExamListViewModel.loadPapersByCategory 的 catch 只调 setError(errorMsg)，papers 保持空数组 ⇒
+      // 只看 papers.length === 0 会把断网/5xx 说成"该科目暂无考卷"，
+      // 而本轮把它升成白卡 + 阴影的正式形态后，这句假陈述更像一个官方状态。
+      // 判定条件与首页 HomeView 的 errorMessage 分支同构（同为列表页，那是全仓已有这一分支的对照）。
+      if (this.vm.errorMessage !== '' && this.vm.papers.length === 0) {
+        // 错误态：文案来自后端/网络层，长度不可控→属"会换行"的文字，配对行高。
+        // 字档取 F12 状态配方给错误文案的那一档（FONT_BODY_MD 14/400 + COLOR_ERROR），
+        // 与"刷题"域失败区（ExamSubjectView）、考试记录页/证书页的错误区同一轨——
+        // 那三处本轮已统一到 14，这里跟着统一走，不另立档位。
+        // 本轮不给这颗"重新登录"出口：本页 VM 的失败落点是 setError(...) 而不是
+        // BaseViewModel.handleFailure(...)，authExpired 连值都没被写，
+        // 按钮要真能动作得先改 ViewModel，越出"本步只改呈现"（已登记，归裁决）。
         Column() {
-          Column({ space: CommonConstants.SPACE_COMPACT }) {
-            Text('该科目暂无考卷')
-              .fontSize(CommonConstants.FONT_BODY_LG)
-              .fontWeight(CommonConstants.WEIGHT_MEDIUM)
-              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
-          }
-          .width('100%')
-          .padding(CommonConstants.SPACE_L)
-          .borderRadius(CommonConstants.RADIUS_CARD)
-          .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+          Text(this.vm.errorMessage)
+            .fontSize(CommonConstants.FONT_BODY_MD)
+            .fontWeight(CommonConstants.WEIGHT_REGULAR)
+            .lineHeight(CommonConstants.LINE_BODY_MD)
+            .fontColor(CommonConstants.COLOR_ERROR)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .padding({ left: CommonConstants.SPACE_M, right: CommonConstants.SPACE_M })
+      } else if (this.vm.papers.length === 0) {
+        // 空态：某个科目一张卷都没有时（真接口拉到该科目零条）。
+        // 容器卡配方按导出屏 design/stitch/v2-final2/stitch_harmonyos_exam_client/_10/code.html
+        // 里那张空态卡（bg-surface-container-lowest / rounded-xl / p-space-lg / shadow-sm）
+        // ⇒ 白卡 COLOR_CARD_BG + RADIUS_CARD + SHADOW_CARD。本轮前的 COLOR_SUBTLE_BG
+        // 落在页面底 COLOR_BG_PAGE 上（两档灰阶只差 1 个 R 值）对比度约 1.004:1，是无影无描边的隐形装饰
+        //（与 Ruling T8-1 判掉的手绘手柄条同一把尺）；卡面不给整周描边（spec §6.6），
+        // 源里那个 folder_off 图标圆座不做（spec §6.5）。
+        // 字档：本页空态只有一句 ⇒ 占配方首句档（源值 text-headline-sm text-on-surface
+        // ⇒ FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN）；本轮前那组
+        // BODY_LG + WEIGHT_MEDIUM(16/500) 在 §3.3 表里不存在（16 只配 600 或 400，Ruling T10-A）。
+        // 只有一个子节点时 Column 构造参数 space 无效果 ⇒ 去掉那层内嵌 Column，卡片属性挂在句上；
+        // textAlign(Center) 保持原 Column 默认居中观感，也与源里的 text-center 一致。
+        // 外层仍整屏居中，横向补 16 页边距——空态卡不贴屏边（计划的全局约束）
+        Column() {
+          Text('该科目暂无考卷')
+            .fontSize(CommonConstants.FONT_HEADLINE_SM)
+            .fontWeight(CommonConstants.WEIGHT_SEMI)
+            .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+            .textAlign(TextAlign.Center)
+            .width('100%')
+            .padding(CommonConstants.SPACE_L)
+            .borderRadius(CommonConstants.RADIUS_CARD)
+            .backgroundColor(CommonConstants.COLOR_CARD_BG)
+            .shadow(CommonConstants.SHADOW_CARD)
         }
         .width('100%')
         .height('100%')
@@ -177,7 +213,8 @@ export struct ExamListPage {
       // 所以这里直接断言成我们约定的类型——传参方 ExamSubjectCard 传的就是 string
       this.categoryName = ctx.pathInfo.param as string
       // MVVM：按科目过滤属业务规则，收拢在 ViewModel；View 只转发事件与渲染
-      // 返回的 Result 这里不处理——失败态由 vm.errorMessage 承载，静态 Demo 阶段 Mock 过滤不会失败
+      // 返回的 Result 这里不处理——失败态由 vm.errorMessage 承载，
+      // 由 build 里那条 errorMessage 分支渲染成可见的错误区（走真接口：断网/5xx/401 都会落到那儿）
       this.vm.loadPapersByCategory(this.categoryName)
     })
   }

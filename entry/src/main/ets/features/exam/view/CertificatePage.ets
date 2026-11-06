@@ -52,20 +52,29 @@ export struct CertificatePage {
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
         } else if (this.vm.certificates.length === 0) {
-          // 空态：按 spec §4 F12 的空态配方（静息底 + RADIUS_CARD + SPACE_L 内边距），
-          // 与考卷列表页/考试记录页同一套。本页只有这一句引导文案，
-          // 按简报的分档它落空态块的第二行（body-sm + 提示色）
+          // 空态容器卡：与考试记录页、考卷列表页同一套配方，源值是导出屏
+          // design/stitch/v2-final2/stitch_harmonyos_exam_client/_10/code.html 里那张空态卡
+          // （bg-surface-container-lowest / rounded-xl / p-space-lg / shadow-sm）⇒ 白卡 + SHADOW_CARD。
+          // 本轮前的 COLOR_SUBTLE_BG 落在 COLOR_BG_PAGE 上两档灰阶只差 1 个 R 值、对比度约 1.004:1，
+          // 等于一张看不见的容器（Ruling T8-1 同一把尺）；卡面不给整周描边（spec §6.6）。
+          // 字档：本页空态只有这一个句子 ⇒ 占配方的首句档
+          // （FONT_HEADLINE_SM + WEIGHT_SEMI + COLOR_TEXT_MAIN，源值 text-headline-sm text-on-surface），
+          // 与两个兄弟页同向；本轮前按"这句属引导句、永远落第二行"把它降成 BODY_SM + 提示色是反向的。
+          // 配方里的次句档（BODY_SM + WEIGHT_REGULAR + COLOR_TEXT_SUB + LINE_BODY_SM，
+          // 源值 text-secondary）这里没有第二个句子，故不套那层 Column({ space })——
+          // 单子节点时构造参数 space 无效果；textAlign(Center) 保持原 Column 默认居中观感，
+          // 也与源里的 text-center 一致。
           Column() {
-            Column({ space: CommonConstants.SPACE_COMPACT }) {
-              Text('通过考试即可获得证书')
-                .fontSize(CommonConstants.FONT_BODY_SM)
-                .fontWeight(CommonConstants.WEIGHT_REGULAR)
-                .fontColor(CommonConstants.COLOR_TEXT_HINT)
-            }
-            .width('100%')
-            .padding(CommonConstants.SPACE_L)
-            .borderRadius(CommonConstants.RADIUS_CARD)
-            .backgroundColor(CommonConstants.COLOR_SUBTLE_BG)
+            Text('通过考试即可获得证书')
+              .fontSize(CommonConstants.FONT_HEADLINE_SM)
+              .fontWeight(CommonConstants.WEIGHT_SEMI)
+              .fontColor(CommonConstants.COLOR_TEXT_MAIN)
+              .textAlign(TextAlign.Center)
+              .width('100%')
+              .padding(CommonConstants.SPACE_L)
+              .borderRadius(CommonConstants.RADIUS_CARD)
+              .backgroundColor(CommonConstants.COLOR_CARD_BG)
+              .shadow(CommonConstants.SHADOW_CARD)
           }
           .width('100%')
           .layoutWeight(1)
@@ -177,10 +186,11 @@ export struct CertificatePage {
     }
     .width('100%')
     .padding(CommonConstants.SPACE_M)
-    // 卡面配方（§6.6）：白底 + RADIUS_CARD + SHADOW_CARD，不给整周描边
+    // 卡面配方（§6.6）：白底 + RADIUS_CARD + SHADOW_CARD，不给整周描边。
+    // 这里不写 alignItems：本 Column 的两个子节点（标题 Row 与字段区 Column）都已 .width('100%')，
+    // 横向对齐属性对满宽子节点没有可作用的空间，写了也不改变渲染
     .backgroundColor(CommonConstants.COLOR_CARD_BG)
     .borderRadius(CommonConstants.RADIUS_CARD)
     .shadow(CommonConstants.SHADOW_CARD)
-    .alignItems(HorizontalAlign.Start)
   }
 }
